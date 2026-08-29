@@ -1,6 +1,6 @@
 # NetStatAnalyzer
 
-![NetStatAnalyzer Preview](https://github.com/user-attachments/assets/73302d10-c8fc-4df7-92f2-0506fbf14e47)
+![NetStatAnalyzer Preview](https://github.com/user-attachments/assets/368c5f97-d946-4bb3-89ec-536cd5ab050f)
 
 **NetStatAnalyzer** é uma ferramenta moderna, leve e eficiente para Windows que permite visualizar, filtrar e monitorar em tempo real todas as conexões de rede ativas no seu sistema, identificando instantaneamente os processos associados.
 
