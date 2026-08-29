@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -8,7 +8,12 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>assets\icon.ico</ApplicationIcon>
     <Title>NetStatAnalyzer</Title>
-    <Version>$(VersionPrefix) 1.0.2</Version>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <FileVersion>1.0.3.0</FileVersion>
+    <Description>Modern Windows Network Connection and Port Analyzer</Description>
+    <Authors>NetStatAnalyzer</Authors>
+    <Product>NetStatAnalyzer</Product>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

@@ -2,45 +2,54 @@
 
 ![NetStatAnalyzer Preview](https://github.com/user-attachments/assets/73302d10-c8fc-4df7-92f2-0506fbf14e47)
 
-**NetStatAnalyzer** é uma ferramenta simples e eficiente para Windows que permite visualizar e monitorar todas as conexões de rede ativas no seu sistema. Com ela, você pode identificar processos conectados, abrir os arquivos associados a esses processos e filtrar conexões com base em seu status.
+**NetStatAnalyzer** é uma ferramenta moderna, leve e eficiente para Windows que permite visualizar, filtrar e monitorar em tempo real todas as conexões de rede ativas no seu sistema, identificando instantaneamente os processos associados.
 
-## Recursos
+---
 
-- **Listagem Completa de Conexões:** Visualize todas as conexões de rede ativas em seu PC.
-- **Processos Associados:** Identifique os processos vinculados a cada conexão de rede.
-- **Acesso Rápido a Arquivos:** Abra o arquivo executável que gerou a conexão e processo diretamente pela ferramenta.
-- **Visualização de IPs:** Exiba os endereços IPs conectados ao seu sistema.
-- **Filtro de Conexões:** Filtre por conexões estabelecidas para um diagnóstico mais preciso.
+## 🚀 Recursos Principais
 
-## Como Usar
+- **Monitoramento de Conexões em Tempo Real:** Visualize conexões TCP/UDP ativas com endereços locais, remotos, portas e estados.
+- **Identificação Visual de Processos:** Extração automática de ícone, nome do executável e PID do processo associado.
+- **Badges de Estado Coloridos:** Identificação visual rápida de conexões (`ESTABLISHED`, `LISTENING`, `TIME_WAIT`, `CLOSE_WAIT`, etc.).
+- **Métricas Instantâneas:** Painel superior com contagem de conexões Totais, Estabelecidas e em Escuta.
+- **Busca Global Instantânea:** Filtre em tempo real por nome do processo, PID, endereço IP, porta ou protocolo.
+- **Menu de Contexto & Ações Rápidas:**
+  - 📁 *Abrir Local do Arquivo* (no Windows Explorer ou duplo clique na linha)
+  - 📋 *Copiar Detalhes da Conexão*
+  - 📋 *Copiar Endereço IP / Porta*
+  - 📋 *Copiar PID*
+  - 🔄 *Recarregamento Assíncrono* (sem travar a interface)
 
-1. **Inicie o NetStatAnalyzer:** Execute o aplicativo com privilégios administrativos para garantir acesso completo às informações de rede.
-2. **Listagem de Conexões:** A ferramenta exibirá automaticamente todas as conexões de rede.
-3. **Ações Possíveis:**
-   - Clique em uma conexão para visualizar detalhes do processo.
-   - Selecione "Abrir Arquivo" para acessar o executável associado.
-   - Use a opção de filtro para exibir apenas conexões estabelecidas.
+---
 
-## Requisitos do Sistema
+## 🛠️ Requisitos do Sistema
 
-- Windows 10 ou superior
-- Privilégios administrativos
-- .NET 8.0
+- **Sistema Operacional:** Windows 10 / Windows 11 (64-bit)
+- **Runtime:** .NET 8.0 Runtime (ou utilize o build single-file executável)
+- **Privilégios:** Recomendado executar como Administrador para listar detalhes de processos de sistema.
 
-## Instalação
+---
 
-1. Baixe o [NetStatAnalyzer](#) no seu PC.
-2. Extraia o conteúdo do arquivo compactado.
-3. Execute o arquivo `NetStatAnalyzer.exe`.
+## 📦 Publicação e Executáveis Portáteis
 
-## Contribuição
+Você pode gerar o executável de duas formas:
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir *issues* ou enviar *pull requests* com melhorias.
+### 1. 100% Portátil (Self-Contained) — *Recomendado para distribuição*
+Inclui o runtime do .NET 8 embutido e compactado. Não necessita que o usuário final instale nada:
+```bash
+dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./dist
+```
+*Executável gerado:* `./dist/NetStatAnalyzer.exe`
 
-## Licença
+### 2. Ultra Compacto (Framework-Dependent)
+Apenas ~2 MB, ideal para máquinas que já possuem o .NET 8 instalado:
+```bash
+dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish
+```
+*Executável gerado:* `./publish/NetStatAnalyzer.exe`
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+---
 
-## Aviso Legal
+## 📄 Licença
 
-O uso do NetStatAnalyzer é de responsabilidade do usuário. Certifique-se de usar a ferramenta de forma ética e em conformidade com as leis locais.
+Distribuído sob a licença [MIT](LICENSE).

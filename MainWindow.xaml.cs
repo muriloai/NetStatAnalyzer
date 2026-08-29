@@ -1,91 +1,226 @@
-﻿using System.Collections.ObjectModel;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Linq;
-using System.Drawing;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace NetStatAnalyzer
-{  
+{
     public class NetStatEntry
     {
-        public string Protocol { get; set; }
-        public string LocalAddress { get; set; }
-        public string ForeignAddress { get; set; }
-        public string State { get; set; }
+        public string Protocol { get; set; } = string.Empty;
+        public string LocalAddress { get; set; } = string.Empty;
+        public string ForeignAddress { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
         public int PID { get; set; }
-        public string ProcessName { get; set; }
-        public BitmapImage ProcessIcon { get; set; }
+        public string ProcessName { get; set; } = "Unknown";
+        public string? ProcessPath { get; set; }
+        public BitmapImage? ProcessIcon { get; set; }
+
+        public string StateBadgeBackground => State?.ToUpperInvariant() switch
+        {
+            "ESTABLISHED" => "#14532D",
+            "LISTENING" => "#1E3A8A",
+            "TIME_WAIT" => "#713F12",
+            "CLOSE_WAIT" => "#7C2D12",
+            "SYN_SENT" or "SYN_RECEIVED" => "#581C87",
+            _ => "#334155"
+        };
+
+        public string StateBadgeForeground => State?.ToUpperInvariant() switch
+        {
+            "ESTABLISHED" => "#4ADE80",
+            "LISTENING" => "#60A5FA",
+            "TIME_WAIT" => "#FDE047",
+            "CLOSE_WAIT" => "#FB923C",
+            "SYN_SENT" or "SYN_RECEIVED" => "#C084FC",
+            _ => "#94A3B8"
+        };
+
+        public string ProtocolBadgeBackground => Protocol?.ToUpperInvariant() switch
+        {
+            "TCP" => "#0369A1",
+            "UDP" => "#4338CA",
+            _ => "#334155"
+        };
+
+        public string ProtocolBadgeForeground => "#F0F9FF";
     }
+
     public partial class MainWindow : Window
     {
-        public ObservableCollection<NetStatEntry> Entries { get; set; } = new ObservableCollection<NetStatEntry>();
+        private readonly List<NetStatEntry> _allEntries = new();
+        public ObservableCollection<NetStatEntry> FilteredEntries { get; set; } = new();
+
+        private bool _isLoading = false;
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
-            LoadNetStatData();
             LoadVersion();
         }
 
-        private void LoadNetStatData()
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            await LoadNetStatDataAsync();
+        }
+
+        private async Task LoadNetStatDataAsync()
+        {
+            if (_isLoading) return;
+
             try
             {
-                Entries.Clear();
-                var netStatOutput = RunCommand("netstat", "-ano");
-                var states = new HashSet<string>();
+                _isLoading = true;
+                LoadingProgressBar.Visibility = Visibility.Visible;
+                StatusTextBlock.Text = "Carregando conexões de rede...";
+                ReloadButton.IsEnabled = false;
 
-                foreach (var line in netStatOutput)
+                var entries = await Task.Run(() =>
                 {
-                    var entry = ParseNetStatLine(line);
-                    if (entry != null)
+                    var resultList = new List<NetStatEntry>();
+                    var outputLines = RunCommand("netstat", "-ano");
+
+                    foreach (var line in outputLines)
                     {
-                        entry.ProcessName = GetProcessName(entry.PID);
-                        entry.ProcessIcon = GetProcessIcon(entry.PID);
-                        Entries.Add(entry);
-
-                        //Adicionando o estado único ao conjunto
-                        states.Add(entry.State); 
+                        var entry = ParseNetStatLine(line);
+                        if (entry != null)
+                        {
+                            entry.ProcessName = GetProcessName(entry.PID);
+                            entry.ProcessPath = GetProcessPath(entry.PID);
+                            entry.ProcessIcon = GetProcessIcon(entry.ProcessPath);
+                            resultList.Add(entry);
+                        }
                     }
-                }
 
-                //Preenchendo o ComboBox com os estados únicos encontrados
-                StateComboBox.ItemsSource = states.OrderBy(state => state).ToList();
+                    return resultList;
+                });
 
-                //Nenhum estado selecionado inicialmente
-                StateComboBox.SelectedItem = null;
+                _allEntries.Clear();
+                _allEntries.AddRange(entries);
+
+                UpdateStateFilterOptions();
+                UpdateMetrics();
+                ApplyFilters();
+
+                StatusTextBlock.Text = "Pronto";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading NetStat data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Erro ao carregar dados do NetStat: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                StatusTextBlock.Text = "Erro ao carregar conexões.";
+            }
+            finally
+            {
+                _isLoading = false;
+                LoadingProgressBar.Visibility = Visibility.Collapsed;
+                ReloadButton.IsEnabled = true;
             }
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void UpdateMetrics()
         {
-            LoadNetStatData();
+            int total = _allEntries.Count;
+            int established = _allEntries.Count(e => string.Equals(e.State, "ESTABLISHED", StringComparison.OrdinalIgnoreCase));
+            int listening = _allEntries.Count(e => string.Equals(e.State, "LISTENING", StringComparison.OrdinalIgnoreCase));
+
+            MetricTotalText.Text = total.ToString();
+            MetricEstablishedText.Text = established.ToString();
+            MetricListeningText.Text = listening.ToString();
+        }
+
+        private void UpdateStateFilterOptions()
+        {
+            string? currentSelected = StateComboBox.SelectedItem as string;
+
+            var states = _allEntries
+                .Select(e => string.IsNullOrWhiteSpace(e.State) ? "N/A" : e.State)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+            states.Insert(0, "Todos os Estados");
+
+            StateComboBox.ItemsSource = states;
+
+            if (!string.IsNullOrEmpty(currentSelected) && states.Contains(currentSelected))
+            {
+                StateComboBox.SelectedItem = currentSelected;
+            }
+            else
+            {
+                StateComboBox.SelectedIndex = 0;
+            }
+
+            if (ProtocolComboBox.SelectedIndex < 0)
+            {
+                ProtocolComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void ApplyFilters()
+        {
+            string searchQuery = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? string.Empty;
+            string selectedProtocol = (ProtocolComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Todos";
+            string selectedState = StateComboBox.SelectedItem as string ?? "Todos os Estados";
+
+            var filtered = _allEntries.Where(entry =>
+            {
+                // Protocol Filter
+                if (selectedProtocol != "Todos" && !entry.Protocol.Equals(selectedProtocol, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // State Filter
+                if (selectedState != "Todos os Estados" && !entry.State.Equals(selectedState, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Global Search Filter (Process name, PID, IP local/remote, Port)
+                if (!string.IsNullOrEmpty(searchQuery))
+                {
+                    bool matchesName = entry.ProcessName.ToLowerInvariant().Contains(searchQuery);
+                    bool matchesPid = entry.PID.ToString().Contains(searchQuery);
+                    bool matchesLocal = entry.LocalAddress.ToLowerInvariant().Contains(searchQuery);
+                    bool matchesForeign = entry.ForeignAddress.ToLowerInvariant().Contains(searchQuery);
+                    bool matchesProtocol = entry.Protocol.ToLowerInvariant().Contains(searchQuery);
+                    bool matchesState = entry.State.ToLowerInvariant().Contains(searchQuery);
+
+                    if (!matchesName && !matchesPid && !matchesLocal && !matchesForeign && !matchesProtocol && !matchesState)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }).ToList();
+
+            FilteredEntries.Clear();
+            foreach (var item in filtered)
+            {
+                FilteredEntries.Add(item);
+            }
+
+            ConnectionCountText.Text = $"Exibindo {FilteredEntries.Count} de {_allEntries.Count} conexões";
+            EmptyStatePanel.Visibility = FilteredEntries.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private string[] RunCommand(string command, string args)
         {
             try
             {
-                using Process process = new Process
+                using var process = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
@@ -105,158 +240,226 @@ namespace NetStatAnalyzer
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error running command '{command}': {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"Erro ao executar comando '{command}': {ex.Message}");
                 return Array.Empty<string>();
             }
         }
 
-        private NetStatEntry ParseNetStatLine(string line)
+        private NetStatEntry? ParseNetStatLine(string line)
         {
             try
             {
                 string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 5 || !int.TryParse(parts[^1], out int pid))
-                    return null;
+                if (parts.Length < 4) return null;
 
-                return new NetStatEntry
+                string protocol = parts[0].ToUpperInvariant();
+                if (protocol != "TCP" && protocol != "UDP") return null;
+
+                if (protocol == "TCP" && parts.Length >= 5)
                 {
-                    Protocol = parts[0],
-                    LocalAddress = parts[1],
-                    ForeignAddress = parts[2],
-                    State = parts.Length > 4 ? parts[3] : "N/A",
-                    PID = pid
-                };
+                    if (int.TryParse(parts[^1], out int pid))
+                    {
+                        return new NetStatEntry
+                        {
+                            Protocol = protocol,
+                            LocalAddress = parts[1],
+                            ForeignAddress = parts[2],
+                            State = parts[3],
+                            PID = pid
+                        };
+                    }
+                }
+                else if (protocol == "UDP" && parts.Length >= 4)
+                {
+                    if (int.TryParse(parts[^1], out int pid))
+                    {
+                        return new NetStatEntry
+                        {
+                            Protocol = protocol,
+                            LocalAddress = parts[1],
+                            ForeignAddress = parts[2],
+                            State = "N/A",
+                            PID = pid
+                        };
+                    }
+                }
+
+                return null;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error parsing line '{line}': {ex.Message}");
+                Debug.WriteLine($"Erro ao processar linha '{line}': {ex.Message}");
                 return null;
             }
         }
 
         private string GetProcessName(int pid)
         {
+            if (pid == 0) return "Sistema Ocioso";
+            if (pid == 4) return "System";
+
             try
             {
-                var process = Process.GetProcessById(pid);
+                using var process = Process.GetProcessById(pid);
                 return process.ProcessName;
             }
             catch
             {
-                return "Unknown";
+                return "Desconhecido";
             }
         }
 
-        private BitmapImage GetProcessIcon(int pid)
+        private string? GetProcessPath(int pid)
         {
+            if (pid <= 4) return null;
+
             try
             {
-                var process = Process.GetProcessById(pid);
-                string path = process.MainModule?.FileName;
+                using var process = Process.GetProcessById(pid);
+                return process.MainModule?.FileName;
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
-                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+        private BitmapImage? GetProcessIcon(string? filePath)
+        {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                return null;
+
+            try
+            {
+                using var icon = System.Drawing.Icon.ExtractAssociatedIcon(filePath);
+                if (icon != null)
                 {
-                    var icon = GetIcon(path);
-                    if (icon != null)
-                    {
-                        var bitmapImage = new BitmapImage();
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            //Converte o ícone para Bitmap
-                            using (var bitmap = icon.ToBitmap())
-                            {
-                                //Salva o bitmap em MemoryStream no formato PNG
-                                bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                            }
-                            memoryStream.Seek(0, SeekOrigin.Begin);
-                            bitmapImage.BeginInit();
-                            bitmapImage.StreamSource = memoryStream;
-                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                            bitmapImage.EndInit();
-                        }
-                        return bitmapImage;
-                    }
+                    using var bitmap = icon.ToBitmap();
+                    using var memoryStream = new MemoryStream();
+                    bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+
+                    var bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.StreamSource = memoryStream;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.EndInit();
+                    bitmapImage.Freeze(); // Permite uso seguro entre threads WPF
+                    return bitmapImage;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error retrieving icon for PID {pid}: {ex.Message}");
+                Debug.WriteLine($"Erro ao extrair ícone '{filePath}': {ex.Message}");
             }
 
             return null;
         }
 
-        private System.Drawing.Icon GetIcon(string filePath)
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            try
-            {
-                return System.Drawing.Icon.ExtractAssociatedIcon(filePath);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error extracting icon: {ex.Message}");
-                return null;
-            }
+            ApplyFilters();
+        }
+
+        private void FilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void ClearFilters_Click(object sender, RoutedEventArgs e)
+        {
+            SearchTextBox.Text = string.Empty;
+            ProtocolComboBox.SelectedIndex = 0;
+            StateComboBox.SelectedIndex = 0;
+            ApplyFilters();
+        }
+
+        private async void Reload_Click(object sender, RoutedEventArgs e)
+        {
+            await LoadNetStatDataAsync();
         }
 
         private void OpenFileLocation_Click(object sender, RoutedEventArgs e)
         {
             if (DataGrid.SelectedItem is NetStatEntry entry)
             {
-                try
-                {
-                    var process = Process.GetProcessById(entry.PID);
-                    string path = process.MainModule?.FileName ?? "";
-                    if (!string.IsNullOrEmpty(path) && File.Exists(path))
-                    {
-                        Process.Start("explorer.exe", $"/select,\"{path}\"");
-                    }
-                }
-                catch
-                {
-                    MessageBox.Show("Unable to open file location.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                OpenFileLocation(entry);
+            }
+            else
+            {
+                MessageBox.Show("Selecione um processo na tabela para abrir o local do arquivo.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private void FilterData_Click(object sender, RoutedEventArgs e)
+        private void OpenFileLocation(NetStatEntry entry)
         {
             try
             {
-                string protocolFilter = ProtocolTextBox.Text.ToLower();
+                string? path = entry.ProcessPath;
+                if (string.IsNullOrEmpty(path))
+                {
+                    path = GetProcessPath(entry.PID);
+                }
 
-                //Obtendo o estado selecionado
-                string stateFilter = StateComboBox.SelectedItem as string ?? string.Empty;
-                string ipFilter = IPTextBox.Text;
-
-                var filtered = Entries.Where(entry =>
-                    (string.IsNullOrEmpty(protocolFilter) || entry.Protocol.ToLower().Contains(protocolFilter)) &&
-                    (string.IsNullOrEmpty(stateFilter) || entry.State.ToLower().Contains(stateFilter.ToLower())) &&
-                    (string.IsNullOrEmpty(ipFilter) || entry.LocalAddress.StartsWith(ipFilter))
-                ).ToList();
-
-                DataGrid.ItemsSource = filtered;
+                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                {
+                    Process.Start("explorer.exe", $"/select,\"{path}\"");
+                }
+                else
+                {
+                    MessageBox.Show($"Não foi possível obter o local do arquivo para o processo '{entry.ProcessName}' (PID {entry.PID}). Pode requerer execução como Administrador.", "Informação", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error filtering data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Erro ao abrir local do arquivo: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void StateComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CopyDetails_Click(object sender, RoutedEventArgs e)
         {
-            FilterData_Click(sender, e);
+            if (DataGrid.SelectedItem is NetStatEntry entry)
+            {
+                string details = $"Processo: {entry.ProcessName} (PID: {entry.PID})\nProtocolo: {entry.Protocol}\nLocal: {entry.LocalAddress}\nRemoto: {entry.ForeignAddress}\nEstado: {entry.State}\nCaminho: {entry.ProcessPath ?? "N/A"}";
+                Clipboard.SetText(details);
+            }
         }
-       
-        private void Reload_Click(object sender, RoutedEventArgs e)
+
+        private void CopyIP_Click(object sender, RoutedEventArgs e)
         {
-            LoadNetStatData();
+            if (DataGrid.SelectedItem is NetStatEntry entry)
+            {
+                Clipboard.SetText(entry.LocalAddress);
+            }
+        }
+
+        private void CopyPID_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataGrid.SelectedItem is NetStatEntry entry)
+            {
+                Clipboard.SetText(entry.PID.ToString());
+            }
+        }
+
+        private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (DataGrid.SelectedItem is NetStatEntry entry)
+            {
+                OpenFileLocation(entry);
+            }
         }
 
         private void LoadVersion()
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            VersionTextBlock.Text = $"v{version}";
+            if (version != null)
+            {
+                VersionTextBlock.Text = $"v{version.Major}.{version.Minor}.{version.Build}";
+            }
+            else
+            {
+                VersionTextBlock.Text = "v1.0.3";
+            }
         }
     }
 }

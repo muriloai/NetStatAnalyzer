@@ -1,4 +1,4 @@
-﻿<Window x:Class="NetStatAnalyzer.MainWindow"
+<Window x:Class="NetStatAnalyzer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,60 +6,446 @@
         xmlns:local="clr-namespace:NetStatAnalyzer"
         mc:Ignorable="d"
         Icon="assets/icon.ico"
-        Title="NetStatAnalyzer" Height="450" Width="800">
-    <Grid Margin="10">
+        Title="NetStatAnalyzer - Monitor de Conexões de Rede" 
+        Height="680" Width="1050"
+        MinHeight="550" MinWidth="850"
+        WindowStartupLocation="CenterScreen"
+        Background="#0F172A"
+        Foreground="#F8FAFC"
+        FontFamily="Segoe UI, Segoe UI Variable Display, Arial"
+        Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <!-- Modern Button Style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#3B82F6" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#2563EB" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#1D4ED8" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#334155" />
+                                <Setter Property="Foreground" Value="#64748B" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary Button Style -->
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="Foreground" Value="#E2E8F0" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#334155" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#475569" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#0F172A" />
+                                <Setter Property="Foreground" Value="#475569" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern TextBox Style -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="CaretBrush" Value="#3B82F6" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#3B82F6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern ComboBox Style -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- DataGrid Styles -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="#0F172A" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="BorderBrush" Value="#1E293B" />
+            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="ContextMenu">
+                <Setter.Value>
+                    <ContextMenu>
+                        <MenuItem Header="📁 Abrir Local do Arquivo" Click="OpenFileLocation_Click" FontWeight="SemiBold" />
+                        <Separator Background="#334155" />
+                        <MenuItem Header="📋 Copiar Detalhes da Linha" Click="CopyDetails_Click" />
+                        <MenuItem Header="📋 Copiar Endereço Local" Click="CopyIP_Click" />
+                        <MenuItem Header="📋 Copiar PID" Click="CopyPID_Click" />
+                        <Separator Background="#334155" />
+                        <MenuItem Header="🔄 Recarregar Conexões" Click="Reload_Click" />
+                    </ContextMenu>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1E293B" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#1E3A8A" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
         <Grid.RowDefinitions>
+            <!-- Top Header & Metrics -->
             <RowDefinition Height="Auto" />
+            <!-- Search & Filters -->
+            <RowDefinition Height="Auto" />
+            <!-- Main Content (DataGrid) -->
             <RowDefinition Height="*" />
+            <!-- Footer Status Bar -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Filters Section -->
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0 0 0 10">
-            <Label Content="Protocol:" VerticalAlignment="Center" />
-            <TextBox x:Name="ProtocolTextBox" Width="100" Margin="5 0" />
+        <!-- 1. Header & Quick Stat Cards -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-            <Label Content="State:" VerticalAlignment="Center" />
-            <ComboBox x:Name="StateComboBox" Width="100" Margin="5 0" SelectionChanged="StateComboBox_SelectionChanged" />
+            <!-- App Title & Icon -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Image Source="assets/icon.png" Width="36" Height="36" Margin="0,0,12,0" />
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="NetStatAnalyzer" FontSize="20" FontWeight="Bold" Foreground="#F8FAFC" />
+                        <Border Background="#1E3A8A" CornerRadius="4" Margin="10,0,0,0" Padding="6,2" VerticalAlignment="Center">
+                            <TextBlock x:Name="VersionTextBlock" Text="v1.0.3" FontSize="11" FontWeight="Bold" Foreground="#60A5FA" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Monitor de conexões de rede ativas e processos associados" FontSize="12" Foreground="#94A3B8" Margin="0,2,0,0" />
+                </StackPanel>
+            </StackPanel>
 
-            <Label Content="IP Filter:" VerticalAlignment="Center" />
-            <TextBox x:Name="IPTextBox" Width="150" Margin="5 0" />
+            <!-- Metric Chips -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Total -->
+                <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,8,0">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="TOTAL" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                        <TextBlock x:Name="MetricTotalText" Text="0" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
 
-            <Button Content="Filter" Width="75" Margin="10 0" Click="FilterData_Click" />
-        </StackPanel>
+                <!-- Established -->
+                <Border Background="#14532D" BorderBrush="#166534" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,8,0">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="ESTABELECIDAS" FontSize="10" FontWeight="Bold" Foreground="#86EFAC" HorizontalAlignment="Center" />
+                        <TextBlock x:Name="MetricEstablishedText" Text="0" FontSize="16" FontWeight="Bold" Foreground="#4ADE80" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
 
-        <TextBlock x:Name="VersionTextBlock" 
-            HorizontalAlignment="Right" 
-            VerticalAlignment="Top" 
-            Margin="10" 
-            FontSize="14" 
-            Foreground="Gray" 
-            Text="1.0.0"/>
+                <!-- Listening -->
+                <Border Background="#1E3A8A" BorderBrush="#1D4ED8" BorderThickness="1" CornerRadius="8" Padding="12,6">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="EM ESCUTA" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
+                        <TextBlock x:Name="MetricListeningText" Text="0" FontSize="16" FontWeight="Bold" Foreground="#60A5FA" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
 
-        <!-- Reload Button -->
-        <Button Content="Reload" Grid.Row="2" Height="30" Width="150" HorizontalAlignment="Left" Margin="0 10" Click="Reload_Click"/>
+        <!-- 2. Filters & Actions Section -->
+        <Border Grid.Row="1" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <!-- Global Search -->
+                    <ColumnDefinition Width="*" MinWidth="200" />
+                    <!-- Protocol Filter -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- State Filter -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Action Buttons -->
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-        <!-- DataGrid Section -->
-        <DataGrid x:Name="DataGrid" Grid.Row="1" ItemsSource="{Binding Entries}" AutoGenerateColumns="False" CanUserAddRows="False" Margin="0 0 0 10">
-            <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Icon" Width="50">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Image Source="{Binding ProcessIcon}" Width="30" Height="30" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <!-- Global Search -->
+                <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,12,0">
+                    <TextBlock Text="Buscar (Processo, IP, Porta, PID):" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4" />
+                    <TextBox x:Name="SearchTextBox" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Height="34" 
+                             TextChanged="SearchTextBox_TextChanged" />
+                </StackPanel>
 
-                <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="100" />
-                <DataGridTextColumn Header="Local Address" Binding="{Binding LocalAddress}" Width="200" />
-                <DataGridTextColumn Header="Foreign Address" Binding="{Binding ForeignAddress}" Width="200" />
-                <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
-                <DataGridTextColumn Header="PID" Binding="{Binding PID}" Width="75" />
-                <DataGridTextColumn Header="Process Name" Binding="{Binding ProcessName}" Width="150" />
-            </DataGrid.Columns>
-        </DataGrid>
+                <!-- Protocol Filter -->
+                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,12,0">
+                    <TextBlock Text="Protocolo:" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4" />
+                    <ComboBox x:Name="ProtocolComboBox" 
+                              Style="{StaticResource ModernComboBox}" 
+                              Width="100" Height="34" 
+                              SelectionChanged="FilterComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Todos" IsSelected="True" />
+                        <ComboBoxItem Content="TCP" />
+                        <ComboBoxItem Content="UDP" />
+                    </ComboBox>
+                </StackPanel>
 
-        <!-- Open File Location Button -->
-        <Button x:Name="OpenFileLocationButton" Content="Open File Location" Grid.Row="2" Height="30" Width="150" HorizontalAlignment="Right" Click="OpenFileLocation_Click" />
+                <!-- State Filter -->
+                <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,12,0">
+                    <TextBlock Text="Estado:" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4" />
+                    <ComboBox x:Name="StateComboBox" 
+                              Style="{StaticResource ModernComboBox}" 
+                              Width="160" Height="34" 
+                              SelectionChanged="FilterComboBox_SelectionChanged" />
+                </StackPanel>
+
+                <!-- Buttons: Limpar & Recarregar -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <Button Content="Limpar Filtros" 
+                            Style="{StaticResource SecondaryButton}" 
+                            Height="34" Margin="0,0,8,0" 
+                            Click="ClearFilters_Click" />
+                    <Button x:Name="ReloadButton" 
+                            Content="⟳ Recarregar" 
+                            Style="{StaticResource ModernButton}" 
+                            Height="34" 
+                            Click="Reload_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 3. DataGrid Section & Empty State Overlay -->
+        <Grid Grid.Row="2">
+            <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Loading Progress Bar -->
+                    <ProgressBar x:Name="LoadingProgressBar" 
+                                 Grid.Row="0" 
+                                 Height="3" 
+                                 IsIndeterminate="True" 
+                                 Background="#1E293B" 
+                                 Foreground="#3B82F6" 
+                                 BorderThickness="0" 
+                                 Visibility="Collapsed" />
+
+                    <!-- Main DataGrid -->
+                    <DataGrid x:Name="DataGrid" 
+                              Grid.Row="1"
+                              ItemsSource="{Binding FilteredEntries}" 
+                              AutoGenerateColumns="False" 
+                              CanUserAddRows="False" 
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True" 
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow"
+                              GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="#1E293B"
+                              HeadersVisibility="Column"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              MouseDoubleClick="DataGrid_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <!-- Process & PID Column -->
+                            <DataGridTemplateColumn Header="PROCESSO" Width="220">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Width="24" Height="24" CornerRadius="4" Background="#1E293B" Margin="0,0,8,0">
+                                                <Image Source="{Binding ProcessIcon}" Width="18" Height="18" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                            </Border>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ProcessName}" FontWeight="SemiBold" Foreground="#F8FAFC" FontSize="12" />
+                                                <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="#94A3B8" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Protocol Column -->
+                            <DataGridTemplateColumn Header="PROTOCOLO" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding ProtocolBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding Protocol}" FontSize="11" FontWeight="Bold" Foreground="{Binding ProtocolBadgeForeground}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Local Address Column -->
+                            <DataGridTemplateColumn Header="ENDEREÇO LOCAL" Width="200">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding LocalAddress}" 
+                                                   FontFamily="Cascadia Code, Consolas, monospace" 
+                                                   FontSize="12" 
+                                                   Foreground="#E2E8F0" 
+                                                   VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Foreign Address Column -->
+                            <DataGridTemplateColumn Header="ENDEREÇO REMOTO" Width="200">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ForeignAddress}" 
+                                                   FontFamily="Cascadia Code, Consolas, monospace" 
+                                                   FontSize="12" 
+                                                   Foreground="#CBD5E1" 
+                                                   VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- State Column -->
+                            <DataGridTemplateColumn Header="ESTADO" Width="130">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding StateBadgeBackground}" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding State}" FontSize="11" FontWeight="Bold" Foreground="{Binding StateBadgeForeground}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- Empty State Overlay -->
+            <Border x:Name="EmptyStatePanel" 
+                    Background="#800F172A" 
+                    Visibility="Collapsed" 
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="🔍" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,8" />
+                    <TextBlock Text="Nenhuma conexão encontrada" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC" HorizontalAlignment="Center" />
+                    <TextBlock Text="Tente ajustar os termos da pesquisa ou redefinir os filtros." FontSize="12" Foreground="#94A3B8" Margin="0,4,0,0" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 4. Footer & Quick Actions -->
+        <Grid Grid.Row="3" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Status & Connection Counts -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="StatusTextBlock" Text="Pronto" FontSize="12" Foreground="#94A3B8" />
+                <TextBlock Text=" • " FontSize="12" Foreground="#475569" Margin="6,0" />
+                <TextBlock x:Name="ConnectionCountText" Text="Exibindo 0 conexões" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" />
+            </StackPanel>
+
+            <!-- Right: Quick Actions -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="📁 Abrir Local do Arquivo" 
+                        Style="{StaticResource SecondaryButton}" 
+                        Height="32" Margin="0,0,8,0"
+                        Click="OpenFileLocation_Click" />
+                <Button Content="📋 Copiar Detalhes" 
+                        Style="{StaticResource SecondaryButton}" 
+                        Height="32" 
+                        Click="CopyDetails_Click" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
