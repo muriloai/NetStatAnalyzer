@@ -42,7 +42,7 @@ namespace NetStatAnalyzer
             "TIME_WAIT" => "#FDE047",
             "CLOSE_WAIT" => "#FB923C",
             "SYN_SENT" or "SYN_RECEIVED" => "#C084FC",
-            _ => "#94A3B8"
+            _ => "#CBD5E1"
         };
 
         public string ProtocolBadgeBackground => Protocol?.ToUpperInvariant() switch
@@ -61,10 +61,12 @@ namespace NetStatAnalyzer
         public ObservableCollection<NetStatEntry> FilteredEntries { get; set; } = new();
 
         private bool _isLoading = false;
+        private bool _isInitialized = false;
 
         public MainWindow()
         {
             InitializeComponent();
+            _isInitialized = true;
             DataContext = this;
             LoadVersion();
         }
@@ -169,6 +171,11 @@ namespace NetStatAnalyzer
 
         private void ApplyFilters()
         {
+            if (!_isInitialized || SearchTextBox == null || ProtocolComboBox == null || StateComboBox == null || ConnectionCountText == null || EmptyStatePanel == null)
+            {
+                return;
+            }
+
             string searchQuery = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? string.Empty;
             string selectedProtocol = (ProtocolComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Todos";
             string selectedState = StateComboBox.SelectedItem as string ?? "Todos os Estados";
@@ -438,6 +445,22 @@ namespace NetStatAnalyzer
             if (DataGrid.SelectedItem is NetStatEntry entry)
             {
                 Clipboard.SetText(entry.PID.ToString());
+            }
+        }
+
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataGrid.SelectedItem is NetStatEntry entry)
+            {
+                SelectedSeparator.Visibility = Visibility.Visible;
+                SelectedProcessText.Visibility = Visibility.Visible;
+                SelectedProcessText.Text = $"Selecionado: {entry.ProcessName} (PID: {entry.PID})";
+            }
+            else
+            {
+                SelectedSeparator.Visibility = Visibility.Collapsed;
+                SelectedProcessText.Visibility = Visibility.Collapsed;
+                SelectedProcessText.Text = string.Empty;
             }
         }
 
