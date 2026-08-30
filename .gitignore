@@ -1,4 +1,6 @@
-## Build results
+## Build & Publish outputs
+[Bb]in/
+[Oo]bj/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -8,13 +10,16 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
-[Oo]bj/
 [Ll]og/
 [Ll]ogs/
+publish/
+dist/
+*.publishproj
 
-## Visual Studio
+## Visual Studio / IDE temporary files
 .vs/
+.vscode/
+.idea/
 *.user
 *.userosscache
 *.sln.docstates
@@ -22,12 +27,28 @@ bld/
 *.userprefs
 *.dbmdl
 *.jsproj.user
-
-## Publish output
-publish/
-dist/
-*.publishproj
-
-## Rider / JetBrains
-.idea/
+*_wpftmp.csproj
+*.tmp
+*.cache
+*.vsidx
+*.dtbcache.v2
+*.futdcache.v2
 *.sln.iml
+
+## Runtime data & Exported files
+allowlist.json
+whitelist.json
+conexoes_*.json
+conexoes_*.csv
+conexoes_*.txt
+permissoes_*.json
+permissoes_*.csv
+permissoes_*.txt
+
+## OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+*.stackdump

@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Icon="pack://application:,,,/assets/icon.ico"
         Title="NetStatAnalyzer - Monitor de Conexões de Rede" 
-        Height="680" Width="1050"
-        MinHeight="550" MinWidth="850"
+        Height="700" Width="1120"
+        MinHeight="550" MinWidth="1040"
         WindowStartupLocation="CenterScreen"
         Background="#181B22"
         Foreground="#F8FAFC"
@@ -85,6 +85,81 @@
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="secBorder" Property="Background" Value="#181B22" />
                                 <Setter Property="Foreground" Value="#4B556E" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Permission Button Style -->
+        <Style x:Key="ModernPermissionButton" TargetType="Button">
+            <Setter Property="Background" Value="#065F46" />
+            <Setter Property="Foreground" Value="#ECFDF5" />
+            <Setter Property="BorderBrush" Value="#059669" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="wlBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="wlBorder" Property="Background" Value="#047857" />
+                                <Setter TargetName="wlBorder" Property="BorderBrush" Value="#10B981" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="wlBorder" Property="Background" Value="#064E3B" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="wlBorder" Property="Background" Value="#181B22" />
+                                <Setter Property="Foreground" Value="#4B556E" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Action Row Icon Button Style -->
+        <Style x:Key="RowIconButton" TargetType="Button">
+            <Setter Property="Background" Value="#262D3D" />
+            <Setter Property="Foreground" Value="#CBD5E1" />
+            <Setter Property="BorderBrush" Value="#3D465C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="7,4" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="5" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#2563EB" />
+                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="#60A5FA" />
+                                <Setter Property="Foreground" Value="#FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#1D4ED8" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -246,12 +321,21 @@
         <!-- DataGrid Styles -->
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="#13161F" />
-            <Setter Property="Foreground" Value="#E2E8F0" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="12,10" />
-            <Setter Property="BorderBrush" Value="#2D3344" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="BorderBrush" Value="#282E3E" />
             <Setter Property="BorderThickness" Value="0,0,1,1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1E2433" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="DataGridRow">
@@ -321,7 +405,7 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="NetStatAnalyzer" FontSize="22" FontWeight="Bold" Foreground="#FFFFFF" />
                     <Border Background="#2563EB" CornerRadius="4" Margin="10,0,0,0" Padding="8,2" VerticalAlignment="Center">
-                        <TextBlock x:Name="VersionTextBlock" Text="v1.0.3" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF" />
+                        <TextBlock x:Name="VersionTextBlock" Text="v1.1.0" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF" />
                     </Border>
                 </StackPanel>
                 <TextBlock Text="Monitor de conexões de rede ativas e processos associados" FontSize="12" Foreground="#CBD5E1" Margin="0,4,0,0" />
@@ -346,10 +430,18 @@
                 </Border>
 
                 <!-- Listening -->
-                <Border Background="#1E2D4A" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="14,6">
+                <Border Background="#1E2D4A" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="14,6" Margin="0,0,8,0">
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock Text="EM ESCUTA" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
                         <TextBlock x:Name="MetricListeningText" Text="0" FontSize="17" FontWeight="Bold" Foreground="#60A5FA" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Trusted / Allowed -->
+                <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="8" Padding="14,6">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="CONFIÁVEIS" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" HorizontalAlignment="Center" />
+                        <TextBlock x:Name="MetricAllowedText" Text="0" FontSize="17" FontWeight="Bold" Foreground="#34D399" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -360,17 +452,19 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <!-- Global Search -->
-                    <ColumnDefinition Width="*" MinWidth="220" />
+                    <ColumnDefinition Width="*" MinWidth="160" />
                     <!-- Protocol Filter -->
                     <ColumnDefinition Width="Auto" />
                     <!-- State Filter -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Confidence Filter -->
                     <ColumnDefinition Width="Auto" />
                     <!-- Action Buttons -->
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <!-- Global Search -->
-                <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,12,0">
+                <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,10,0">
                     <TextBlock Text="Buscar (Processo, IP, Porta, PID):" FontSize="11" FontWeight="Medium" Foreground="#CBD5E1" Margin="0,0,0,4" />
                     <TextBox x:Name="SearchTextBox" 
                              Style="{StaticResource ModernTextBox}" 
@@ -379,11 +473,11 @@
                 </StackPanel>
 
                 <!-- Protocol Filter -->
-                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,12,0">
+                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,10,0">
                     <TextBlock Text="Protocolo:" FontSize="11" FontWeight="Medium" Foreground="#CBD5E1" Margin="0,0,0,4" />
                     <ComboBox x:Name="ProtocolComboBox" 
                               Style="{StaticResource ModernComboBox}" 
-                              Width="100" Height="34" 
+                              Width="90" Height="34" 
                               SelectionChanged="FilterComboBox_SelectionChanged">
                         <ComboBoxItem Content="Todos" />
                         <ComboBoxItem Content="TCP" />
@@ -392,25 +486,47 @@
                 </StackPanel>
 
                 <!-- State Filter -->
-                <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,12,0">
+                <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,10,0">
                     <TextBlock Text="Estado:" FontSize="11" FontWeight="Medium" Foreground="#CBD5E1" Margin="0,0,0,4" />
                     <ComboBox x:Name="StateComboBox" 
                               Style="{StaticResource ModernComboBox}" 
-                              Width="160" Height="34" 
+                              Width="135" Height="34" 
                               SelectionChanged="FilterComboBox_SelectionChanged" />
                 </StackPanel>
 
-                <!-- Buttons: Limpar & Recarregar -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Bottom">
+                <!-- Confidence Filter -->
+                <StackPanel Grid.Column="3" Orientation="Vertical" Margin="0,0,10,0">
+                    <TextBlock Text="Filtro de Confiança:" FontSize="11" FontWeight="Medium" Foreground="#CBD5E1" Margin="0,0,0,4" />
+                    <ComboBox x:Name="AllowFilterComboBox" 
+                              Style="{StaticResource ModernComboBox}" 
+                              Width="145" Height="34" 
+                              SelectionChanged="FilterComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Todas" />
+                        <ComboBoxItem Content="Apenas Confiáveis" />
+                        <ComboBoxItem Content="Ocultar Confiáveis" />
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Buttons: Limpar & Recarregar & Exportar & Conexoes Confiaveis -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
                     <Button Content="Limpar Filtros" 
                             Style="{StaticResource ModernSecondaryButton}" 
-                            Height="34" Margin="0,0,8,0" 
+                            Height="34" Margin="0,0,6,0" 
                             Click="ClearFilters_Click" />
                     <Button x:Name="ReloadButton" 
                             Content="⟳ Recarregar" 
                             Style="{StaticResource ModernPrimaryButton}" 
-                            Height="34" 
+                            Height="34" Margin="0,0,6,0"
                             Click="Reload_Click" />
+                    <Button Content="📤 Exportar" 
+                            Style="{StaticResource ModernSecondaryButton}" 
+                            Height="34" Margin="0,0,6,0"
+                            ToolTip="Exportar as conexões vigentes em formato JSON, CSV ou TXT"
+                            Click="ExportConnections_Click" />
+                    <Button Content="🛡️ Conexões Confiáveis" 
+                            Style="{StaticResource ModernPermissionButton}" 
+                            Height="34" 
+                            Click="OpenAllowManager_Click" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -434,15 +550,18 @@
                                  BorderThickness="0" 
                                  Visibility="Collapsed" />
 
-                    <!-- Main DataGrid -->
+                    <!-- Main DataGrid (SelectionMode="Extended" enables Shift, Ctrl, and Ctrl+Shift multi-block selection) -->
                     <DataGrid x:Name="DataGrid" 
                               Grid.Row="1"
                               ItemsSource="{Binding FilteredEntries}" 
                               AutoGenerateColumns="False" 
                               CanUserAddRows="False" 
                               CanUserDeleteRows="False"
+                              CanUserResizeColumns="True"
+                              CanUserReorderColumns="True"
+                              CanUserSortColumns="True"
                               IsReadOnly="True" 
-                              SelectionMode="Single"
+                              SelectionMode="Extended" 
                               SelectionUnit="FullRow"
                               AlternationCount="2"
                               GridLinesVisibility="Horizontal"
@@ -461,18 +580,23 @@
                         </DataGrid.Resources>
                         <DataGrid.ContextMenu>
                             <ContextMenu Background="#222630" BorderBrush="#3D465C" BorderThickness="1">
+                                <MenuItem Header="🛡️ Marcar Selecionado(s) como Confiável" Click="AddToAllowlist_Click" FontWeight="Bold" Foreground="#34D399" />
+                                <MenuItem Header="🗑️ Remover das Conexões Confiáveis" Click="RemoveFromAllowlist_Click" Foreground="#F87171" />
+                                <Separator Background="#3D465C" />
                                 <MenuItem Header="📁 Abrir Local do Arquivo" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="#FFFFFF" />
                                 <Separator Background="#3D465C" />
-                                <MenuItem Header="📋 Copiar Detalhes da Linha" Click="CopyDetails_Click" Foreground="#F8FAFC" />
-                                <MenuItem Header="📋 Copiar Endereço Local" Click="CopyIP_Click" Foreground="#F8FAFC" />
-                                <MenuItem Header="📋 Copiar PID" Click="CopyPID_Click" Foreground="#F8FAFC" />
+                                <MenuItem Header="📋 Copiar Detalhes da(s) Linha(s)" Click="CopyDetails_Click" Foreground="#F8FAFC" />
+                                <MenuItem Header="📋 Copiar Endereço(s) Remoto(s)" Click="CopyForeignIP_Click" Foreground="#F8FAFC" />
+                                <MenuItem Header="📋 Copiar Endereço(s) Local(is)" Click="CopyLocalIP_Click" Foreground="#F8FAFC" />
+                                <MenuItem Header="📋 Copiar PID(s)" Click="CopyPID_Click" Foreground="#F8FAFC" />
                                 <Separator Background="#3D465C" />
+                                <MenuItem Header="📤 Exportar Conexões Exibidas..." Click="ExportConnections_Click" Foreground="#60A5FA" FontWeight="SemiBold" />
                                 <MenuItem Header="🔄 Recarregar Conexões" Click="Reload_Click" Foreground="#F8FAFC" />
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.Columns>
                             <!-- Process & PID Column -->
-                            <DataGridTemplateColumn Header="PROCESSO" Width="220">
+                            <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="220" MinWidth="170">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -488,8 +612,25 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
+                            <!-- Trust Status Column -->
+                            <DataGridTemplateColumn Header="STATUS" SortMemberPath="IsAllowed" Width="120" MinWidth="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding AllowBadgeBackground}" 
+                                                BorderBrush="{Binding AllowBadgeBorder}"
+                                                BorderThickness="1"
+                                                CornerRadius="4" 
+                                                Padding="6,2" 
+                                                HorizontalAlignment="Left"
+                                                Visibility="{Binding AllowBadgeVisibility}">
+                                            <TextBlock Text="🛡️ Confiável" FontSize="10" FontWeight="Bold" Foreground="{Binding AllowBadgeForeground}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
                             <!-- Protocol Column -->
-                            <DataGridTemplateColumn Header="PROTOCOLO" Width="90">
+                            <DataGridTemplateColumn Header="PROTOCOLO" SortMemberPath="Protocol" Width="105" MinWidth="95">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Background="{Binding ProtocolBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
@@ -500,13 +641,13 @@
                             </DataGridTemplateColumn>
 
                             <!-- Local Address Column -->
-                            <DataGridTemplateColumn Header="ENDEREÇO LOCAL" Width="200">
+                            <DataGridTemplateColumn Header="ENDEREÇO LOCAL" SortMemberPath="LocalAddress" Width="200" MinWidth="160">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding LocalAddress}" 
                                                    FontFamily="Cascadia Code, Consolas, Courier New, monospace" 
                                                    FontSize="12" 
-                                                   FontWeight="Medium"
+                                                   FontWeight="Medium" 
                                                    Foreground="#FFFFFF" 
                                                    VerticalAlignment="Center" />
                                     </DataTemplate>
@@ -514,13 +655,13 @@
                             </DataGridTemplateColumn>
 
                             <!-- Foreign Address Column -->
-                            <DataGridTemplateColumn Header="ENDEREÇO REMOTO" Width="200">
+                            <DataGridTemplateColumn Header="ENDEREÇO REMOTO" SortMemberPath="ForeignAddress" Width="200" MinWidth="160">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding ForeignAddress}" 
                                                    FontFamily="Cascadia Code, Consolas, Courier New, monospace" 
                                                    FontSize="12" 
-                                                   FontWeight="Medium"
+                                                   FontWeight="Medium" 
                                                    Foreground="#FFFFFF" 
                                                    VerticalAlignment="Center" />
                                     </DataTemplate>
@@ -528,12 +669,33 @@
                             </DataGridTemplateColumn>
 
                             <!-- State Column -->
-                            <DataGridTemplateColumn Header="ESTADO" Width="130">
+                            <DataGridTemplateColumn Header="ESTADO" SortMemberPath="State" Width="125" MinWidth="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Background="{Binding StateBadgeBackground}" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
                                             <TextBlock Text="{Binding State}" FontSize="11" FontWeight="Bold" Foreground="{Binding StateBadgeForeground}" />
                                         </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Actions Column -->
+                            <DataGridTemplateColumn Header="AÇÕES" CanUserSort="False" Width="95" MinWidth="85">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <!-- Open File Location Button -->
+                                            <Button Style="{StaticResource RowIconButton}" 
+                                                    Content="📁" 
+                                                    ToolTip="Abrir o local do arquivo deste executável no Windows Explorer"
+                                                    Click="RowOpenFileLocation_Click" />
+
+                                            <!-- Copy Details Button -->
+                                            <Button Style="{StaticResource RowIconButton}" 
+                                                    Content="📋" 
+                                                    ToolTip="Copiar detalhes completos desta conexão para a área de transferência"
+                                                    Click="RowCopyDetails_Click" />
+                                        </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -572,16 +734,12 @@
                 <TextBlock x:Name="SelectedProcessText" Text="" FontSize="12" FontWeight="Bold" Foreground="#60A5FA" Visibility="Collapsed" />
             </StackPanel>
 
-            <!-- Right: Quick Actions -->
+            <!-- Right: Selection Actions -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="📁 Abrir Local do Arquivo" 
-                        Style="{StaticResource ModernSecondaryButton}" 
-                        Height="32" Margin="0,0,8,0"
-                        Click="OpenFileLocation_Click" />
-                <Button Content="📋 Copiar Detalhes" 
-                        Style="{StaticResource ModernSecondaryButton}" 
+                <Button Content="➕ Marcar como Confiável" 
+                        Style="{StaticResource ModernPermissionButton}" 
                         Height="32" 
-                        Click="CopyDetails_Click" />
+                        Click="AddToAllowlist_Click" />
             </StackPanel>
         </Grid>
     </Grid>

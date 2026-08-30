@@ -1,0 +1,422 @@
+<Window x:Class="NetStatAnalyzer.AllowlistManagerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NetStatAnalyzer"
+        mc:Ignorable="d"
+        Icon="pack://application:,,,/assets/icon.ico"
+        Title="Gerenciador de Conexões Confiáveis - NetStatAnalyzer" 
+        Height="540" Width="850"
+        MinHeight="450" MinWidth="680"
+        WindowStartupLocation="CenterOwner"
+        Background="#181B22"
+        Foreground="#F8FAFC"
+        FontFamily="Segoe UI, Arial, sans-serif">
+
+    <Window.Resources>
+        <!-- Button Styles -->
+        <Style x:Key="ModernPrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#2563EB" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1D4ED8" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1E40AF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernSecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#2A303F" />
+            <Setter Property="Foreground" Value="#F1F5F9" />
+            <Setter Property="BorderBrush" Value="#3D465C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="secBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="secBorder" Property="Background" Value="#373F54" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="secBorder" Property="Background" Value="#222734" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernDangerButton" TargetType="Button">
+            <Setter Property="Background" Value="#991B1B" />
+            <Setter Property="Foreground" Value="#FEE2E2" />
+            <Setter Property="BorderBrush" Value="#B91C1C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="dangBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="dangBorder" Property="Background" Value="#DC2626" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="dangBorder" Property="Background" Value="#7F1D1D" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Compact Action Row Icon Button Style -->
+        <Style x:Key="RowIconDangerButton" TargetType="Button">
+            <Setter Property="Background" Value="#262D3D" />
+            <Setter Property="Foreground" Value="#F87171" />
+            <Setter Property="BorderBrush" Value="#3D465C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="7,4" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="5" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#DC2626" />
+                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="#EF4444" />
+                                <Setter Property="Foreground" Value="#FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#991B1B" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern TextBox -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#151821" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="CaretBrush" Value="#60A5FA" />
+            <Setter Property="BorderBrush" Value="#3D465C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="tbBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="tbBorder" Property="BorderBrush" Value="#3B82F6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- DataGrid Styles -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#13161F" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="BorderBrush" Value="#282E3E" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1E2433" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="#1C202A" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="BorderThickness" Value="0,1,0,1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="MinHeight" Value="36" />
+            <Style.Triggers>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="#222734" />
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2C364D" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#1D4ED8" />
+                    <Setter Property="BorderBrush" Value="#60A5FA" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <!-- Header -->
+            <RowDefinition Height="Auto" />
+            <!-- Search & Actions -->
+            <RowDefinition Height="Auto" />
+            <!-- Rules DataGrid -->
+            <RowDefinition Height="*" />
+            <!-- Footer -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🛡️ Conexões Confiáveis" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" />
+                    <Border Background="#065F46" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Margin="10,0,0,0" Padding="8,2" VerticalAlignment="Center">
+                        <TextBlock x:Name="RuleCountTextBlock" Text="0 Conexões Confiáveis" FontSize="11" FontWeight="Bold" Foreground="#6EE7B7" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Conexões que correspondem à combinação de Processo + IP são reconhecidas e marcadas como confiáveis." FontSize="12" Foreground="#94A3B8" Margin="0,4,0,0" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Search Bar -->
+        <Border Grid.Row="1" Background="#222630" BorderBrush="#2F3543" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="SearchTextBox" 
+                         Style="{StaticResource ModernTextBox}" 
+                         Height="34" 
+                         TextChanged="SearchTextBox_TextChanged"
+                         VerticalAlignment="Center" />
+                <TextBlock Text="🔍 Filtrar conexões por processo ou IP..." 
+                           IsHitTestVisible="False" 
+                           Foreground="#64748B" 
+                           FontSize="12" 
+                           VerticalAlignment="Center" 
+                           Margin="12,0,0,0"
+                           Visibility="{Binding ElementName=SearchTextBox, Path=Text.IsEmpty, Converter={x:Static local:EmptyStringToVisibilityConverter.Instance}}" />
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0">
+                    <Button Content="Limpar Filtro" Style="{StaticResource ModernSecondaryButton}" Height="34" Click="ClearFilter_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Rules DataGrid -->
+        <Border Grid.Row="2" Background="#1C202A" BorderBrush="#2D3344" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+            <DataGrid x:Name="RulesDataGrid" 
+                      AutoGenerateColumns="False" 
+                      CanUserAddRows="False" 
+                      CanUserDeleteRows="False" 
+                      CanUserResizeColumns="True"
+                      CanUserReorderColumns="True"
+                      CanUserSortColumns="True"
+                      IsReadOnly="True" 
+                      SelectionMode="Extended" 
+                      SelectionUnit="FullRow"
+                      AlternationCount="2"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="#282E3E"
+                      HeadersVisibility="Column"
+                      Background="#1C202A"
+                      Foreground="#FFFFFF"
+                      BorderThickness="0">
+                <DataGrid.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#1D4ED8" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#1E40AF" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#FFFFFF" />
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <!-- Process Column -->
+                    <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="160" MinWidth="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="6,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Protocol Column -->
+                    <DataGridTemplateColumn Header="PROTOCOLO" SortMemberPath="Protocol" Width="95" MinWidth="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="#1E293B" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="4,0">
+                                    <TextBlock Text="{Binding Protocol}" FontSize="11" FontWeight="Bold" Foreground="#60A5FA" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Local Address Column -->
+                    <DataGridTemplateColumn Header="ENDEREÇO LOCAL" SortMemberPath="LocalAddress" Width="180" MinWidth="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding LocalAddress}" FontFamily="Cascadia Code, Consolas, monospace" FontWeight="SemiBold" Foreground="#34D399" VerticalAlignment="Center" Margin="6,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Remote Address Column -->
+                    <DataGridTemplateColumn Header="ENDEREÇO REMOTO" SortMemberPath="ForeignAddress" Width="180" MinWidth="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ForeignAddress}" FontFamily="Cascadia Code, Consolas, monospace" Foreground="#E2E8F0" VerticalAlignment="Center" Margin="6,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Added At Column -->
+                    <DataGridTemplateColumn Header="ADICIONADO EM" SortMemberPath="AddedAt" Width="135" MinWidth="115">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding AddedAt, StringFormat='dd/MM/yyyy HH:mm'}" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="6,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Actions Column -->
+                    <DataGridTemplateColumn Header="AÇÕES" CanUserSort="False" Width="80" MinWidth="70">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource RowIconDangerButton}" 
+                                        Content="🗑️" 
+                                        ToolTip="Remover esta conexão da lista de confiáveis" 
+                                        Click="DeleteRule_Click" 
+                                        HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Footer Actions -->
+        <Grid Grid.Row="3" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Import / Export / Clear -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="📥 Importar JSON" 
+                        Style="{StaticResource ModernSecondaryButton}" 
+                        Height="34" Margin="0,0,8,0"
+                        Click="ImportJson_Click" />
+                <Button Content="📤 Exportar JSON" 
+                        Style="{StaticResource ModernSecondaryButton}" 
+                        Height="34" Margin="0,0,8,0"
+                        Click="ExportJson_Click" />
+                <Button Content="🗑️ Limpar Tudo" 
+                        Style="{StaticResource ModernDangerButton}" 
+                        Height="34" 
+                        Click="ClearAll_Click" />
+            </StackPanel>
+
+            <!-- Right: Close Button -->
+            <Button Grid.Column="1" 
+                    Content="Fechar" 
+                    Style="{StaticResource ModernPrimaryButton}" 
+                    Height="34" Width="90"
+                    Click="Close_Click" />
+        </Grid>
+    </Grid>
+</Window>
