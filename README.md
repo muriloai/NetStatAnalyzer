@@ -61,6 +61,10 @@ flowchart LR
     E --> F[Foco Imediato nas Conexões Suspeitas]
 ```
 
+> 💡 **Visualização Interativa:** <a href="https://dataxstudios.com.br/br/apps/mermaid-studio/#c=RY9NasMwEEb3PcW3L75AFg21HUMgbUNTsjFeDNI4FcieIE3aQulhQs6QE_hixdLCm-FjeG9-ei_f5pOCYvf-AADPbSUj_0w3Qc3KRslSh6J4Qvm7D2I4RsEjtntw1JkaCd5FpfVf8ksUBQ5uSEq1DKtk7N10_WIPIwNKsifGkYPlbvFeZ3IW6_YjTNeeT5J7L3RmspLRVKrEbdrGeQ2ywpu5eKWw7HEx03UGU96k3LSNGMF2YOtI5w8i8p13jjhc4pmdUuz-AQ" target="_blank" rel="noopener noreferrer">Abrir este fluxo em tela cheia com zoom no Mermaid Studio ↗</a>
+
+
+
 ### Como utilizar na prática
 1. Selecione uma ou mais conexões na tabela principal e clique em **Marcar como Confiável**.
 2. Alterne o filtro de confiança para **Ocultar Confiáveis** para visualizar apenas o tráfego não mapeado.
@@ -106,6 +110,10 @@ flowchart TD
     UC1 & UC2 & UC3 --> E1 & EN & POL
     INF1 & INF2 & INF3 & INF4 -. Implementam .-> PORTS
 ```
+
+> 💡 **Visualização Interativa:** <a href="https://dataxstudios.com.br/br/apps/mermaid-studio/#c=fVTLbtswELz7K_bkU5Iidk46FHBlGVAQ2YIfSgGiKDbSJiFCcQWSiuvv6aGnfIV_rKCk-FW7Okjg7M4uZ3ahZ8Xr_BWNg-W4BwBg66cXg9UrpIYsaYdOsv75gBsyIEZVB27_bH9zAI_pBAiSLEt-NGT_ZCKTtLYBJCj1o9QFr4FgpBSvlbQuQY0vZNrAAStpaAkXpDru7nyGvovtK4TJWIzsRudzUrgJuSxRF0AwRofwTepC6pc2m3TRO9Y6qiol8xOpHul0hmjZQkGwsgwEIWtn0LHdd1-Ft2KRow5Za8p9IbuyFKKlw5yBaO-_k3MmZyiiXxUb979K6Wy-XIiUjUMbQDwlt2bz5vtrMlcQp4ZzsnZOltV7g-w6zqliKx2bzRXE-x5tTzKXHBpziXJnzpjL7YeWHECknSywIAsEKavth5M5HvgS3Yrudvteh_Oc1-pAVzQVka5LG0BHSg07zlm1pnf8hUN3ZMaDWJrauugdVd0MMWUl880lLbF-NmidqXNXG_rU1KDkYVcbDGBUYOWwYNNoi7_M9h3j6aSR5S8SKtn5fhQfiEeph4OTQRylDMW9ZT2Ris4MB3IuYYJKPWH-5vfTr_ER_U546r8TDCBcZFew_L4EgvvFbHpiQwbX118hS9pD0pxW4S30_X4272Gv2-hDrMlr9u5iNPJQNIW-H0nv0yjoN360n2H7uYPrG4jLSlHp_yYl3HwW_ws" target="_blank" rel="noopener noreferrer">Abrir diagrama de arquitetura em tela cheia com zoom no Mermaid Studio ↗</a>
+
+
 
 ### Decisões Técnicas de Engenharia
 
