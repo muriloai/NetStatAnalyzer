@@ -17,7 +17,7 @@
 
 <div align="center">
 
-![NetStatAnalyzer Preview](https://github.com/user-attachments/assets/aa7690da-5567-4da4-8c92-9d73b0d2b82c)
+![NetStatAnalyzer Preview](https://github.com/user-attachments/assets/4a01d3b9-b5b2-4663-aaef-e618096d53dc)
 
 </div>
 
