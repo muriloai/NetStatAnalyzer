@@ -1,6 +1,9 @@
-## Build & Publish outputs
+##=============================================================================
+## .NET / C# Build & Publish Outputs
+##=============================================================================
 [Bb]in/
 [Oo]bj/
+[Aa]rtifacts/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -10,16 +13,59 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
+[Bb]uild/
 [Ll]og/
 [Ll]ogs/
-publish/
-dist/
+[Pp]ublish/
+[Pp]ublish-*/
+[Dd]ist/
+[Dd]ist-*/
+target/
 *.publishproj
+*.pubxml
+*.pubxml.user
 
+## Single-file & runtime builds
+win-x64/
+win-x86/
+win-arm64/
+linux-x64/
+linux-arm64/
+osx-x64/
+osx-arm64/
+
+## MSBuild & Package outputs
+*.nupkg
+*.snupkg
+*.nuspec
+*.appx
+*.msix
+*.appxbundle
+*.msixbundle
+*.msi
+*.wixpack
+
+## Archives & Compressed Packages (Build artifacts / releases)
+*.zip
+*.7z
+*.rar
+*.tar.gz
+*.tar.bz2
+*.tgz
+
+## Executables & Dynamic Libraries (Temporary / single-file outputs)
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+*.pfx
+*.snk
+
+##=============================================================================
 ## Visual Studio / IDE temporary files
+##=============================================================================
 .vs/
-.vscode/
-.idea/
 *.user
 *.userosscache
 *.sln.docstates
@@ -34,8 +80,37 @@ dist/
 *.dtbcache.v2
 *.futdcache.v2
 *.sln.iml
+*.pidb
+*.vshost.*
+*.vshost.*.manifest
 
+## VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+## JetBrains Rider / Resharper
+.idea/
+_ReSharper*/
+*.ReSharper
+*.DotSettings.user
+
+##=============================================================================
+## Test & Code Coverage
+##=============================================================================
+[Tt]est[Rr]esults/
+[Cc]overage/
+*.trx
+*.opencover.xml
+*.coverage
+*.coveragexml
+
+##=============================================================================
 ## Runtime data & Exported files
+##=============================================================================
 allowlist.json
 whitelist.json
 conexoes_*.json
@@ -44,11 +119,17 @@ conexoes_*.txt
 permissoes_*.json
 permissoes_*.csv
 permissoes_*.txt
+export_*.json
+export_*.csv
+export_*.txt
 
-## OS generated files
-Thumbs.db
+##=============================================================================
+## Operating System generated files
+##=============================================================================
+[Tt]humbs.db
 ehthumbs.db
-Desktop.ini
+[Dd]esktop.ini
 $RECYCLE.BIN/
 .DS_Store
 *.stackdump
+

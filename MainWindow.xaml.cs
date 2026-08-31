@@ -76,6 +76,7 @@ namespace NetStatAnalyzer
             if (DataContext is MainViewModel vm)
             {
                 vm.SearchQuery = SearchTextBox.Text;
+                DataGrid.AutoFitColumns();
             }
         }
 
@@ -93,6 +94,7 @@ namespace NetStatAnalyzer
                     vm.SelectedTrustFilter = allowItem.Content?.ToString() ?? "Todas";
 
                 vm.ApplyFilters();
+                DataGrid.AutoFitColumns();
             }
         }
 
@@ -104,6 +106,7 @@ namespace NetStatAnalyzer
             if (AllowFilterComboBox != null) AllowFilterComboBox.SelectedIndex = 0;
 
             ViewModel.ClearFilters();
+            DataGrid.AutoFitColumns();
         }
 
         private async void Reload_Click(object sender, RoutedEventArgs e)
@@ -122,6 +125,7 @@ namespace NetStatAnalyzer
             }
 
             ViewModel.AddSelectedToAllowlist(selected);
+            DataGrid.AutoFitColumns();
         }
 
         private void RemoveFromAllowlist_Click(object sender, RoutedEventArgs e)
@@ -134,6 +138,7 @@ namespace NetStatAnalyzer
             }
 
             ViewModel.RemoveSelectedFromAllowlist(selected);
+            DataGrid.AutoFitColumns();
         }
 
         private void OpenAllowManager_Click(object sender, RoutedEventArgs e)
@@ -146,6 +151,7 @@ namespace NetStatAnalyzer
             managerWindow.ShowDialog();
             ViewModel.ReevaluateTrustedStatus();
             ViewModel.ApplyFilters();
+            DataGrid.AutoFitColumns();
         }
 
         private void ExportConnections_Click(object sender, RoutedEventArgs e)

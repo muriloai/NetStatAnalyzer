@@ -83,7 +83,7 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
                 var doc = new AllowlistDocument
                 {
                     App = "NetStatAnalyzer",
-                    Version = "1.2.0",
+                    Version = "1.2.1",
                     ExportedAt = DateTime.Now,
                     Rules = rules.ToList()
                 };
@@ -101,7 +101,7 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
             }
         }
 
-        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.2.0")
+        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.2.1")
         {
             var doc = new AllowlistDocument
             {
@@ -128,14 +128,14 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
 
                 if (doc == null || doc.Rules == null || doc.Rules.Count == 0)
                 {
-                    return (false, Array.Empty<AllowlistRule>(), doc?.Version ?? "1.2.0", "Nenhuma regra válida encontrada no arquivo.");
+                    return (false, Array.Empty<AllowlistRule>(), doc?.Version ?? "1.2.1", "Nenhuma regra válida encontrada no arquivo.");
                 }
 
                 var validRules = doc.Rules
                     .Where(r => !string.IsNullOrWhiteSpace(r.ProcessName) && !string.IsNullOrWhiteSpace(r.IP))
                     .ToList();
 
-                return (true, validRules, doc.Version ?? "1.2.0", $"{validRules.Count} regras extraídas do arquivo.");
+                return (true, validRules, doc.Version ?? "1.2.1", $"{validRules.Count} regras extraídas do arquivo.");
             }
             catch (Exception ex)
             {

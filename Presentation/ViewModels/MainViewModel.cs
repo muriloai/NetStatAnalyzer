@@ -70,7 +70,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             get => _selectedState;
             set
             {
-                if (SetProperty(ref _selectedState, value))
+                string safeValue = string.IsNullOrWhiteSpace(value) ? "Todos os Estados" : value;
+                if (SetProperty(ref _selectedState, safeValue))
                 {
                     ApplyFilters();
                 }
@@ -83,7 +84,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             get => _selectedTrustFilter;
             set
             {
-                if (SetProperty(ref _selectedTrustFilter, value))
+                string safeValue = string.IsNullOrWhiteSpace(value) ? "Todas" : value;
+                if (SetProperty(ref _selectedTrustFilter, safeValue))
                 {
                     ApplyFilters();
                 }
@@ -149,7 +151,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _exportUseCase = exportUseCase;
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.2.0";
+            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.2.1";
 
             ReloadCommand = new AsyncRelayCommand(LoadConnectionsAsync);
             ClearFiltersCommand = new RelayCommand(ClearFilters);
@@ -235,7 +237,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 StateOptions.Add(state);
             }
 
-            if (!string.IsNullOrEmpty(current) && StateOptions.Contains(current))
+            if (!string.IsNullOrWhiteSpace(current) && StateOptions.Contains(current))
             {
                 SelectedState = current;
             }
@@ -256,7 +258,9 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     return false;
                 }
 
-                if (SelectedState != "Todos os Estados" && !entry.State.Equals(SelectedState, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(SelectedState) && 
+                    !SelectedState.Equals("Todos os Estados", StringComparison.OrdinalIgnoreCase) && 
+                    !entry.State.Equals(SelectedState, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }

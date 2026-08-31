@@ -6,7 +6,7 @@ namespace NetStatAnalyzer.Presentation.Extensions
 {
     public static class DataGridExtensions
     {
-        public static void AutoFitColumns(this DataGrid? dataGrid, string? excludeHeader = "AÇÕES")
+        public static void AutoFitColumns(this DataGrid? dataGrid, string? excludeHeader = null)
         {
             if (dataGrid == null || dataGrid.Columns.Count == 0) return;
 
@@ -14,7 +14,7 @@ namespace NetStatAnalyzer.Presentation.Extensions
             {
                 foreach (var column in dataGrid.Columns)
                 {
-                    if (excludeHeader != null && column.Header?.ToString() == excludeHeader)
+                    if (excludeHeader != null && string.Equals(column.Header?.ToString(), excludeHeader, StringComparison.OrdinalIgnoreCase))
                         continue;
 
                     column.Width = new DataGridLength(0, DataGridLengthUnitType.Auto);

@@ -356,7 +356,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="AÇÕES" CanUserSort="False" Width="80" MinWidth="70">
+                    <DataGridTemplateColumn Header="AÇÕES" CanUserSort="False" Width="95" MinWidth="85">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Style="{StaticResource RowIconDangerButton}" 

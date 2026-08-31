@@ -5,14 +5,17 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET Version](https://img.shields.io/badge/.NET-8.0%20Windows-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D6?logo=windows&logoColor=white)](https://microsoft.com/windows)
-[![Release](https://img.shields.io/badge/Release-v1.2.0-emerald.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
+[![Tests](https://img.shields.io/badge/Tests-34%20Passed-brightgreen.svg)](#testes-automatizados)
+[![Release](https://img.shields.io/badge/Release-v1.2.1-emerald.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
 [![Architecture](https://img.shields.io/badge/Arch-x64-orange.svg)](#)
 
-<br/>
+</div>
 
-**NetStatAnalyzer** é um monitor visual de conexões de rede para Windows. Ele mapeia em tempo real todas as portas e sockets ativos (TCP e UDP), identificando instantaneamente o executável, PID, caminho em disco e ícone de cada processo.
+<p align="justify">
+<strong>NetStatAnalyzer</strong> é um monitor visual de conexões de rede para Windows. Ele mapeia em tempo real todas as portas e sockets ativos (TCP e UDP), identificando instantaneamente o executável, PID, caminho em disco e ícone de cada processo.
+</p>
 
-<br/>
+<div align="center">
 
 ![NetStatAnalyzer Preview](https://github.com/user-attachments/assets/aa7690da-5567-4da4-8c92-9d73b0d2b82c)
 
@@ -139,24 +142,58 @@ Você pode exportar a lista de conexões exibidas na tela a qualquer momento nos
 ## Como Compilar e Executar
 
 ### Pré-requisitos
-- Windows 10 (versão 19041+) ou Windows 11 (64-bit).
-- SDK do .NET 8.0 instalado na máquina de desenvolvimento.
 
-### 1. Publicação Autocontida Portátil (Recomendada)
-Gera um único executável independente de cerca de 70 MB com o runtime embutido, pronto para rodar em qualquer máquina sem instalar nada:
+- **Sistema Operacional:** Windows 10 (versão 19041+) ou Windows 11 (64-bit).
+- **SDK:** [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) instalado.
 
-```powershell
-dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./dist
-```
-> Executável gerado em: `./dist/NetStatAnalyzer.exe`
+---
 
-### 2. Publicação Dependente do Framework
-Gera um executável enxuto de apenas 2 MB para computadores que já possuem o .NET 8 Desktop Runtime:
+### 1. Executar Diretamente (Modo Rápido)
+
+Para compilar e iniciar o aplicativo imediatamente em ambiente local:
 
 ```powershell
-dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish
+dotnet run
 ```
-> Executável gerado em: `./publish/NetStatAnalyzer.exe`
+
+---
+
+### 2. Gerar o Executável Final (`.exe`)
+
+Você pode publicar o NetStatAnalyzer em dois formatos práticos:
+
+#### Opção A: Executável Portátil / Autocontido (Recomendado)
+Gera um executável único que já traz o runtime do .NET 8 embutido e comprimido. **Não necessita de nenhuma instalação prévia de .NET no computador de destino**:
+
+```powershell
+dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish
+```
+> O arquivo executável pronto para uso estará em: `./publish/NetStatAnalyzer.exe`
+
+#### Opção B: Executável Compacto (~2 MB)
+Gera um executável leve para máquinas que já possuem o [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0/runtime) instalado:
+
+```powershell
+dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish-compact
+```
+> O arquivo executável estará em: `./publish-compact/NetStatAnalyzer.exe`
+
+---
+
+## Testes Automatizados
+
+O projeto conta com uma suíte de testes unitários automatizados cobrindo as regras de negócio centrais da aplicação (34 testes com xUnit):
+
+- **Política de Conexões Confiáveis (`TrustEvaluationPolicy`):** Validação de extração e sanitização de endereços IPv4/IPv6 com portas, correspondência *case-insensitive* por processo, detecção de wildcards (`0.0.0.0`, `*:*`, `[::]:0`) e validação de portas locais para sockets em escuta.
+- **Gerenciamento de Regras Confiáveis (`ManageAllowlistUseCase`):** Inclusão com prevenção contra duplicatas, remoção granular e em lote, persistência e disparo de eventos de notificação.
+- **Varredura e Mapeamento de Conexões (`ScanConnectionsUseCase`):** Mapeamento e enriquecimento de sockets de rede com resolução de processos e atribuição de confiabilidade.
+- **Exportação de Dados (`FileConnectionExporter`):** Formatação correta e escape de dados para CSV, relatórios em colunas alinhadas em TXT e serialização com metadados em JSON.
+
+### Como Executar os Testes
+
+```powershell
+dotnet test
+```
 
 ---
 
@@ -214,6 +251,12 @@ NetStatAnalyzer/
 │       ├── AllowlistManagerViewModel.cs   # ViewModel do gerenciador de regras
 │       ├── ConnectionItemViewModel.cs     # ViewModel de linha e badges visuais
 │       └── MainViewModel.cs               # ViewModel da janela principal
+├── NetStatAnalyzer.Tests/                 # Bateria de testes automatizados (xUnit)
+│   ├── TrustEvaluationPolicyTests.cs      # Testes de confiabilidade e sanitização de IP
+│   ├── ManageAllowlistUseCaseTests.cs     # Testes do gerenciador de regras
+│   ├── ScanConnectionsUseCaseTests.cs     # Testes de varredura e enriquecimento
+│   ├── FileConnectionExporterTests.cs     # Testes dos exportadores CSV, TXT e JSON
+│   └── NetStatAnalyzer.Tests.csproj
 ├── AllowlistManagerWindow.xaml            # Interface do gerenciador de regras
 ├── AllowlistManagerWindow.xaml.cs
 ├── App.xaml                               # Inicialização e estilos globais
@@ -222,6 +265,7 @@ NetStatAnalyzer/
 ├── MainWindow.xaml                        # Interface da janela principal
 ├── MainWindow.xaml.cs                     # Inicialização da view e bindings
 ├── NetStatAnalyzer.csproj                 # Configuração de build do .NET 8
+├── NetStatAnalyzer.sln                    # Solução Visual Studio
 └── LICENSE                                # Licença MIT
 ```
 
