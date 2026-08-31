@@ -1,67 +1,60 @@
 using System;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using NetStatAnalyzer.Application.UseCases;
+using NetStatAnalyzer.Domain.Entities;
+using NetStatAnalyzer.Domain.Policies;
+using NetStatAnalyzer.Infrastructure.Persistence;
+using NetStatAnalyzer.Presentation.Extensions;
+using NetStatAnalyzer.Presentation.ViewModels;
 
 namespace NetStatAnalyzer
 {
     public partial class AllowlistManagerWindow : Window
     {
-        private readonly AllowlistService _allowlistService = AllowlistService.Instance;
-        public ObservableCollection<AllowlistRule> DisplayRules { get; set; } = new();
+        public AllowlistManagerViewModel ViewModel { get; }
 
-        public AllowlistManagerWindow()
+        public AllowlistManagerWindow(ManageAllowlistUseCase? useCase = null)
         {
             InitializeComponent();
-            RulesDataGrid.ItemsSource = DisplayRules;
-            RefreshRules();
 
-            _allowlistService.RulesChanged += (s, e) => Dispatcher.Invoke(RefreshRules);
-        }
+            var allowlistUseCase = useCase ?? new ManageAllowlistUseCase(new JsonFileAllowlistRepository());
+            ViewModel = new AllowlistManagerViewModel(allowlistUseCase);
+            DataContext = ViewModel;
 
-        private void RefreshRules()
-        {
-            string query = SearchTextBox?.Text?.Trim().ToLowerInvariant() ?? string.Empty;
-
-            var filtered = _allowlistService.Rules.Where(r =>
+            ViewModel.PropertyChanged += (s, e) =>
             {
-                if (string.IsNullOrEmpty(query)) return true;
-                return r.ProcessName.ToLowerInvariant().Contains(query) ||
-                       (r.LocalAddress != null && r.LocalAddress.ToLowerInvariant().Contains(query)) ||
-                       (r.ForeignAddress != null && r.ForeignAddress.ToLowerInvariant().Contains(query)) ||
-                       r.IP.ToLowerInvariant().Contains(query) ||
-                       (r.Protocol != null && r.Protocol.ToLowerInvariant().Contains(query));
-            }).ToList();
+                if (e.PropertyName == nameof(AllowlistManagerViewModel.RuleCountSummary))
+                {
+                    RuleCountTextBlock.Text = ViewModel.RuleCountSummary;
+                }
+            };
 
-            DisplayRules.Clear();
-            foreach (var rule in filtered)
-            {
-                DisplayRules.Add(rule);
-            }
-
-            RuleCountTextBlock.Text = $"{_allowlistService.Rules.Count} Conexões Confiáveis";
-            AutoFitColumns();
+            RulesDataGrid.ItemsSource = ViewModel.DisplayRules;
+            RuleCountTextBlock.Text = ViewModel.RuleCountSummary;
+            RulesDataGrid.AutoFitColumns();
         }
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            RefreshRules();
+            ViewModel.SearchQuery = SearchTextBox.Text;
+            RulesDataGrid.AutoFitColumns();
         }
 
         private void ClearFilter_Click(object sender, RoutedEventArgs e)
         {
             SearchTextBox.Text = string.Empty;
-            RefreshRules();
+            ViewModel.SearchQuery = string.Empty;
+            RulesDataGrid.AutoFitColumns();
         }
 
         private void DeleteRule_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is AllowlistRule rule)
             {
-                string targetDesc = !string.IsNullOrEmpty(rule.LocalAddress) && AllowlistService.IsWildcardOrListeningAddress(rule.ForeignAddress)
+                string targetDesc = !string.IsNullOrEmpty(rule.LocalAddress) && TrustEvaluationPolicy.IsWildcardOrListeningAddress(rule.ForeignAddress)
                     ? rule.LocalAddress
                     : (rule.ForeignAddress ?? rule.IP);
 
@@ -73,15 +66,15 @@ namespace NetStatAnalyzer
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    _allowlistService.RemoveRule(rule);
-                    RefreshRules();
+                    ViewModel.DeleteRule(rule);
+                    RulesDataGrid.AutoFitColumns();
                 }
             }
         }
 
         private void ClearAll_Click(object sender, RoutedEventArgs e)
         {
-            if (_allowlistService.Rules.Count == 0)
+            if (ViewModel.TotalRulesCount == 0)
             {
                 MessageBox.Show("A lista de conexões confiáveis já está vazia.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -95,8 +88,8 @@ namespace NetStatAnalyzer
 
             if (result == MessageBoxResult.Yes)
             {
-                _allowlistService.ClearAll();
-                RefreshRules();
+                ViewModel.ClearAll();
+                RulesDataGrid.AutoFitColumns();
             }
         }
 
@@ -104,7 +97,7 @@ namespace NetStatAnalyzer
         {
             try
             {
-                if (_allowlistService.Rules.Count == 0)
+                if (ViewModel.TotalRulesCount == 0)
                 {
                     MessageBox.Show("Não há conexões confiáveis para exportar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
@@ -120,9 +113,9 @@ namespace NetStatAnalyzer
 
                 if (dialog.ShowDialog(this) == true)
                 {
-                    string json = _allowlistService.ExportToJson();
+                    string json = ViewModel.ExportToJson();
                     File.WriteAllText(dialog.FileName, json);
-                    MessageBox.Show($"Conexões confiáveis exportadas com sucesso!\nArquivo: {dialog.FileName}\nTotal de conexões: {_allowlistService.Rules.Count}",
+                    MessageBox.Show($"Conexões confiáveis exportadas com sucesso!\nArquivo: {dialog.FileName}\nTotal de conexões: {ViewModel.TotalRulesCount}",
                         "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
@@ -146,11 +139,11 @@ namespace NetStatAnalyzer
                 if (dialog.ShowDialog(this) == true)
                 {
                     string json = File.ReadAllText(dialog.FileName);
-                    var result = _allowlistService.ImportFromJson(json);
+                    var result = ViewModel.ImportFromJson(json);
 
                     if (result.Success)
                     {
-                        RefreshRules();
+                        RulesDataGrid.AutoFitColumns();
                         MessageBox.Show(result.Message, "Importação Concluída", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
@@ -168,22 +161,6 @@ namespace NetStatAnalyzer
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             Close();
-        }
-
-        private void AutoFitColumns()
-        {
-            if (RulesDataGrid == null || RulesDataGrid.Columns.Count == 0) return;
-
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                foreach (var column in RulesDataGrid.Columns)
-                {
-                    if (column.Header?.ToString() == "AÇÕES") continue;
-
-                    column.Width = new DataGridLength(0, DataGridLengthUnitType.Auto);
-                    column.Width = DataGridLength.Auto;
-                }
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
     }
 }

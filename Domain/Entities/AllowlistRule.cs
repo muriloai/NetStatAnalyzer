@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace NetStatAnalyzer
+namespace NetStatAnalyzer.Domain.Entities
 {
     public class AllowlistRule
     {
@@ -28,13 +28,13 @@ namespace NetStatAnalyzer
         public string Notes { get; set; } = string.Empty;
     }
 
-    public class AllowlistExportDocument
+    public class AllowlistDocument
     {
         [JsonPropertyName("app")]
         public string App { get; set; } = "NetStatAnalyzer";
 
         [JsonPropertyName("version")]
-        public string Version { get; set; } = "1.1.0";
+        public string Version { get; set; } = "1.2.0";
 
         [JsonPropertyName("exportedAt")]
         public DateTime ExportedAt { get; set; } = DateTime.UtcNow;
