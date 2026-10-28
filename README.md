@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET Version](https://img.shields.io/badge/.NET-8.0%20Windows-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D6?logo=windows&logoColor=white)](https://microsoft.com/windows)
-[![Tests](https://img.shields.io/badge/Tests-34%20Passed-brightgreen.svg)](#testes-automatizados)
+[![Tests](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml/badge.svg)](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)
 [![Release](https://img.shields.io/badge/Release-v1.2.1-emerald.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
 [![Architecture](https://img.shields.io/badge/Arch-x64-orange.svg)](#)
 
@@ -197,11 +197,15 @@ O projeto conta com uma suíte de testes unitários automatizados cobrindo as re
 - **Varredura e Mapeamento de Conexões (`ScanConnectionsUseCase`):** Mapeamento e enriquecimento de sockets de rede com resolução de processos e atribuição de confiabilidade.
 - **Exportação de Dados (`FileConnectionExporter`):** Formatação correta e escape de dados para CSV, relatórios em colunas alinhadas em TXT e serialização com metadados em JSON.
 
-### Como Executar os Testes
+### Como Executar os Testes Localmente
 
 ```powershell
 dotnet test
 ```
+
+### Integração Contínua (CI)
+
+Os testes são executados e validados automaticamente a cada *push* ou *pull request* para a branch `main` através do workflow no **[GitHub Actions](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)**, assegurando que o badge de status reflita fielmente o estado real e verificável da suíte em ambiente Windows com .NET 8.0 SDK.
 
 ---
 
@@ -209,6 +213,9 @@ dotnet test
 
 ```text
 NetStatAnalyzer/
+├── .github/
+│   └── workflows/
+│       └── tests.yml                      # Pipeline de CI (execução automatizada de testes)
 ├── assets/
 │   ├── icon.ico                           # Ícone do aplicativo para Windows
 │   ├── icon.png                           # Logotipo em alta resolução
