@@ -19,6 +19,13 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public string ProcessName => Model.ProcessName;
         public string? ProcessPath => Model.ProcessPath;
 
+        public double CpuPercent => Model.CpuPercent;
+        public double BandwidthBytesPerSec => Model.BandwidthBytesPerSec;
+        public string DisplayCpu => Model.DisplayCpu;
+        public string DisplayBandwidth => Model.DisplayBandwidth;
+        public ThreatLevel ThreatLevel => Model.ThreatLevel;
+        public string ThreatReason => Model.ThreatReason;
+
         public bool IsAllowed
         {
             get => Model.IsTrusted;
@@ -42,6 +49,50 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public string AllowBadgeForeground => IsAllowed ? "#34D399" : "Transparent";
         public string AllowBadgeBorder => IsAllowed ? "#059669" : "Transparent";
         public Visibility AllowBadgeVisibility => IsAllowed ? Visibility.Visible : Visibility.Collapsed;
+
+        public string CpuBadgeBackground => CpuPercent switch
+        {
+            >= 50.0 => "#7F1D1D",
+            >= 20.0 => "#854D0E",
+            >= 5.0 => "#1E3A8A",
+            _ => "#1F2937"
+        };
+
+        public string CpuBadgeForeground => CpuPercent switch
+        {
+            >= 50.0 => "#FCA5A5",
+            >= 20.0 => "#FDE047",
+            >= 5.0 => "#93C5FD",
+            _ => "#E2E8F0"
+        };
+
+        public string ThreatBadgeText => ThreatLevel switch
+        {
+            ThreatLevel.Critical => "🚨 CRÍTICO",
+            ThreatLevel.High => "⚠️ ALERTA",
+            ThreatLevel.Medium => "⚠️ PICO/PROXY",
+            ThreatLevel.Low => "ℹ️ ATENÇÃO",
+            _ => string.Empty
+        };
+
+        public string ThreatBadgeBackground => ThreatLevel switch
+        {
+            ThreatLevel.Critical => "#7F1D1D",
+            ThreatLevel.High => "#991B1B",
+            ThreatLevel.Medium => "#854D0E",
+            ThreatLevel.Low => "#1E3A8A",
+            _ => "Transparent"
+        };
+
+        public string ThreatBadgeForeground => ThreatLevel switch
+        {
+            ThreatLevel.Critical or ThreatLevel.High => "#FCA5A5",
+            ThreatLevel.Medium => "#FDE047",
+            ThreatLevel.Low => "#93C5FD",
+            _ => "Transparent"
+        };
+
+        public Visibility ThreatBadgeVisibility => ThreatLevel != ThreatLevel.Normal ? Visibility.Visible : Visibility.Collapsed;
 
         public string StateBadgeBackground => Model.State switch
         {
@@ -75,6 +126,22 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public ConnectionItemViewModel(NetworkConnection model)
         {
             Model = model;
+        }
+
+        public void NotifyMetricsChanged()
+        {
+            OnPropertyChanged(nameof(CpuPercent));
+            OnPropertyChanged(nameof(BandwidthBytesPerSec));
+            OnPropertyChanged(nameof(DisplayCpu));
+            OnPropertyChanged(nameof(DisplayBandwidth));
+            OnPropertyChanged(nameof(CpuBadgeBackground));
+            OnPropertyChanged(nameof(CpuBadgeForeground));
+            OnPropertyChanged(nameof(ThreatLevel));
+            OnPropertyChanged(nameof(ThreatReason));
+            OnPropertyChanged(nameof(ThreatBadgeText));
+            OnPropertyChanged(nameof(ThreatBadgeBackground));
+            OnPropertyChanged(nameof(ThreatBadgeForeground));
+            OnPropertyChanged(nameof(ThreatBadgeVisibility));
         }
     }
 }
