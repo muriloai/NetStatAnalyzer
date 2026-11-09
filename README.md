@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET Version](https://img.shields.io/badge/.NET-8.0%20Windows-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D6?logo=windows&logoColor=white)](https://microsoft.com/windows)
-[![Tests](https://img.shields.io/badge/Tests-43%20passed-success.svg)](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)
+[![Tests](https://img.shields.io/badge/Tests-44%20passed-success.svg)](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)
 [![Release](https://img.shields.io/badge/Release-v1.3.0-emerald.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
 [![Architecture](https://img.shields.io/badge/Arch-x64-orange.svg)](#)
 
@@ -17,7 +17,7 @@
 
 <div align="center">
 
-<img src="docs/images/preview-main.png" alt="NetStatAnalyzer Preview v1.3.0" width="950" onerror="this.src='https://github.com/user-attachments/assets/4a01d3b9-b5b2-4663-aaef-e618096d53dc'" />
+<img src="docs/images/preview-main.png" alt="NetStatAnalyzer Preview v1.3.0" width="950" />
 
 </div>
 
@@ -27,7 +27,7 @@
 
 O **NetStatAnalyzer é 100% focado e otimizado para o sistema operacional Windows** (Windows 10 versão 19041+ e Windows 11 x64).
 
-Ele aproveita subsistemas e subsistemas nativos do kernel do Windows:
+Ele aproveita subsistemas e recursos nativos do kernel do Windows:
 - **Win32 Netstat & IP Helper API:** Mapeamento de sockets de rede e endpoints remotos.
 - **Win32 `GetProcessIoCounters` & `TotalProcessorTime`:** Medição precisa de consumo de I/O de rede (leitura/escrita) e porcentagem de CPU.
 - **Windows Task Scheduler CLI & Engine:** Auditoria detalhada de tarefas agendadas em nível de sistema e usuário.
@@ -56,16 +56,34 @@ Relatórios recentes de inteligência de ameaças (como os detalhados pela *Micr
 - **Filtro de Corte de CPU ao Vivo:** Slider/seletor instantâneo para filtrar conexões e exibir **somente processos que ultrapassem X% de CPU** (ex: `> 1%`, `> 5%`, `> 10%`, `> 25%`, `> 50%`).
 - **Filtro Rápido de Anomalias:** Checkbox para isolar de imediato processos com alertas de risco ou picos anormais de tráfego.
 
+<div align="center">
+<img src="docs/images/preview-main.png" alt="Aba de Conexões e Monitoramento" width="900" />
+</div>
+
+---
+
 ### 2. ⚡ Visão Consolidada de Processos e Consumo
 - Agrupamento inteligente por executável e PID.
 - Detalhamento de **Download / Leitura** e **Upload / Escrita**.
 - Contagem de conexões ativas simultâneas.
 - Diagnóstico automático com flags de alerta (🚨 *Proxy Residencial*, 🚨 *Mineração Oculta*, ⚠️ *Pico de Tráfego*).
 
+<div align="center">
+<img src="docs/images/preview-processes.png" alt="Aba de Processos e Consumo" width="900" />
+</div>
+
+---
+
 ### 3. ⏱️ Auditoria de Tarefas Agendadas (Windows Task Scheduler)
 - Listagem completa das tarefas agendadas locais.
 - **Detecção de Persistência Furtiva:** Identifica scripts em execução oculta de PowerShell (`-WindowStyle Hidden`, `-enc`), disparos frequentes (a cada 5 minutos), executáveis rodando a partir de pastas temporárias (`%Temp%` ou `AppData`) e tarefas não-Microsoft.
 - Botão direto para **Abrir o Agendador de Tarefas Oficial (`taskschd.msc`)** para desativar ou remover entradas suspeitas.
+
+<div align="center">
+<img src="docs/images/preview-scheduled-tasks.png" alt="Aba de Tarefas Agendadas" width="900" />
+</div>
+
+---
 
 ### 4. 🚀 Auditoria de Itens de Inicialização (Startup Items)
 - Varredura de chaves de registro `HKCU\Run`, `HKCU\RunOnce`, `HKLM\Run`, `HKLM\RunOnce` e `WOW6432Node`.
@@ -77,9 +95,19 @@ Relatórios recentes de inteligência de ameaças (como os detalhados pela *Micr
   - **Pasta Inicializar (`shell:startup`)** no Windows Explorer.
   - **Editor do Registro (`regedit.exe`)**.
 
+<div align="center">
+<img src="docs/images/preview-startup-items.png" alt="Aba de Itens de Inicialização" width="900" />
+</div>
+
+---
+
 ### 5. 🛡️ Central de Insights de Ameaças & Painel Estratégico
 - Cartões explicativos com contadores de ameaças detectadas no endpoint.
 - Checklist de resposta e orientações para governança de TI.
+
+<div align="center">
+<img src="docs/images/preview-threat-insights.png" alt="Painel Estratégico de Insights de Ameaças" width="900" />
+</div>
 
 ---
 
@@ -185,12 +213,13 @@ dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained tru
 
 ## 🧪 Testes Automatizados
 
-A aplicação conta com **43 testes automatizados** utilizando xUnit cobrindo:
+A aplicação conta com **44 testes automatizados** utilizando xUnit cobrindo:
 - **Políticas de Detecção de Ameaças (`ThreatDetectionPolicy`):** Detecção de proxy residencial (`WorldProxyPool`), mineração oculta (`CharityEngine`, `BOINC`), monitores PowerShell ocultos, picos de banda e scripts de inicialização.
 - **Formatação de Métricas (`ProcessMetricInfo`):** Formatação consistente de taxas (`B/s`, `KB/s`, `MB/s`, `GB/s`).
 - **Filtro de Corte de CPU ao Vivo:** Validação de corte dinâmico no `MainViewModel`.
 - **Conexões Confiáveis (`TrustEvaluationPolicy` & `ManageAllowlistUseCase`):** Sanitização de endereços IPv4/IPv6, portas e wildcards.
 - **Exportadores (`FileConnectionExporter`):** Formatação de arquivos JSON, CSV e TXT.
+- **Geração de Evidências Visuais (`ScreenshotGeneratorTests`):** Renderização e captura automatizada das telas.
 
 Execute os testes com:
 ```powershell

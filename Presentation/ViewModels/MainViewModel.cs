@@ -187,6 +187,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     OnPropertyChanged(nameof(IsTasksTabActive));
                     OnPropertyChanged(nameof(IsStartupTabActive));
                     OnPropertyChanged(nameof(IsInsightsTabActive));
+                    OnPropertyChanged(nameof(CurrentTabSummary));
                 }
             }
         }
@@ -197,7 +198,23 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public bool IsStartupTabActive => SelectedTabIndex == 3;
         public bool IsInsightsTabActive => SelectedTabIndex == 4;
 
-        // Metrics & Counters
+        public string CurrentTabSummary
+        {
+            get
+            {
+                return SelectedTabIndex switch
+                {
+                    0 => ConnectionCountSummary,
+                    1 => ProcessCountSummary,
+                    2 => TaskCountSummary,
+                    3 => StartupCountSummary,
+                    4 => "Governança de TI, Análise LGPD e Prevenção de Ameaças",
+                    _ => ConnectionCountSummary
+                };
+            }
+        }
+
+        // Metrics & Counters - Tab 0: Conexões
         private int _metricTotal;
         public int MetricTotal
         {
@@ -224,6 +241,153 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         {
             get => _metricAllowed;
             set => SetProperty(ref _metricAllowed, value);
+        }
+
+        private int _metricThreatConnections;
+        public int MetricThreatConnections
+        {
+            get => _metricThreatConnections;
+            set => SetProperty(ref _metricThreatConnections, value);
+        }
+
+        // Metrics & Counters - Tab 1: Processos & Consumo
+        private int _metricProcessesTotal;
+        public int MetricProcessesTotal
+        {
+            get => _metricProcessesTotal;
+            set => SetProperty(ref _metricProcessesTotal, value);
+        }
+
+        private int _metricProcessesHighCpu;
+        public int MetricProcessesHighCpu
+        {
+            get => _metricProcessesHighCpu;
+            set => SetProperty(ref _metricProcessesHighCpu, value);
+        }
+
+        private int _metricProcessesHighNetwork;
+        public int MetricProcessesHighNetwork
+        {
+            get => _metricProcessesHighNetwork;
+            set => SetProperty(ref _metricProcessesHighNetwork, value);
+        }
+
+        private int _metricProcessesThreats;
+        public int MetricProcessesThreats
+        {
+            get => _metricProcessesThreats;
+            set => SetProperty(ref _metricProcessesThreats, value);
+        }
+
+        private string _metricProcessesBandwidthSum = "0 B/s";
+        public string MetricProcessesBandwidthSum
+        {
+            get => _metricProcessesBandwidthSum;
+            set => SetProperty(ref _metricProcessesBandwidthSum, value);
+        }
+
+        private string _processCountSummary = "0 processos monitorados";
+        public string ProcessCountSummary
+        {
+            get => _processCountSummary;
+            set
+            {
+                if (SetProperty(ref _processCountSummary, value))
+                {
+                    OnPropertyChanged(nameof(CurrentTabSummary));
+                }
+            }
+        }
+
+        // Metrics & Counters - Tab 2: Tarefas Agendadas
+        private int _metricTasksTotal;
+        public int MetricTasksTotal
+        {
+            get => _metricTasksTotal;
+            set => SetProperty(ref _metricTasksTotal, value);
+        }
+
+        private int _metricTasksEnabled;
+        public int MetricTasksEnabled
+        {
+            get => _metricTasksEnabled;
+            set => SetProperty(ref _metricTasksEnabled, value);
+        }
+
+        private int _metricTasksDisabled;
+        public int MetricTasksDisabled
+        {
+            get => _metricTasksDisabled;
+            set => SetProperty(ref _metricTasksDisabled, value);
+        }
+
+        private int _metricTasksNonMicrosoft;
+        public int MetricTasksNonMicrosoft
+        {
+            get => _metricTasksNonMicrosoft;
+            set => SetProperty(ref _metricTasksNonMicrosoft, value);
+        }
+
+        private int _metricTasksSuspicious;
+        public int MetricTasksSuspicious
+        {
+            get => _metricTasksSuspicious;
+            set => SetProperty(ref _metricTasksSuspicious, value);
+        }
+
+        private string _taskCountSummary = "0 tarefas agendadas";
+        public string TaskCountSummary
+        {
+            get => _taskCountSummary;
+            set
+            {
+                if (SetProperty(ref _taskCountSummary, value))
+                {
+                    OnPropertyChanged(nameof(CurrentTabSummary));
+                }
+            }
+        }
+
+        // Metrics & Counters - Tab 3: Itens de Inicialização
+        private int _metricStartupTotal;
+        public int MetricStartupTotal
+        {
+            get => _metricStartupTotal;
+            set => SetProperty(ref _metricStartupTotal, value);
+        }
+
+        private int _metricStartupRegistry;
+        public int MetricStartupRegistry
+        {
+            get => _metricStartupRegistry;
+            set => SetProperty(ref _metricStartupRegistry, value);
+        }
+
+        private int _metricStartupFolder;
+        public int MetricStartupFolder
+        {
+            get => _metricStartupFolder;
+            set => SetProperty(ref _metricStartupFolder, value);
+        }
+
+        private int _metricStartupSuspicious;
+        public int MetricStartupSuspicious
+        {
+            get => _metricStartupSuspicious;
+            set => SetProperty(ref _metricStartupSuspicious, value);
+        }
+
+        private string _startupCountSummary = "0 itens de inicialização";
+        public string StartupCountSummary
+        {
+            get => _startupCountSummary;
+            set
+            {
+                if (SetProperty(ref _startupCountSummary, value))
+                {
+                    OnPropertyChanged(nameof(CurrentTabSummary));
+                }
+            }
         }
 
         // Threat intelligence counters
@@ -268,7 +432,13 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public string ConnectionCountSummary
         {
             get => _connectionCountSummary;
-            set => SetProperty(ref _connectionCountSummary, value);
+            set
+            {
+                if (SetProperty(ref _connectionCountSummary, value))
+                {
+                    OnPropertyChanged(nameof(CurrentTabSummary));
+                }
+            }
         }
 
         private bool _isEmptyState;
@@ -343,6 +513,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 await LoadStartupItemsInternalAsync();
 
                 UpdateThreatIntelligenceMetrics();
+                UpdateAllTabMetrics();
                 StatusMessage = "Pronto - Varredura completa atualizada.";
             }
             catch (Exception ex)
@@ -450,6 +621,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
             UpdateStateFilterOptions();
             UpdateMetrics();
+            UpdateProcessMetrics();
             ApplyFilters();
             ApplyProcessFilters();
         }
@@ -462,6 +634,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 _allTasks.Add(new ScheduledTaskItemViewModel(t));
             }
+            UpdateTaskMetrics();
             ApplyTaskFilters();
         }
 
@@ -473,6 +646,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 _allStartupItems.Add(new StartupItemViewModel(i));
             }
+            UpdateStartupMetrics();
             ApplyStartupFilters();
         }
 
@@ -515,6 +689,42 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             MetricEstablished = _allEntries.Count(e => string.Equals(e.State, "ESTABLISHED", StringComparison.OrdinalIgnoreCase));
             MetricListening = _allEntries.Count(e => string.Equals(e.State, "LISTENING", StringComparison.OrdinalIgnoreCase));
             MetricAllowed = _allEntries.Count(e => e.IsAllowed);
+            MetricThreatConnections = _allEntries.Count(e => e.ThreatLevel > ThreatLevel.Normal);
+        }
+
+        private void UpdateProcessMetrics()
+        {
+            MetricProcessesTotal = _allProcesses.Count;
+            MetricProcessesHighCpu = _allProcesses.Count(p => p.CpuPercent >= 5.0);
+            MetricProcessesHighNetwork = _allProcesses.Count(p => p.TotalBytesPerSec >= 50_000);
+            MetricProcessesThreats = _allProcesses.Count(p => p.ThreatLevel > ThreatLevel.Normal);
+            double totalBandwidth = _allProcesses.Sum(p => p.TotalBytesPerSec);
+            MetricProcessesBandwidthSum = ProcessMetricInfo.FormatBytesPerSec(totalBandwidth);
+        }
+
+        private void UpdateTaskMetrics()
+        {
+            MetricTasksTotal = _allTasks.Count;
+            MetricTasksEnabled = _allTasks.Count(t => !string.Equals(t.State, "Desabilitado", StringComparison.OrdinalIgnoreCase));
+            MetricTasksDisabled = _allTasks.Count(t => string.Equals(t.State, "Desabilitado", StringComparison.OrdinalIgnoreCase));
+            MetricTasksNonMicrosoft = _allTasks.Count(t => !t.IsMicrosoftTask);
+            MetricTasksSuspicious = _allTasks.Count(t => t.IsSuspicious);
+        }
+
+        private void UpdateStartupMetrics()
+        {
+            MetricStartupTotal = _allStartupItems.Count;
+            MetricStartupRegistry = _allStartupItems.Count(s => s.SourceType == "Registro");
+            MetricStartupFolder = _allStartupItems.Count(s => s.SourceType == "Pasta Inicializar");
+            MetricStartupSuspicious = _allStartupItems.Count(s => s.IsSuspicious);
+        }
+
+        public void UpdateAllTabMetrics()
+        {
+            UpdateMetrics();
+            UpdateProcessMetrics();
+            UpdateTaskMetrics();
+            UpdateStartupMetrics();
         }
 
         private void UpdateStateFilterOptions()
@@ -662,6 +872,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 FilteredProcesses.Add(item);
             }
+            ProcessCountSummary = $"Exibindo {FilteredProcesses.Count} de {_allProcesses.Count} processos";
         }
 
         public void ApplyTaskFilters()
@@ -704,6 +915,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 FilteredTasks.Add(item);
             }
+            TaskCountSummary = $"Exibindo {FilteredTasks.Count} de {_allTasks.Count} tarefas";
         }
 
         public void ApplyStartupFilters()
@@ -749,6 +961,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 FilteredStartupItems.Add(item);
             }
+            StartupCountSummary = $"Exibindo {FilteredStartupItems.Count} de {_allStartupItems.Count} itens";
         }
 
         public void ClearFilters()

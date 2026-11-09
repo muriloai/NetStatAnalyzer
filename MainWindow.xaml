@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NetStatAnalyzer"
         mc:Ignorable="d"
-        Icon="pack://application:,,,/assets/icon.ico"
-        Title="NetStatAnalyzer - Monitor de Rede, Processos, Banda e Persistência" 
-        Height="780" Width="1240"
+        Icon="pack://application:,,,/NetStatAnalyzer;component/assets/icon.ico"
+        Title="NetStatAnalyzer - Monitor de Rede, Processos, Recursos e Persistência" 
+        Height="800" Width="1260"
         MinHeight="600" MinWidth="1080"
         WindowStartupLocation="CenterScreen"
         Background="#14171F"
@@ -55,7 +55,7 @@
 
         <!-- Secondary Button -->
         <Style x:Key="ModernSecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#222836" />
+            <Setter Property="Background" Value="#1F2533" />
             <Setter Property="Foreground" Value="#F1F5F9" />
             <Setter Property="BorderBrush" Value="#353E54" />
             <Setter Property="BorderThickness" Value="1" />
@@ -92,37 +92,43 @@
             </Setter>
         </Style>
 
-        <!-- Tool Quick Action Button -->
-        <Style x:Key="ModernToolButton" TargetType="Button">
-            <Setter Property="Background" Value="#1A202C" />
-            <Setter Property="Foreground" Value="#93C5FD" />
-            <Setter Property="BorderBrush" Value="#2B374E" />
-            <Setter Property="BorderThickness" Value="1" />
+        <!-- Modern Tab Button (Inactive) -->
+        <Style x:Key="ModernTabButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#94A3B8" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="18,10" />
+            <Setter Property="BorderThickness" Value="0,0,0,3" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="toolBorder"
+                        <Border x:Name="tabBorder"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6"
+                                CornerRadius="6,6,0,0"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="toolBorder" Property="Background" Value="#24324D" />
-                                <Setter TargetName="toolBorder" Property="BorderBrush" Value="#3B82F6" />
+                                <Setter TargetName="tabBorder" Property="Background" Value="#1F2636" />
                                 <Setter Property="Foreground" Value="#FFFFFF" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <!-- Modern Active Tab Button -->
+        <Style x:Key="ModernActiveTabButton" BasedOn="{StaticResource ModernTabButton}" TargetType="Button">
+            <Setter Property="Background" Value="#1A2130" />
+            <Setter Property="Foreground" Value="#60A5FA" />
+            <Setter Property="BorderBrush" Value="#3B82F6" />
         </Style>
 
         <!-- Permission Button -->
@@ -407,149 +413,162 @@
 
     <Grid Margin="18">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" /> <!-- Row 0: Top Header & Metrics & Tools -->
-            <RowDefinition Height="Auto" /> <!-- Row 1: Tab Navigation Bar -->
-            <RowDefinition Height="*" />    <!-- Row 2: Active Tab Content -->
-            <RowDefinition Height="Auto" /> <!-- Row 3: Bottom Status Bar -->
+            <RowDefinition Height="Auto" /> <!-- Row 0: Header & Windows Tools -->
+            <RowDefinition Height="Auto" /> <!-- Row 1: Connected Tab Bar -->
+            <RowDefinition Height="*" />    <!-- Row 2: Active Tab Content (With its own Contextual Metrics) -->
+            <RowDefinition Height="Auto" /> <!-- Row 3: Scoped Bottom Status Bar -->
         </Grid.RowDefinitions>
 
-        <!-- ROW 0: HEADER, METRIC CARDS & WINDOWS TOOLS LAUNCHER -->
-        <Grid Grid.Row="0" Margin="0,0,0,12">
+        <!-- ROW 0: CLEAN HEADER & WINDOWS TOOLS LAUNCHER -->
+        <Grid Grid.Row="0" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Title & Subtitle -->
+            <!-- Title & Subtitle (No buzzwords) -->
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="NetStatAnalyzer" FontSize="22" FontWeight="Bold" Foreground="#FFFFFF" />
                     <Border Background="#2563EB" CornerRadius="4" Margin="10,0,0,0" Padding="8,2" VerticalAlignment="Center">
                         <TextBlock x:Name="VersionTextBlock" Text="v1.3.0" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF" />
                     </Border>
-                    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Margin="8,0,0,0" Padding="6,2" VerticalAlignment="Center">
-                        <TextBlock Text="Windows Endpoint Defense" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8" />
-                    </Border>
                 </StackPanel>
-                <TextBlock Text="Monitoramento avançado de rede, consumo de banda e CPU por processo, tarefas agendadas e itens de inicialização" FontSize="12" Foreground="#94A3B8" Margin="0,4,0,0" />
+                <TextBlock Text="Auditoria de conexões de rede, processos ativos, consumo de banda e CPU, tarefas agendadas e inicialização" FontSize="12" Foreground="#94A3B8" Margin="0,4,0,0" />
             </StackPanel>
 
-            <!-- Metrics Cards -->
+            <!-- Actions Header: Windows Tools Dropdown & Global Refresh -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Border Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,6,0">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="TOTAL CONEXÕES" FontSize="9" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                        <TextBlock x:Name="MetricTotalText" Text="0" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" />
-                    </StackPanel>
-                </Border>
+                <!-- Windows Native Tools Dropdown Menu -->
+                <Button x:Name="WindowsToolsBtn" 
+                        Content="🛠️ Ferramentas do Windows ▾" 
+                        Style="{StaticResource ModernSecondaryButton}" 
+                        ToolTip="Menu rápido para abrir utilitários oficiais do sistema operacional Windows"
+                        Margin="0,0,8,0" 
+                        Click="WindowsToolsBtn_Click">
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="WindowsToolsMenu" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1">
+                            <MenuItem Header="📊 Monitor de Recursos" 
+                                      ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)" 
+                                      Foreground="#F8FAFC" Click="OpenResourceMonitor_Click" />
+                            <MenuItem Header="⏱️ Agendador de Tarefas" 
+                                      ToolTip="Abrir o Agendador de Tarefas oficial do Windows (taskschd.msc)" 
+                                      Foreground="#F8FAFC" Click="OpenTaskScheduler_Click" />
+                            <MenuItem Header="🚀 Aplicativos de Inicialização" 
+                                      ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)" 
+                                      Foreground="#F8FAFC" Click="OpenStartupSettings_Click" />
+                            <MenuItem Header="📋 Gerenciador de Tarefas" 
+                                      ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)" 
+                                      Foreground="#F8FAFC" Click="OpenTaskManager_Click" />
+                            <Separator Background="#283144" />
+                            <MenuItem Header="📁 Pasta de Inicialização" 
+                                      ToolTip="Abrir a pasta de inicialização do usuário (shell:startup)" 
+                                      Foreground="#F8FAFC" Click="OpenStartupFolder_Click" />
+                            <MenuItem Header="🔑 Editor do Registro" 
+                                      ToolTip="Abrir o Editor do Registro do Windows (regedit.exe)" 
+                                      Foreground="#F8FAFC" Click="OpenRegistryEditor_Click" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
 
-                <Border Background="#132F20" BorderBrush="#15803D" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,6,0">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="ESTABELECIDAS" FontSize="9" FontWeight="Bold" Foreground="#86EFAC" HorizontalAlignment="Center" />
-                        <TextBlock x:Name="MetricEstablishedText" Text="0" FontSize="16" FontWeight="Bold" Foreground="#4ADE80" HorizontalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <Border Background="#1A2740" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,6,0">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="EM ESCUTA" FontSize="9" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
-                        <TextBlock x:Name="MetricListeningText" Text="0" FontSize="16" FontWeight="Bold" Foreground="#60A5FA" HorizontalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,6,0">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="CONFIÁVEIS" FontSize="9" FontWeight="Bold" Foreground="#6EE7B7" HorizontalAlignment="Center" />
-                        <TextBlock x:Name="MetricAllowedText" Text="0" FontSize="16" FontWeight="Bold" Foreground="#34D399" HorizontalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Threat / Anomaly Card -->
-                <Border Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,6">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="ALERTAS / PICOS" FontSize="9" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
-                        <TextBlock x:Name="MetricThreatText" Text="0" FontSize="16" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" />
-                    </StackPanel>
-                </Border>
+                <!-- Global Refresh Button -->
+                <Button x:Name="ReloadButton" 
+                        Content="🔄 Atualizar Tudo" 
+                        Style="{StaticResource ModernPrimaryButton}" 
+                        ToolTip="Executar nova varredura completa de rede, processos, agendador e inicialização"
+                        Click="Reload_Click" />
             </StackPanel>
         </Grid>
 
-        <!-- ROW 1: NAVIGATION TABS & WINDOWS TOOLS BAR -->
-        <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="8,6" Margin="0,0,0,12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+        <!-- ROW 1: CONNECTED TAB BAR (Looks like genuine modern tabs) -->
+        <Border Grid.Row="1" Background="#161B26" BorderBrush="#283144" BorderThickness="0,0,0,1" Margin="0,0,0,12" Padding="4,0,4,0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                <Button x:Name="TabConnectionsBtn" Content="🌐 Conexões de Rede" 
+                        Style="{StaticResource ModernActiveTabButton}" 
+                        Margin="0,0,4,0" Click="TabButton_Click" Tag="0" />
 
-                <!-- Tab Navigation Buttons -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="TabConnectionsBtn" Content="🌐 Conexões de Rede" 
-                            Style="{StaticResource ModernPrimaryButton}" 
-                            Margin="0,0,6,0" Click="TabButton_Click" Tag="0" />
+                <Button x:Name="TabProcessesBtn" Content="⚡ Processos &amp; Consumo" 
+                        Style="{StaticResource ModernTabButton}" 
+                        Margin="0,0,4,0" Click="TabButton_Click" Tag="1" />
 
-                    <Button x:Name="TabProcessesBtn" Content="⚡ Processos &amp; Consumo" 
-                            Style="{StaticResource ModernSecondaryButton}" 
-                            Margin="0,0,6,0" Click="TabButton_Click" Tag="1" />
+                <Button x:Name="TabTasksBtn" Content="⏱️ Tarefas Agendadas" 
+                        Style="{StaticResource ModernTabButton}" 
+                        Margin="0,0,4,0" Click="TabButton_Click" Tag="2" />
 
-                    <Button x:Name="TabTasksBtn" Content="⏱️ Tarefas Agendadas" 
-                            Style="{StaticResource ModernSecondaryButton}" 
-                            Margin="0,0,6,0" Click="TabButton_Click" Tag="2" />
+                <Button x:Name="TabStartupBtn" Content="🚀 Itens de Inicialização" 
+                        Style="{StaticResource ModernTabButton}" 
+                        Margin="0,0,4,0" Click="TabButton_Click" Tag="3" />
 
-                    <Button x:Name="TabStartupBtn" Content="🚀 Itens de Inicialização" 
-                            Style="{StaticResource ModernSecondaryButton}" 
-                            Margin="0,0,6,0" Click="TabButton_Click" Tag="3" />
-
-                    <Button x:Name="TabInsightsBtn" Content="🛡️ Insights de Ameaças &amp; LGPD" 
-                            Style="{StaticResource ModernSecondaryButton}" 
-                            Click="TabButton_Click" Tag="4" />
-                </StackPanel>
-
-                <!-- Official Windows Tools Quick Access Links -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Ferramentas Oficiais do Windows:" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0" />
-                    
-                    <Button Content="📊 Resmon" 
-                            Style="{StaticResource ModernToolButton}" 
-                            ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)" 
-                            Margin="0,0,4,0" 
-                            Click="OpenResourceMonitor_Click" />
-
-                    <Button Content="⏱️ TaskSchd" 
-                            Style="{StaticResource ModernToolButton}" 
-                            ToolTip="Abrir o Agendador de Tarefas do Windows (taskschd.msc)" 
-                            Margin="0,0,4,0" 
-                            Click="OpenTaskScheduler_Click" />
-
-                    <Button Content="🚀 Inicialização" 
-                            Style="{StaticResource ModernToolButton}" 
-                            ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)" 
-                            Margin="0,0,4,0" 
-                            Click="OpenStartupSettings_Click" />
-
-                    <Button Content="📋 TaskMgr" 
-                            Style="{StaticResource ModernToolButton}" 
-                            ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)" 
-                            Click="OpenTaskManager_Click" />
-                </StackPanel>
-            </Grid>
+                <Button x:Name="TabInsightsBtn" Content="🛡️ Insights &amp; Governança" 
+                        Style="{StaticResource ModernTabButton}" 
+                        Click="TabButton_Click" Tag="4" />
+            </StackPanel>
         </Border>
 
-        <!-- ROW 2: ACTIVE TAB CONTENT CONTAINER -->
+        <!-- ROW 2: ACTIVE TAB CONTENT CONTAINER (With Isolated Per-Tab Metrics) -->
         <Grid Grid.Row="2">
 
-            <!-- TAB 0: CONEXÕES DE REDE (NETSTAT + CPU + BANDA + ALERTAS) -->
+            <!-- ========================================== -->
+            <!-- TAB 0: CONEXÕES DE REDE (COM MÉTRICAS PRÓPRIAS) -->
+            <!-- ========================================== -->
             <Grid x:Name="TabContentConnections" Visibility="Visible">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" /> <!-- Contextual Network Metric Cards -->
+                    <RowDefinition Height="Auto" /> <!-- Filters Bar -->
+                    <RowDefinition Height="*" />    <!-- DataGrid -->
                 </Grid.RowDefinitions>
 
+                <!-- Contextual Metrics: Network Connections -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="TOTAL CONEXÕES" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricTotalText" Text="{Binding MetricTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Background="#132F20" BorderBrush="#15803D" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="ESTABELECIDAS" FontSize="10" FontWeight="Bold" Foreground="#86EFAC" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricEstablishedText" Text="{Binding MetricEstablished}" FontSize="18" FontWeight="Bold" Foreground="#4ADE80" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#1A2740" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="EM ESCUTA" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricListeningText" Text="{Binding MetricListening}" FontSize="18" FontWeight="Bold" Foreground="#60A5FA" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="3" Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="CONFIÁVEIS" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricAllowedText" Text="{Binding MetricAllowed}" FontSize="18" FontWeight="Bold" Foreground="#34D399" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="ALERTAS / PICOS" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricThreatText" Text="{Binding MetricThreatConnections}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
                 <!-- Filters Bar -->
-                <Border Grid.Row="0" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" MinWidth="140" />
+                            <ColumnDefinition Width="*" MinWidth="130" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
@@ -638,27 +657,24 @@
                             <Button Content="Limpar" 
                                     Style="{StaticResource ModernSecondaryButton}" 
                                     Height="32" Margin="0,0,5,0" 
+                                    ToolTip="Redefinir todos os filtros de busca e corte"
                                     Click="ClearFilters_Click" />
-                            <Button x:Name="ReloadButton" 
-                                    Content="Recarregar" 
-                                    Style="{StaticResource ModernPrimaryButton}" 
-                                    Height="32" Margin="0,0,5,0"
-                                    Click="Reload_Click" />
                             <Button Content="Exportar" 
                                     Style="{StaticResource ModernSecondaryButton}" 
-                                    Height="32" Margin="0,0,5,0"
-                                    ToolTip="Exportar as conexões vigentes em formato JSON, CSV ou TXT"
+                                    Height="32" Margin="0,0,5,0" 
+                                    ToolTip="Exportar conexões em formato JSON, CSV ou TXT"
                                     Click="ExportConnections_Click" />
                             <Button Content="Confiáveis" 
                                     Style="{StaticResource ModernPermissionButton}" 
                                     Height="32" 
+                                    ToolTip="Gerenciar regras de processos e endereços confiáveis"
                                     Click="OpenAllowManager_Click" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- DataGrid Connections -->
-                <Border Grid.Row="1" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                <Border Grid.Row="2" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                     <Grid>
                         <ProgressBar x:Name="LoadingProgressBar" 
                                      VerticalAlignment="Top"
@@ -695,7 +711,7 @@
                                     <MenuItem Header="Remover das Conexões Confiáveis" Click="RemoveFromAllowlist_Click" Foreground="#F87171" />
                                     <Separator Background="#283144" />
                                     <MenuItem Header="Abrir Local do Arquivo" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="#FFFFFF" />
-                                    <MenuItem Header="Abrir no Monitor de Recursos (resmon)" Click="OpenResourceMonitor_Click" Foreground="#93C5FD" />
+                                    <MenuItem Header="Abrir no Monitor de Recursos" Click="OpenResourceMonitor_Click" Foreground="#93C5FD" />
                                     <Separator Background="#283144" />
                                     <MenuItem Header="Copiar Detalhes da(s) Linha(s)" Click="CopyDetails_Click" Foreground="#F8FAFC" />
                                     <MenuItem Header="Copiar Endereço(s) Remoto(s)" Click="CopyForeignIP_Click" Foreground="#F8FAFC" />
@@ -754,8 +770,8 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border Background="{Binding AllowBadgeBackground}" 
-                                                    BorderBrush="{Binding AllowBadgeBorder}"
-                                                    BorderThickness="1"
+                                                    BorderBrush="{Binding AllowBadgeBorder}" 
+                                                    BorderThickness="1" 
                                                     CornerRadius="4" 
                                                     Padding="6,2" 
                                                     HorizontalAlignment="Left"
@@ -854,15 +870,64 @@
                 </Border>
             </Grid>
 
-            <!-- TAB 1: PROCESSOS & CONSUMO (CPU + BANDA + CONEXÕES) -->
+            <!-- ========================================== -->
+            <!-- TAB 1: PROCESSOS & CONSUMO (COM MÉTRICAS PRÓPRIAS) -->
+            <!-- ========================================== -->
             <Grid x:Name="TabContentProcesses" Visibility="Collapsed">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" /> <!-- Contextual Process Metric Cards -->
+                    <RowDefinition Height="Auto" /> <!-- Action Bar -->
+                    <RowDefinition Height="*" />    <!-- DataGrid -->
                 </Grid.RowDefinitions>
 
+                <!-- Contextual Metrics: Processes -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="PROCESSOS ATIVOS" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricProcessesTotalText" Text="{Binding MetricProcessesTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Background="#332415" BorderBrush="#D97706" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="CPU &gt; 5%" FontSize="10" FontWeight="Bold" Foreground="#FDE047" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricProcessesHighCpuText" Text="{Binding MetricProcessesHighCpu}" FontSize="18" FontWeight="Bold" Foreground="#F59E0B" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#142B3B" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="ALTO TRÁFEGO REDE" FontSize="10" FontWeight="Bold" Foreground="#7DD3FC" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricProcessesHighNetworkText" Text="{Binding MetricProcessesHighNetwork}" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="3" Background="#1E1E38" BorderBrush="#6366F1" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="BANDA COMBINADA" FontSize="10" FontWeight="Bold" Foreground="#C7D2FE" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricProcessesBandwidthSumText" Text="{Binding MetricProcessesBandwidthSum}" FontSize="18" FontWeight="Bold" Foreground="#818CF8" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="DIAGNÓSTICOS / ALERTAS" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricProcessesThreatsText" Text="{Binding MetricProcessesThreats}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
                 <!-- Action Bar -->
-                <Border Grid.Row="0" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -870,25 +935,27 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Visão Consolidada por Processo Ativo:" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
-                            <TextBlock Text="Acompanhe o consumo acumulado de CPU, taxa de leitura (download), escrita (upload) e anomalias." FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" />
+                            <TextBlock Text="Monitoramento de Recursos por Processo Ativo" FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
+                            <TextBlock Text="Analise consumo de CPU, transferências em tempo real e identifique comportamentos fora do padrão." FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="📊 Monitor de Recursos (resmon)" 
+                            <Button Content="📊 Monitor de Recursos" 
                                     Style="{StaticResource ModernPrimaryButton}" 
+                                    ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)"
                                     Margin="0,0,6,0" 
                                     Click="OpenResourceMonitor_Click" />
 
                             <Button Content="📋 Gerenciador de Tarefas" 
                                     Style="{StaticResource ModernSecondaryButton}" 
+                                    ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)"
                                     Click="OpenTaskManager_Click" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- DataGrid Aggregated Processes -->
-                <Border Grid.Row="1" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                <Border Grid.Row="2" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                     <DataGrid x:Name="ProcessesDataGrid" 
                               ItemsSource="{Binding FilteredProcesses}" 
                               AutoGenerateColumns="False" 
@@ -973,15 +1040,64 @@
                 </Border>
             </Grid>
 
-            <!-- TAB 2: TAREFAS AGENDADAS (WINDOWS TASK SCHEDULER) -->
+            <!-- ========================================== -->
+            <!-- TAB 2: TAREFAS AGENDADAS (COM MÉTRICAS PRÓPRIAS) -->
+            <!-- ========================================== -->
             <Grid x:Name="TabContentTasks" Visibility="Collapsed">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" /> <!-- Contextual Tasks Metric Cards -->
+                    <RowDefinition Height="Auto" /> <!-- Action & Filter Bar -->
+                    <RowDefinition Height="*" />    <!-- DataGrid -->
                 </Grid.RowDefinitions>
 
+                <!-- Contextual Metrics: Scheduled Tasks -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="TOTAL TAREFAS" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricTasksTotalText" Text="{Binding MetricTasksTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Background="#132F20" BorderBrush="#15803D" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="HABILITADAS" FontSize="10" FontWeight="Bold" Foreground="#86EFAC" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricTasksEnabledText" Text="{Binding MetricTasksEnabled}" FontSize="18" FontWeight="Bold" Foreground="#4ADE80" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#1E2330" BorderBrush="#353E54" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="DESABILITADAS" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricTasksDisabledText" Text="{Binding MetricTasksDisabled}" FontSize="18" FontWeight="Bold" Foreground="#CBD5E1" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="3" Background="#332415" BorderBrush="#D97706" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="NÃO-MICROSOFT" FontSize="10" FontWeight="Bold" Foreground="#FDE047" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricTasksNonMicrosoftText" Text="{Binding MetricTasksNonMicrosoft}" FontSize="18" FontWeight="Bold" Foreground="#F59E0B" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="SUSPEITAS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricTasksSuspiciousText" Text="{Binding MetricTasksSuspicious}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
                 <!-- Action Bar -->
-                <Border Grid.Row="0" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -989,7 +1105,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Tarefas Agendadas no Windows:" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
+                            <TextBlock Text="Auditoria do Agendador de Tarefas do Windows:" FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
                             
                             <TextBlock Text="Filtro:" FontSize="11" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,6,0" />
                             <ComboBox x:Name="TaskFilterComboBox" 
@@ -1004,15 +1120,16 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="⏱️ Abrir Agendador Oficial (taskschd.msc)" 
+                            <Button Content="⏱️ Agendador de Tarefas" 
                                     Style="{StaticResource ModernPrimaryButton}" 
+                                    ToolTip="Abrir o Agendador de Tarefas oficial do Windows (taskschd.msc)"
                                     Click="OpenTaskScheduler_Click" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- DataGrid Scheduled Tasks -->
-                <Border Grid.Row="1" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                <Border Grid.Row="2" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                     <DataGrid x:Name="TasksDataGrid" 
                               ItemsSource="{Binding FilteredTasks}" 
                               AutoGenerateColumns="False" 
@@ -1082,15 +1199,56 @@
                 </Border>
             </Grid>
 
-            <!-- TAB 3: ITENS DE INICIALIZAÇÃO (STARTUP ITEMS) -->
+            <!-- ========================================== -->
+            <!-- TAB 3: ITENS DE INICIALIZAÇÃO (COM MÉTRICAS PRÓPRIAS) -->
+            <!-- ========================================== -->
             <Grid x:Name="TabContentStartup" Visibility="Collapsed">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" /> <!-- Contextual Startup Metric Cards -->
+                    <RowDefinition Height="Auto" /> <!-- Action & Filter Bar -->
+                    <RowDefinition Height="*" />    <!-- DataGrid -->
                 </Grid.RowDefinitions>
 
+                <!-- Contextual Metrics: Startup Items -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="TOTAL INICIALIZAÇÃO" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricStartupTotalText" Text="{Binding MetricStartupTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Background="#1A2740" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="REGISTRO (RUN)" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricStartupRegistryText" Text="{Binding MetricStartupRegistry}" FontSize="18" FontWeight="Bold" Foreground="#60A5FA" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#142B3B" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="PASTA STARTUP" FontSize="10" FontWeight="Bold" Foreground="#7DD3FC" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricStartupFolderText" Text="{Binding MetricStartupFolder}" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="3" Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="SUSPEITOS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="MetricStartupSuspiciousText" Text="{Binding MetricStartupSuspicious}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
                 <!-- Action Bar -->
-                <Border Grid.Row="0" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -1098,7 +1256,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Itens de Inicialização do Windows:" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
+                            <TextBlock Text="Itens de Inicialização Automática do Windows:" FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
                             
                             <TextBlock Text="Filtro:" FontSize="11" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,6,0" />
                             <ComboBox x:Name="StartupFilterComboBox" 
@@ -1114,28 +1272,28 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="🚀 Configurações (ms-settings)" 
+                            <Button Content="🚀 Configurações de Inicialização" 
                                     Style="{StaticResource ModernPrimaryButton}" 
-                                    ToolTip="Abrir o painel oficial do Windows para ativar/desativar programas na inicialização"
+                                    ToolTip="Abrir o painel de aplicativos de inicialização nas Configurações do Windows (ms-settings:startupapps)"
                                     Margin="0,0,6,0" 
                                     Click="OpenStartupSettings_Click" />
 
-                            <Button Content="📁 Pasta shell:startup" 
+                            <Button Content="📁 Pasta de Inicialização" 
                                     Style="{StaticResource ModernSecondaryButton}" 
-                                    ToolTip="Abrir a pasta de inicialização do usuário no Windows Explorer"
+                                    ToolTip="Abrir a pasta de inicialização do usuário no Windows Explorer (shell:startup)"
                                     Margin="0,0,6,0" 
                                     Click="OpenStartupFolder_Click" />
 
-                            <Button Content="🔑 Regedit" 
+                            <Button Content="🔑 Editor do Registro" 
                                     Style="{StaticResource ModernSecondaryButton}" 
-                                    ToolTip="Abrir o Editor do Registro do Windows"
+                                    ToolTip="Abrir o Editor do Registro do Windows (regedit.exe)"
                                     Click="OpenRegistryEditor_Click" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- DataGrid Startup Items -->
-                <Border Grid.Row="1" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                <Border Grid.Row="2" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                     <DataGrid x:Name="StartupDataGrid" 
                               ItemsSource="{Binding FilteredStartupItems}" 
                               AutoGenerateColumns="False" 
@@ -1196,7 +1354,9 @@
                 </Border>
             </Grid>
 
-            <!-- TAB 4: INSIGHTS DE AMEAÇAS & LGPD (PAINEL ESTRATÉGICO) -->
+            <!-- ========================================== -->
+            <!-- TAB 4: INSIGHTS & GOVERNANÇA LGPD -->
+            <!-- ========================================== -->
             <ScrollViewer x:Name="TabContentInsights" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="0,0,0,10">
                     <!-- Threat Cards Grid -->
@@ -1297,27 +1457,79 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- ROW 3: BOTTOM STATUS BAR -->
+        <!-- ROW 3: SCOPED BOTTOM STATUS & CONTEXTUAL ACTIONS BAR -->
         <Grid Grid.Row="3" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
+            <!-- Contextual Status Text -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="StatusTextBlock" Text="Pronto" FontSize="12" Foreground="#CBD5E1" />
                 <TextBlock Text=" • " FontSize="12" Foreground="#4B556E" Margin="6,0" />
-                <TextBlock x:Name="ConnectionCountText" Text="Exibindo 0 conexões" FontSize="12" FontWeight="SemiBold" Foreground="#FFFFFF" />
+                <TextBlock x:Name="ConnectionCountText" Text="{Binding CurrentTabSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#FFFFFF" />
                 <TextBlock x:Name="SelectedSeparator" Text=" • " FontSize="12" Foreground="#4B556E" Margin="6,0" Visibility="Collapsed" />
                 <TextBlock x:Name="SelectedProcessText" Text="" FontSize="12" FontWeight="Bold" Foreground="#60A5FA" Visibility="Collapsed" />
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="Marcar como Confiável" 
-                        Style="{StaticResource ModernPermissionButton}" 
-                        Height="30" 
-                        Click="AddToAllowlist_Click" />
-            </StackPanel>
+            <!-- Scoped Contextual Action Buttons -->
+            <Grid Grid.Column="1">
+                <!-- Action for Tab 0: Network Connections -->
+                <StackPanel x:Name="ConnectionsActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Visible">
+                    <Button Content="Marcar como Confiável" 
+                            Style="{StaticResource ModernPermissionButton}" 
+                            Height="30" 
+                            ToolTip="Adicionar o(s) processo(s) selecionado(s) à lista de conexões confiáveis"
+                            Click="AddToAllowlist_Click" />
+                </StackPanel>
+
+                <!-- Action for Tab 1: Processes -->
+                <StackPanel x:Name="ProcessesActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                    <Button Content="📊 Monitor de Recursos" 
+                            Style="{StaticResource ModernSecondaryButton}" 
+                            Height="30" Margin="0,0,6,0" 
+                            ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)"
+                            Click="OpenResourceMonitor_Click" />
+                    <Button Content="📋 Gerenciador de Tarefas" 
+                            Style="{StaticResource ModernSecondaryButton}" 
+                            Height="30" 
+                            ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)"
+                            Click="OpenTaskManager_Click" />
+                </StackPanel>
+
+                <!-- Action for Tab 2: Scheduled Tasks -->
+                <StackPanel x:Name="TasksActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                    <Button Content="⏱️ Agendador de Tarefas" 
+                            Style="{StaticResource ModernPrimaryButton}" 
+                            Height="30" 
+                            ToolTip="Abrir o Agendador de Tarefas do Windows (taskschd.msc)"
+                            Click="OpenTaskScheduler_Click" />
+                </StackPanel>
+
+                <!-- Action for Tab 3: Startup Items -->
+                <StackPanel x:Name="StartupActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                    <Button Content="🚀 Configurações de Inicialização" 
+                            Style="{StaticResource ModernPrimaryButton}" 
+                            Height="30" Margin="0,0,6,0" 
+                            ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)"
+                            Click="OpenStartupSettings_Click" />
+                    <Button Content="📁 Pasta de Inicialização" 
+                            Style="{StaticResource ModernSecondaryButton}" 
+                            Height="30" 
+                            ToolTip="Abrir pasta shell:startup no Windows Explorer"
+                            Click="OpenStartupFolder_Click" />
+                </StackPanel>
+
+                <!-- Action for Tab 4: Insights -->
+                <StackPanel x:Name="InsightsActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                    <Button Content="🔄 Recarregar Diagnósticos" 
+                            Style="{StaticResource ModernPrimaryButton}" 
+                            Height="30" 
+                            ToolTip="Recarregar todos os dados e atualizar diagnósticos"
+                            Click="Reload_Click" />
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
