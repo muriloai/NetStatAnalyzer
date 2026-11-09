@@ -13,7 +13,6 @@ namespace NetStatAnalyzer.Infrastructure.System
 
         public static bool OpenStartupAppsSettings()
         {
-            // Windows 10 / 11 modern settings URI for startup apps
             return LaunchTool("ms-settings:startupapps");
         }
 

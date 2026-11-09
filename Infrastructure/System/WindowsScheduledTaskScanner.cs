@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NetStatAnalyzer.Application.Contracts;
@@ -24,13 +25,13 @@ namespace NetStatAnalyzer.Infrastructure.System
                     if (lines.Count < 2) return tasks;
 
                     var header = ParseCsvLine(lines[0]);
-                    int taskNameIdx = FindColumnIndex(header, "tarefa", "taskname", 1);
-                    int nextRunIdx = FindColumnIndex(header, "próxima", "proxima", "next", 2);
-                    int statusIdx = FindColumnIndex(header, "status", "estado", 3);
-                    int lastRunIdx = FindColumnIndex(header, "última", "ultima", "last", 5);
-                    int authorIdx = FindColumnIndex(header, "autor", "author", 7);
-                    int cmdIdx = FindColumnIndex(header, "executada", "task to run", 8);
-                    int schedTypeIdx = FindColumnIndex(header, "tipo de agendamento", "schedule type", 18);
+                    int taskNameIdx = FindColumnIndex(header, 1, "tarefa", "taskname", "task name");
+                    int nextRunIdx = FindColumnIndex(header, 2, "próxima", "proxima", "next");
+                    int statusIdx = FindColumnIndex(header, 3, "status", "estado");
+                    int lastRunIdx = FindColumnIndex(header, 5, "última", "ultima", "last");
+                    int authorIdx = FindColumnIndex(header, 7, "autor", "author");
+                    int cmdIdx = FindColumnIndex(header, 8, "executada", "task to run", "action");
+                    int schedTypeIdx = FindColumnIndex(header, 18, "tipo de agendamento", "schedule type");
 
                     for (int i = 1; i < lines.Count; i++)
                     {
@@ -165,12 +166,12 @@ namespace NetStatAnalyzer.Infrastructure.System
             return result;
         }
 
-        private static int FindColumnIndex(List<string> header, string keyword1, string keyword2, int fallback)
+        private static int FindColumnIndex(List<string> header, int fallback, params string[] keywords)
         {
             for (int i = 0; i < header.Count; i++)
             {
                 string h = header[i].ToLowerInvariant();
-                if (h.Contains(keyword1) || (!string.IsNullOrEmpty(keyword2) && h.Contains(keyword2)))
+                if (keywords.Any(k => h.Contains(k)))
                 {
                     return i;
                 }

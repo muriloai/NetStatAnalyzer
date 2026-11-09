@@ -1,4 +1,3 @@
-using System;
 using NetStatAnalyzer.Domain.Enums;
 
 namespace NetStatAnalyzer.Domain.Entities
