@@ -102,7 +102,7 @@ namespace NetStatAnalyzer
             }
         }
 
-        private void SwitchTab(int index)
+        public void SwitchTab(int index)
         {
             ViewModel.SelectedTabIndex = index;
 

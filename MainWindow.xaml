@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NetStatAnalyzer"
         mc:Ignorable="d"
-        Icon="pack://application:,,,/assets/icon.ico"
+        Icon="pack://application:,,,/NetStatAnalyzer;component/assets/icon.ico"
         Title="NetStatAnalyzer - Monitor de Rede, Processos, Banda e Persistência" 
         Height="780" Width="1240"
         MinHeight="600" MinWidth="1080"
