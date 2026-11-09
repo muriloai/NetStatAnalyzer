@@ -15,6 +15,14 @@ namespace NetStatAnalyzer.Domain.Entities
         public string? ProcessPath { get; set; }
         public bool IsTrusted { get; set; }
 
+        public double CpuPercent { get; set; }
+        public double BandwidthBytesPerSec { get; set; }
+        public ThreatLevel ThreatLevel { get; set; } = ThreatLevel.Normal;
+        public string ThreatReason { get; set; } = string.Empty;
+
+        public string DisplayCpu => $"{CpuPercent:F1}%";
+        public string DisplayBandwidth => ProcessMetricInfo.FormatBytesPerSec(BandwidthBytesPerSec);
+
         public string DisplayState => State switch
         {
             ConnectionState.Established => "ESTABLISHED",

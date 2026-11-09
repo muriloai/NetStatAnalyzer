@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using NetStatAnalyzer.Application.UseCases;
 using NetStatAnalyzer.Domain.Entities;
+using NetStatAnalyzer.Domain.Enums;
 using NetStatAnalyzer.Domain.Policies;
+using NetStatAnalyzer.Infrastructure.Monitoring;
+using NetStatAnalyzer.Infrastructure.System;
 using NetStatAnalyzer.Presentation.Common;
 
 namespace NetStatAnalyzer.Presentation.ViewModels
@@ -18,11 +21,26 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         private readonly ScanConnectionsUseCase _scanUseCase;
         private readonly ManageAllowlistUseCase _allowlistUseCase;
         private readonly ExportConnectionsUseCase _exportUseCase;
+        private readonly ScanProcessMetricsUseCase _metricsUseCase;
+        private readonly ScanScheduledTasksUseCase _tasksUseCase;
+        private readonly ScanStartupItemsUseCase _startupUseCase;
 
+        // 1. Network Connections Tab
         private readonly List<ConnectionItemViewModel> _allEntries = new();
         public ObservableCollection<ConnectionItemViewModel> FilteredEntries { get; } = new();
-
         public ObservableCollection<string> StateOptions { get; } = new();
+
+        // 2. Aggregated Processes Tab
+        private readonly List<ProcessAggregateItemViewModel> _allProcesses = new();
+        public ObservableCollection<ProcessAggregateItemViewModel> FilteredProcesses { get; } = new();
+
+        // 3. Scheduled Tasks Tab
+        private readonly List<ScheduledTaskItemViewModel> _allTasks = new();
+        public ObservableCollection<ScheduledTaskItemViewModel> FilteredTasks { get; } = new();
+
+        // 4. Startup Items Tab
+        private readonly List<StartupItemViewModel> _allStartupItems = new();
+        public ObservableCollection<StartupItemViewModel> FilteredStartupItems { get; } = new();
 
         private bool _isLoading;
         public bool IsLoading
@@ -46,7 +64,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 if (SetProperty(ref _searchQuery, value))
                 {
-                    ApplyFilters();
+                    ApplyAllFilters();
                 }
             }
         }
@@ -92,6 +110,94 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
         }
 
+        // Live CPU Cutoff Filter
+        private double _cpuCutoffThreshold = 0.0;
+        public double CpuCutoffThreshold
+        {
+            get => _cpuCutoffThreshold;
+            set
+            {
+                if (SetProperty(ref _cpuCutoffThreshold, value))
+                {
+                    OnPropertyChanged(nameof(CpuCutoffSummary));
+                    ApplyFilters();
+                    ApplyProcessFilters();
+                }
+            }
+        }
+
+        public string CpuCutoffSummary => _cpuCutoffThreshold <= 0.0
+            ? "Corte CPU: Desativado (0%)"
+            : $"Corte CPU: > {_cpuCutoffThreshold:F0}%";
+
+        // Filter: Only Anomalies / Threat Spikes
+        private bool _onlyAnomalies;
+        public bool OnlyAnomalies
+        {
+            get => _onlyAnomalies;
+            set
+            {
+                if (SetProperty(ref _onlyAnomalies, value))
+                {
+                    ApplyFilters();
+                    ApplyProcessFilters();
+                }
+            }
+        }
+
+        // Filter for Scheduled Tasks
+        private string _selectedTaskFilter = "Todas";
+        public string SelectedTaskFilter
+        {
+            get => _selectedTaskFilter;
+            set
+            {
+                if (SetProperty(ref _selectedTaskFilter, value))
+                {
+                    ApplyTaskFilters();
+                }
+            }
+        }
+
+        // Filter for Startup Items
+        private string _selectedStartupFilter = "Todos";
+        public string SelectedStartupFilter
+        {
+            get => _selectedStartupFilter;
+            set
+            {
+                if (SetProperty(ref _selectedStartupFilter, value))
+                {
+                    ApplyStartupFilters();
+                }
+            }
+        }
+
+        // Tab selection (0: Conexões, 1: Processos, 2: Tarefas Agendadas, 3: Itens Inicialização, 4: Insights)
+        private int _selectedTabIndex = 0;
+        public int SelectedTabIndex
+        {
+            get => _selectedTabIndex;
+            set
+            {
+                if (SetProperty(ref _selectedTabIndex, value))
+                {
+                    OnPropertyChanged(nameof(IsConnectionsTabActive));
+                    OnPropertyChanged(nameof(IsProcessesTabActive));
+                    OnPropertyChanged(nameof(IsTasksTabActive));
+                    OnPropertyChanged(nameof(IsStartupTabActive));
+                    OnPropertyChanged(nameof(IsInsightsTabActive));
+                }
+            }
+        }
+
+        public bool IsConnectionsTabActive => SelectedTabIndex == 0;
+        public bool IsProcessesTabActive => SelectedTabIndex == 1;
+        public bool IsTasksTabActive => SelectedTabIndex == 2;
+        public bool IsStartupTabActive => SelectedTabIndex == 3;
+        public bool IsInsightsTabActive => SelectedTabIndex == 4;
+
+        // Metrics & Counters
         private int _metricTotal;
         public int MetricTotal
         {
@@ -120,6 +226,44 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             set => SetProperty(ref _metricAllowed, value);
         }
 
+        // Threat intelligence counters
+        private int _threatCountProxy;
+        public int ThreatCountProxy
+        {
+            get => _threatCountProxy;
+            set => SetProperty(ref _threatCountProxy, value);
+        }
+
+        private int _threatCountMiner;
+        public int ThreatCountMiner
+        {
+            get => _threatCountMiner;
+            set => SetProperty(ref _threatCountMiner, value);
+        }
+
+        private int _threatCountSpikes;
+        public int ThreatCountSpikes
+        {
+            get => _threatCountSpikes;
+            set => SetProperty(ref _threatCountSpikes, value);
+        }
+
+        private int _threatCountTasks;
+        public int ThreatCountTasks
+        {
+            get => _threatCountTasks;
+            set => SetProperty(ref _threatCountTasks, value);
+        }
+
+        private int _threatCountStartup;
+        public int ThreatCountStartup
+        {
+            get => _threatCountStartup;
+            set => SetProperty(ref _threatCountStartup, value);
+        }
+
+        public int TotalThreatsCount => ThreatCountProxy + ThreatCountMiner + ThreatCountSpikes + ThreatCountTasks + ThreatCountStartup;
+
         private string _connectionCountSummary = "0 conexões encontradas";
         public string ConnectionCountSummary
         {
@@ -139,22 +283,43 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public ICommand ReloadCommand { get; }
         public ICommand ClearFiltersCommand { get; }
 
+        // Windows Tools Commands
+        public ICommand OpenTaskSchedulerCommand { get; }
+        public ICommand OpenStartupSettingsCommand { get; }
+        public ICommand OpenTaskManagerCommand { get; }
+        public ICommand OpenResourceMonitorCommand { get; }
+        public ICommand OpenStartupFolderCommand { get; }
+        public ICommand OpenRegistryEditorCommand { get; }
+
         public ManageAllowlistUseCase AllowlistUseCase => _allowlistUseCase;
 
         public MainViewModel(
             ScanConnectionsUseCase scanUseCase,
             ManageAllowlistUseCase allowlistUseCase,
-            ExportConnectionsUseCase exportUseCase)
+            ExportConnectionsUseCase exportUseCase,
+            ScanProcessMetricsUseCase? metricsUseCase = null,
+            ScanScheduledTasksUseCase? tasksUseCase = null,
+            ScanStartupItemsUseCase? startupUseCase = null)
         {
             _scanUseCase = scanUseCase;
             _allowlistUseCase = allowlistUseCase;
             _exportUseCase = exportUseCase;
+            _metricsUseCase = metricsUseCase ?? new ScanProcessMetricsUseCase(new Win32ProcessMetricsProvider());
+            _tasksUseCase = tasksUseCase ?? new ScanScheduledTasksUseCase(new WindowsScheduledTaskScanner());
+            _startupUseCase = startupUseCase ?? new ScanStartupItemsUseCase(new WindowsStartupScanner());
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.2.1";
+            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.3.0";
 
-            ReloadCommand = new AsyncRelayCommand(LoadConnectionsAsync);
+            ReloadCommand = new AsyncRelayCommand(LoadAllDataAsync);
             ClearFiltersCommand = new RelayCommand(ClearFilters);
+
+            OpenTaskSchedulerCommand = new RelayCommand(() => WindowsToolsLauncher.OpenTaskScheduler());
+            OpenStartupSettingsCommand = new RelayCommand(() => WindowsToolsLauncher.OpenStartupAppsSettings());
+            OpenTaskManagerCommand = new RelayCommand(() => WindowsToolsLauncher.OpenTaskManager());
+            OpenResourceMonitorCommand = new RelayCommand(() => WindowsToolsLauncher.OpenResourceMonitor());
+            OpenStartupFolderCommand = new RelayCommand(() => WindowsToolsLauncher.OpenStartupFolder());
+            OpenRegistryEditorCommand = new RelayCommand(() => WindowsToolsLauncher.OpenRegistryEditor());
 
             _allowlistUseCase.RulesChanged += (s, e) =>
             {
@@ -164,38 +329,170 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             };
         }
 
-        public async Task LoadConnectionsAsync()
+        public async Task LoadAllDataAsync()
         {
             if (IsLoading) return;
 
             try
             {
                 IsLoading = true;
-                StatusMessage = "Carregando conexões de rede...";
+                StatusMessage = "Carregando conexões, métricas de CPU/Banda, tarefas e itens de inicialização...";
 
-                var rules = _allowlistUseCase.GetAllRules();
-                var domainConnections = await _scanUseCase.ExecuteAsync(rules);
+                await LoadConnectionsInternalAsync();
+                await LoadScheduledTasksInternalAsync();
+                await LoadStartupItemsInternalAsync();
 
-                _allEntries.Clear();
-                foreach (var conn in domainConnections)
-                {
-                    _allEntries.Add(new ConnectionItemViewModel(conn));
-                }
-
-                UpdateStateFilterOptions();
-                UpdateMetrics();
-                ApplyFilters();
-
-                StatusMessage = "Pronto";
+                UpdateThreatIntelligenceMetrics();
+                StatusMessage = "Pronto - Varredura completa atualizada.";
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Erro ao carregar: {ex.Message}";
+                StatusMessage = $"Erro ao carregar dados: {ex.Message}";
             }
             finally
             {
                 IsLoading = false;
             }
+        }
+
+        public async Task LoadConnectionsAsync()
+        {
+            if (IsLoading) return;
+            try
+            {
+                IsLoading = true;
+                StatusMessage = "Carregando conexões de rede e métricas...";
+                await LoadConnectionsInternalAsync();
+                StatusMessage = "Pronto";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Erro ao carregar conexões: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task LoadConnectionsInternalAsync()
+        {
+            var rules = _allowlistUseCase.GetAllRules();
+            var domainConnections = await _scanUseCase.ExecuteAsync(rules);
+
+            // Extract unique PIDs
+            var pids = domainConnections.Select(c => c.PID).Distinct().ToList();
+            var metrics = await _metricsUseCase.ExecuteAsync(pids);
+
+            // Count connections per PID for anomaly detection
+            var connCountByPid = domainConnections.GroupBy(c => c.PID).ToDictionary(g => g.Key, g => g.Count());
+
+            // Enrich domain connections with metrics and threat evaluation
+            foreach (var conn in domainConnections)
+            {
+                if (metrics.TryGetValue(conn.PID, out var m))
+                {
+                    conn.CpuPercent = m.CpuPercent;
+                    conn.BandwidthBytesPerSec = m.TotalBytesPerSec;
+                    int count = connCountByPid.TryGetValue(conn.PID, out int c) ? c : 1;
+
+                    var eval = ThreatDetectionPolicy.EvaluateProcess(
+                        conn.ProcessName,
+                        conn.ProcessPath,
+                        m.CpuPercent,
+                        m.TotalBytesPerSec,
+                        count);
+
+                    conn.ThreatLevel = eval.Level;
+                    conn.ThreatReason = eval.Reason;
+                }
+            }
+
+            _allEntries.Clear();
+            foreach (var conn in domainConnections)
+            {
+                _allEntries.Add(new ConnectionItemViewModel(conn));
+            }
+
+            // Build aggregated processes view
+            _allProcesses.Clear();
+            var groupedByPid = domainConnections.GroupBy(c => c.PID);
+            foreach (var group in groupedByPid)
+            {
+                var first = group.First();
+                metrics.TryGetValue(first.PID, out var m);
+
+                double cpu = m?.CpuPercent ?? first.CpuPercent;
+                double read = m?.ReadBytesPerSec ?? 0.0;
+                double write = m?.WriteBytesPerSec ?? 0.0;
+                int count = group.Count();
+
+                var eval = ThreatDetectionPolicy.EvaluateProcess(
+                    first.ProcessName,
+                    first.ProcessPath,
+                    cpu,
+                    read + write,
+                    count);
+
+                _allProcesses.Add(new ProcessAggregateItemViewModel
+                {
+                    PID = first.PID,
+                    ProcessName = first.ProcessName,
+                    ProcessPath = first.ProcessPath,
+                    CpuPercent = cpu,
+                    ReadBytesPerSec = read,
+                    WriteBytesPerSec = write,
+                    ActiveConnectionsCount = count,
+                    ThreatLevel = eval.Level,
+                    ThreatReason = eval.Reason
+                });
+            }
+
+            UpdateStateFilterOptions();
+            UpdateMetrics();
+            ApplyFilters();
+            ApplyProcessFilters();
+        }
+
+        private async Task LoadScheduledTasksInternalAsync()
+        {
+            var tasks = await _tasksUseCase.ExecuteAsync();
+            _allTasks.Clear();
+            foreach (var t in tasks)
+            {
+                _allTasks.Add(new ScheduledTaskItemViewModel(t));
+            }
+            ApplyTaskFilters();
+        }
+
+        private async Task LoadStartupItemsInternalAsync()
+        {
+            var items = await _startupUseCase.ExecuteAsync();
+            _allStartupItems.Clear();
+            foreach (var i in items)
+            {
+                _allStartupItems.Add(new StartupItemViewModel(i));
+            }
+            ApplyStartupFilters();
+        }
+
+        private void UpdateThreatIntelligenceMetrics()
+        {
+            ThreatCountProxy = _allProcesses.Count(p => p.ThreatReason.Contains("Proxy")) +
+                               _allTasks.Count(t => t.ThreatReason.Contains("Proxy")) +
+                               _allStartupItems.Count(s => s.ThreatReason.Contains("Proxy"));
+
+            ThreatCountMiner = _allProcesses.Count(p => p.ThreatReason.Contains("Mineração") || p.ThreatReason.Contains("distribuída")) +
+                               _allTasks.Count(t => t.ThreatReason.Contains("minerador") || t.ThreatReason.Contains("distribuída")) +
+                               _allStartupItems.Count(s => s.ThreatReason.Contains("Mineração"));
+
+            ThreatCountSpikes = _allProcesses.Count(p => p.ThreatLevel >= ThreatLevel.Medium &&
+                                                         (p.ThreatReason.Contains("Pico") || p.ThreatReason.Contains("conexões")));
+
+            ThreatCountTasks = _allTasks.Count(t => t.IsSuspicious);
+            ThreatCountStartup = _allStartupItems.Count(s => s.IsSuspicious);
+
+            OnPropertyChanged(nameof(TotalThreatsCount));
         }
 
         public void ReevaluateTrustedStatus()
@@ -247,6 +544,14 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
         }
 
+        public void ApplyAllFilters()
+        {
+            ApplyFilters();
+            ApplyProcessFilters();
+            ApplyTaskFilters();
+            ApplyStartupFilters();
+        }
+
         public void ApplyFilters()
         {
             string query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
@@ -274,6 +579,18 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     return false;
                 }
 
+                // CPU Cutoff filter
+                if (CpuCutoffThreshold > 0.0 && entry.CpuPercent < CpuCutoffThreshold)
+                {
+                    return false;
+                }
+
+                // Only Anomalies filter
+                if (OnlyAnomalies && entry.ThreatLevel == ThreatLevel.Normal)
+                {
+                    return false;
+                }
+
                 if (!string.IsNullOrEmpty(query))
                 {
                     bool matchesName = entry.ProcessName.ToLowerInvariant().Contains(query);
@@ -283,8 +600,9 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     bool matchesProtocol = entry.Protocol.ToLowerInvariant().Contains(query);
                     bool matchesState = entry.State.ToLowerInvariant().Contains(query);
                     bool matchesAllowed = entry.IsAllowed && "confiavel".Contains(query);
+                    bool matchesThreat = !string.IsNullOrEmpty(entry.ThreatReason) && entry.ThreatReason.ToLowerInvariant().Contains(query);
 
-                    if (!matchesName && !matchesPid && !matchesLocal && !matchesForeign && !matchesProtocol && !matchesState && !matchesAllowed)
+                    if (!matchesName && !matchesPid && !matchesLocal && !matchesForeign && !matchesProtocol && !matchesState && !matchesAllowed && !matchesThreat)
                     {
                         return false;
                     }
@@ -303,13 +621,147 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             IsEmptyState = FilteredEntries.Count == 0;
         }
 
+        public void ApplyProcessFilters()
+        {
+            string query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            var filtered = _allProcesses.Where(p =>
+            {
+                // CPU cutoff filter
+                if (CpuCutoffThreshold > 0.0 && p.CpuPercent < CpuCutoffThreshold)
+                {
+                    return false;
+                }
+
+                // Only Anomalies filter
+                if (OnlyAnomalies && p.ThreatLevel == ThreatLevel.Normal)
+                {
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(query))
+                {
+                    bool matchesName = p.ProcessName.ToLowerInvariant().Contains(query);
+                    bool matchesPid = p.PID.ToString().Contains(query);
+                    bool matchesThreat = !string.IsNullOrEmpty(p.ThreatReason) && p.ThreatReason.ToLowerInvariant().Contains(query);
+
+                    if (!matchesName && !matchesPid && !matchesThreat)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+            .OrderByDescending(p => p.CpuPercent)
+            .ThenByDescending(p => p.TotalBytesPerSec)
+            .ToList();
+
+            FilteredProcesses.Clear();
+            foreach (var item in filtered)
+            {
+                FilteredProcesses.Add(item);
+            }
+        }
+
+        public void ApplyTaskFilters()
+        {
+            string query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            var filtered = _allTasks.Where(t =>
+            {
+                if (SelectedTaskFilter == "Apenas Suspeitas / Não-Microsoft" && (t.IsMicrosoftTask && !t.IsSuspicious))
+                {
+                    return false;
+                }
+                if (SelectedTaskFilter == "Apenas Habilitadas" && t.State.Equals("Desabilitado", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(query))
+                {
+                    bool matchesName = t.TaskName.ToLowerInvariant().Contains(query);
+                    bool matchesPath = t.TaskPath.ToLowerInvariant().Contains(query);
+                    bool matchesCmd = t.TaskToRun.ToLowerInvariant().Contains(query);
+                    bool matchesAuthor = t.Author.ToLowerInvariant().Contains(query);
+                    bool matchesThreat = !string.IsNullOrEmpty(t.ThreatReason) && t.ThreatReason.ToLowerInvariant().Contains(query);
+
+                    if (!matchesName && !matchesPath && !matchesCmd && !matchesAuthor && !matchesThreat)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+            .OrderByDescending(t => t.ThreatLevel)
+            .ThenBy(t => t.TaskName)
+            .ToList();
+
+            FilteredTasks.Clear();
+            foreach (var item in filtered)
+            {
+                FilteredTasks.Add(item);
+            }
+        }
+
+        public void ApplyStartupFilters()
+        {
+            string query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            var filtered = _allStartupItems.Where(s =>
+            {
+                if (SelectedStartupFilter == "Apenas Suspeitos" && !s.IsSuspicious)
+                {
+                    return false;
+                }
+                if (SelectedStartupFilter == "Apenas Registro" && s.SourceType != "Registro")
+                {
+                    return false;
+                }
+                if (SelectedStartupFilter == "Apenas Pastas" && s.SourceType != "Pasta Inicializar")
+                {
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(query))
+                {
+                    bool matchesName = s.Name.ToLowerInvariant().Contains(query);
+                    bool matchesCmd = s.Command.ToLowerInvariant().Contains(query);
+                    bool matchesLoc = s.Location.ToLowerInvariant().Contains(query);
+                    bool matchesThreat = !string.IsNullOrEmpty(s.ThreatReason) && s.ThreatReason.ToLowerInvariant().Contains(query);
+
+                    if (!matchesName && !matchesCmd && !matchesLoc && !matchesThreat)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+            .OrderByDescending(s => s.ThreatLevel)
+            .ThenBy(s => s.Name)
+            .ToList();
+
+            FilteredStartupItems.Clear();
+            foreach (var item in filtered)
+            {
+                FilteredStartupItems.Add(item);
+            }
+        }
+
         public void ClearFilters()
         {
             SearchQuery = string.Empty;
             SelectedProtocol = "Todos";
             SelectedState = "Todos os Estados";
             SelectedTrustFilter = "Todas";
-            ApplyFilters();
+            CpuCutoffThreshold = 0.0;
+            OnlyAnomalies = false;
+            SelectedTaskFilter = "Todas";
+            SelectedStartupFilter = "Todos";
+            ApplyAllFilters();
         }
 
         public int AddSelectedToAllowlist(IEnumerable<ConnectionItemViewModel> items)
