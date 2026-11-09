@@ -56,6 +56,7 @@ namespace NetStatAnalyzer
             VersionTextBlock.Text = ViewModel.AppVersion;
             ViewModel.PropertyChanged += (s, e) =>
             {
+                // Tab 0: Conexões metrics
                 if (e.PropertyName == nameof(MainViewModel.MetricTotal))
                     MetricTotalText.Text = ViewModel.MetricTotal.ToString();
                 else if (e.PropertyName == nameof(MainViewModel.MetricEstablished))
@@ -64,15 +65,55 @@ namespace NetStatAnalyzer
                     MetricListeningText.Text = ViewModel.MetricListening.ToString();
                 else if (e.PropertyName == nameof(MainViewModel.MetricAllowed))
                     MetricAllowedText.Text = ViewModel.MetricAllowed.ToString();
-                else if (e.PropertyName == nameof(MainViewModel.TotalThreatsCount) ||
-                         e.PropertyName == nameof(MainViewModel.ThreatCountProxy) ||
-                         e.PropertyName == nameof(MainViewModel.ThreatCountMiner) ||
-                         e.PropertyName == nameof(MainViewModel.ThreatCountSpikes))
+                else if (e.PropertyName == nameof(MainViewModel.MetricThreatConnections) ||
+                         e.PropertyName == nameof(MainViewModel.TotalThreatsCount))
                 {
-                    MetricThreatText.Text = ViewModel.TotalThreatsCount.ToString();
+                    MetricThreatText.Text = ViewModel.MetricThreatConnections.ToString();
                 }
-                else if (e.PropertyName == nameof(MainViewModel.ConnectionCountSummary))
-                    ConnectionCountText.Text = ViewModel.ConnectionCountSummary;
+
+                // Tab 1: Processos metrics
+                else if (e.PropertyName == nameof(MainViewModel.MetricProcessesTotal))
+                    MetricProcessesTotalText.Text = ViewModel.MetricProcessesTotal.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricProcessesHighCpu))
+                    MetricProcessesHighCpuText.Text = ViewModel.MetricProcessesHighCpu.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricProcessesHighNetwork))
+                    MetricProcessesHighNetworkText.Text = ViewModel.MetricProcessesHighNetwork.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricProcessesBandwidthSum))
+                    MetricProcessesBandwidthSumText.Text = ViewModel.MetricProcessesBandwidthSum;
+                else if (e.PropertyName == nameof(MainViewModel.MetricProcessesThreats))
+                    MetricProcessesThreatsText.Text = ViewModel.MetricProcessesThreats.ToString();
+
+                // Tab 2: Tarefas Agendadas metrics
+                else if (e.PropertyName == nameof(MainViewModel.MetricTasksTotal))
+                    MetricTasksTotalText.Text = ViewModel.MetricTasksTotal.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricTasksEnabled))
+                    MetricTasksEnabledText.Text = ViewModel.MetricTasksEnabled.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricTasksDisabled))
+                    MetricTasksDisabledText.Text = ViewModel.MetricTasksDisabled.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricTasksNonMicrosoft))
+                    MetricTasksNonMicrosoftText.Text = ViewModel.MetricTasksNonMicrosoft.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricTasksSuspicious))
+                    MetricTasksSuspiciousText.Text = ViewModel.MetricTasksSuspicious.ToString();
+
+                // Tab 3: Itens de Inicialização metrics
+                else if (e.PropertyName == nameof(MainViewModel.MetricStartupTotal))
+                    MetricStartupTotalText.Text = ViewModel.MetricStartupTotal.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricStartupRegistry))
+                    MetricStartupRegistryText.Text = ViewModel.MetricStartupRegistry.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricStartupFolder))
+                    MetricStartupFolderText.Text = ViewModel.MetricStartupFolder.ToString();
+                else if (e.PropertyName == nameof(MainViewModel.MetricStartupSuspicious))
+                    MetricStartupSuspiciousText.Text = ViewModel.MetricStartupSuspicious.ToString();
+
+                // Status & Contextual Summaries
+                else if (e.PropertyName == nameof(MainViewModel.CurrentTabSummary) ||
+                         e.PropertyName == nameof(MainViewModel.ConnectionCountSummary) ||
+                         e.PropertyName == nameof(MainViewModel.ProcessCountSummary) ||
+                         e.PropertyName == nameof(MainViewModel.TaskCountSummary) ||
+                         e.PropertyName == nameof(MainViewModel.StartupCountSummary))
+                {
+                    ConnectionCountText.Text = ViewModel.CurrentTabSummary;
+                }
                 else if (e.PropertyName == nameof(MainViewModel.StatusMessage))
                     StatusTextBlock.Text = ViewModel.StatusMessage;
                 else if (e.PropertyName == nameof(MainViewModel.IsLoading))
@@ -106,14 +147,14 @@ namespace NetStatAnalyzer
         {
             ViewModel.SelectedTabIndex = index;
 
-            var primaryStyle = (Style)FindResource("ModernPrimaryButton");
-            var secStyle = (Style)FindResource("ModernSecondaryButton");
+            var activeStyle = (Style)FindResource("ModernActiveTabButton");
+            var inactiveStyle = (Style)FindResource("ModernTabButton");
 
-            TabConnectionsBtn.Style = index == 0 ? primaryStyle : secStyle;
-            TabProcessesBtn.Style = index == 1 ? primaryStyle : secStyle;
-            TabTasksBtn.Style = index == 2 ? primaryStyle : secStyle;
-            TabStartupBtn.Style = index == 3 ? primaryStyle : secStyle;
-            TabInsightsBtn.Style = index == 4 ? primaryStyle : secStyle;
+            TabConnectionsBtn.Style = index == 0 ? activeStyle : inactiveStyle;
+            TabProcessesBtn.Style = index == 1 ? activeStyle : inactiveStyle;
+            TabTasksBtn.Style = index == 2 ? activeStyle : inactiveStyle;
+            TabStartupBtn.Style = index == 3 ? activeStyle : inactiveStyle;
+            TabInsightsBtn.Style = index == 4 ? activeStyle : inactiveStyle;
 
             TabContentConnections.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
             TabContentProcesses.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
@@ -121,10 +162,33 @@ namespace NetStatAnalyzer
             TabContentStartup.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
             TabContentInsights.Visibility = index == 4 ? Visibility.Visible : Visibility.Collapsed;
 
+            ConnectionsActionPanel.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+            ProcessesActionPanel.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
+            TasksActionPanel.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
+            StartupActionPanel.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
+            InsightsActionPanel.Visibility = index == 4 ? Visibility.Visible : Visibility.Collapsed;
+
+            ConnectionCountText.Text = ViewModel.CurrentTabSummary;
+
+            // Clear row selection details on tab switch
+            SelectedSeparator.Visibility = Visibility.Collapsed;
+            SelectedProcessText.Visibility = Visibility.Collapsed;
+            SelectedProcessText.Text = string.Empty;
+
             if (index == 0) DataGrid.AutoFitColumns();
             else if (index == 1) ProcessesDataGrid.AutoFitColumns();
             else if (index == 2) TasksDataGrid.AutoFitColumns();
             else if (index == 3) StartupDataGrid.AutoFitColumns();
+        }
+
+        private void WindowsToolsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = PlacementMode.Bottom;
+                btn.ContextMenu.IsOpen = true;
+            }
         }
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
