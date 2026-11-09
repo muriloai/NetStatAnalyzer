@@ -49,7 +49,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ThreatLevel.High => "⚠️ ALTO RISCO",
             ThreatLevel.Medium => "⚠️ SUSPEITO",
             ThreatLevel.Low => "ℹ️ ATENÇÃO",
-            _ => "🛡️ NORMAL"
+            _ => "NORMAL"
         };
 
         public string ThreatBadgeBackground => ThreatLevel switch
@@ -58,7 +58,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ThreatLevel.High => "#991B1B",
             ThreatLevel.Medium => "#854D0E",
             ThreatLevel.Low => "#1E3A8A",
-            _ => "#064E3B"
+            _ => "#161B26"
         };
 
         public string ThreatBadgeForeground => ThreatLevel switch
@@ -66,7 +66,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ThreatLevel.Critical or ThreatLevel.High => "#FCA5A5",
             ThreatLevel.Medium => "#FDE047",
             ThreatLevel.Low => "#93C5FD",
-            _ => "#34D399"
+            _ => "#94A3B8"
         };
 
         public Visibility ThreatBadgeVisibility => ThreatLevel != ThreatLevel.Normal ? Visibility.Visible : Visibility.Collapsed;

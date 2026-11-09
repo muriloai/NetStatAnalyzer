@@ -35,9 +35,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 {
                     Model.IsTrusted = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(AllowBadgeText));
                     OnPropertyChanged(nameof(AllowBadgeBackground));
                     OnPropertyChanged(nameof(AllowBadgeForeground));
                     OnPropertyChanged(nameof(AllowBadgeBorder));
+                    OnPropertyChanged(nameof(AllowBadgeToolTip));
                     OnPropertyChanged(nameof(AllowBadgeVisibility));
                 }
             }
@@ -45,10 +47,14 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public BitmapImage? ProcessIcon => ProcessIconCache.Instance.GetIcon(Model.ProcessPath);
 
-        public string AllowBadgeBackground => IsAllowed ? "#064E3B" : "Transparent";
-        public string AllowBadgeForeground => IsAllowed ? "#34D399" : "Transparent";
-        public string AllowBadgeBorder => IsAllowed ? "#059669" : "Transparent";
-        public Visibility AllowBadgeVisibility => IsAllowed ? Visibility.Visible : Visibility.Collapsed;
+        public string AllowBadgeText => IsAllowed ? "🛡️ Confiável" : "Monitorado";
+        public string AllowBadgeBackground => IsAllowed ? "#064E3B" : "#141A24";
+        public string AllowBadgeForeground => IsAllowed ? "#34D399" : "#64748B";
+        public string AllowBadgeBorder => IsAllowed ? "#059669" : "#263244";
+        public string AllowBadgeToolTip => IsAllowed 
+            ? "Conexão autorizada pelo usuário na Lista de Permissão (Allowlist)" 
+            : "Conexão sob monitoramento padrão. Clique com botão direito ou em 'Marcar como Confiável' para autorizar.";
+        public Visibility AllowBadgeVisibility => Visibility.Visible;
 
         public string CpuBadgeBackground => CpuPercent switch
         {

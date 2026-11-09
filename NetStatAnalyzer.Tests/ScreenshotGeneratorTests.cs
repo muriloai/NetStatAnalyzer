@@ -28,17 +28,26 @@ namespace NetStatAnalyzer.Tests
                     }
 
                     var window = new MainWindow();
-                    window.Width = 1240;
-                    window.Height = 780;
+                    window.Width = 1260;
+                    window.Height = 800;
                     window.Show();
 
-                    window.ViewModel.LoadAllDataAsync().GetAwaiter().GetResult();
+                    // Wait for initial async load to finish
+                    var timeout = DateTime.UtcNow.AddSeconds(15);
+                    while (window.ViewModel.IsLoading && DateTime.UtcNow < timeout)
+                    {
+                        var frame = new System.Windows.Threading.DispatcherFrame();
+                        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(
+                            System.Windows.Threading.DispatcherPriority.Background,
+                            new Action(() => frame.Continue = false));
+                        System.Windows.Threading.Dispatcher.PushFrame(frame);
+                        Thread.Sleep(50);
+                    }
 
                     Capture(window, 0, Path.Combine(outputDir, "preview-main.png"));
                     Capture(window, 1, Path.Combine(outputDir, "preview-processes.png"));
                     Capture(window, 2, Path.Combine(outputDir, "preview-scheduled-tasks.png"));
                     Capture(window, 3, Path.Combine(outputDir, "preview-startup-items.png"));
-                    Capture(window, 4, Path.Combine(outputDir, "preview-threat-insights.png"));
 
                     window.Close();
                 }
@@ -58,18 +67,21 @@ namespace NetStatAnalyzer.Tests
             }
 
             Assert.True(File.Exists(Path.Combine(outputDir, "preview-main.png")));
+            Assert.True(File.Exists(Path.Combine(outputDir, "preview-processes.png")));
+            Assert.True(File.Exists(Path.Combine(outputDir, "preview-scheduled-tasks.png")));
+            Assert.True(File.Exists(Path.Combine(outputDir, "preview-startup-items.png")));
         }
 
         private static void Capture(MainWindow window, int tabIndex, string filePath)
         {
             window.SwitchTab(tabIndex);
 
-            var size = new Size(1240, 780);
+            var size = new Size(1260, 800);
             window.Measure(size);
             window.Arrange(new Rect(new Point(0, 0), size));
             window.UpdateLayout();
 
-            var rtb = new RenderTargetBitmap(1240, 780, 96, 96, PixelFormats.Pbgra32);
+            var rtb = new RenderTargetBitmap(1260, 800, 96, 96, PixelFormats.Pbgra32);
             rtb.Render(window);
 
             var encoder = new PngBitmapEncoder();

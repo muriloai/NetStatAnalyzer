@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -6,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using NetStatAnalyzer.Application.UseCases;
 using NetStatAnalyzer.Domain.Policies;
@@ -23,6 +25,7 @@ namespace NetStatAnalyzer
     public partial class MainWindow : Window
     {
         public MainViewModel ViewModel { get; }
+        private readonly DispatcherTimer _liveReadingTimer;
 
         public MainWindow()
         {
@@ -52,6 +55,25 @@ namespace NetStatAnalyzer
                 startupUseCase);
 
             DataContext = ViewModel;
+
+            _liveReadingTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(2)
+            };
+            _liveReadingTimer.Tick += async (s, e) =>
+            {
+                if (ViewModel.IsLoading) return;
+                if (ViewModel.SelectedTabIndex == 0 && ConnectionsLiveReadingToggleBtn.IsChecked == true)
+                {
+                    await ViewModel.RefreshConnectionsAsync();
+                    DataGrid.AutoFitColumns();
+                }
+                else if (ViewModel.SelectedTabIndex == 1 && LiveReadingToggleBtn.IsChecked == true)
+                {
+                    await ViewModel.RefreshProcessesAsync();
+                    ProcessesDataGrid.AutoFitColumns();
+                }
+            };
 
             VersionTextBlock.Text = ViewModel.AppVersion;
             ViewModel.PropertyChanged += (s, e) =>
@@ -154,19 +176,13 @@ namespace NetStatAnalyzer
             TabProcessesBtn.Style = index == 1 ? activeStyle : inactiveStyle;
             TabTasksBtn.Style = index == 2 ? activeStyle : inactiveStyle;
             TabStartupBtn.Style = index == 3 ? activeStyle : inactiveStyle;
-            TabInsightsBtn.Style = index == 4 ? activeStyle : inactiveStyle;
 
             TabContentConnections.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
             TabContentProcesses.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
             TabContentTasks.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
             TabContentStartup.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
-            TabContentInsights.Visibility = index == 4 ? Visibility.Visible : Visibility.Collapsed;
 
             ConnectionsActionPanel.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
-            ProcessesActionPanel.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
-            TasksActionPanel.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
-            StartupActionPanel.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
-            InsightsActionPanel.Visibility = index == 4 ? Visibility.Visible : Visibility.Collapsed;
 
             ConnectionCountText.Text = ViewModel.CurrentTabSummary;
 
@@ -175,10 +191,18 @@ namespace NetStatAnalyzer
             SelectedProcessText.Visibility = Visibility.Collapsed;
             SelectedProcessText.Text = string.Empty;
 
-            if (index == 0) DataGrid.AutoFitColumns();
-            else if (index == 1) ProcessesDataGrid.AutoFitColumns();
-            else if (index == 2) TasksDataGrid.AutoFitColumns();
-            else if (index == 3) StartupDataGrid.AutoFitColumns();
+            AutoFitActiveTabGrid();
+        }
+
+        private void AutoFitActiveTabGrid()
+        {
+            switch (ViewModel.SelectedTabIndex)
+            {
+                case 0: DataGrid.AutoFitColumns(); break;
+                case 1: ProcessesDataGrid.AutoFitColumns(); break;
+                case 2: TasksDataGrid.AutoFitColumns(); break;
+                case 3: StartupDataGrid.AutoFitColumns(); break;
+            }
         }
 
         private void WindowsToolsBtn_Click(object sender, RoutedEventArgs e)
@@ -197,6 +221,33 @@ namespace NetStatAnalyzer
             {
                 vm.SearchQuery = SearchTextBox.Text;
                 DataGrid.AutoFitColumns();
+            }
+        }
+
+        private void ProcessSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.SearchQuery = ProcessSearchTextBox.Text;
+                ProcessesDataGrid.AutoFitColumns();
+            }
+        }
+
+        private void TaskSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.SearchQuery = TaskSearchTextBox.Text;
+                TasksDataGrid.AutoFitColumns();
+            }
+        }
+
+        private void StartupSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.SearchQuery = StartupSearchTextBox.Text;
+                StartupDataGrid.AutoFitColumns();
             }
         }
 
@@ -220,22 +271,28 @@ namespace NetStatAnalyzer
 
         private void CpuCutoffComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (DataContext is MainViewModel vm && CpuCutoffComboBox?.SelectedItem is ComboBoxItem item)
+            if (DataContext is MainViewModel vm && CpuCutoffComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string tagStr && double.TryParse(tagStr, out double threshold))
             {
-                if (double.TryParse(item.Tag?.ToString(), out double cutoff))
-                {
-                    vm.CpuCutoffThreshold = cutoff;
-                    DataGrid.AutoFitColumns();
-                }
+                vm.CpuCutoffThreshold = threshold;
+                DataGrid.AutoFitColumns();
             }
         }
 
-        private void OnlyAnomaliesCheckBox_Click(object sender, RoutedEventArgs e)
+        private void ProcessCpuCutoffComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
+            if (DataContext is MainViewModel vm && ProcessCpuCutoffComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string tagStr && double.TryParse(tagStr, out double threshold))
             {
-                vm.OnlyAnomalies = OnlyAnomaliesCheckBox.IsChecked == true;
-                DataGrid.AutoFitColumns();
+                vm.CpuCutoffThreshold = threshold;
+                ProcessesDataGrid.AutoFitColumns();
+            }
+        }
+
+        private void ProcessBandwidthCutoffComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm && ProcessBandwidthCutoffComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string tagStr && double.TryParse(tagStr, out double threshold))
+            {
+                vm.BandwidthCutoffThreshold = threshold;
+                ProcessesDataGrid.AutoFitColumns();
             }
         }
 
@@ -243,7 +300,7 @@ namespace NetStatAnalyzer
         {
             if (DataContext is MainViewModel vm && TaskFilterComboBox?.SelectedItem is ComboBoxItem item)
             {
-                vm.SelectedTaskFilter = item.Content?.ToString() ?? "Todas";
+                vm.SelectedTaskFilter = item.Content?.ToString() ?? "Todas as Tarefas";
                 TasksDataGrid.AutoFitColumns();
             }
         }
@@ -252,8 +309,26 @@ namespace NetStatAnalyzer
         {
             if (DataContext is MainViewModel vm && StartupFilterComboBox?.SelectedItem is ComboBoxItem item)
             {
-                vm.SelectedStartupFilter = item.Content?.ToString() ?? "Todos";
+                vm.SelectedStartupFilter = item.Content?.ToString() ?? "Todos os Itens";
                 StartupDataGrid.AutoFitColumns();
+            }
+        }
+
+        private void OnlyAnomaliesCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.OnlyAnomalies = OnlyAnomaliesCheckBox.IsChecked ?? false;
+                DataGrid.AutoFitColumns();
+            }
+        }
+
+        private void ProcessOnlyAnomaliesCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.OnlyAnomalies = ProcessOnlyAnomaliesCheckBox.IsChecked ?? false;
+                ProcessesDataGrid.AutoFitColumns();
             }
         }
 
@@ -265,19 +340,94 @@ namespace NetStatAnalyzer
             if (AllowFilterComboBox != null) AllowFilterComboBox.SelectedIndex = 0;
             if (CpuCutoffComboBox != null) CpuCutoffComboBox.SelectedIndex = 0;
             if (OnlyAnomaliesCheckBox != null) OnlyAnomaliesCheckBox.IsChecked = false;
-            if (TaskFilterComboBox != null) TaskFilterComboBox.SelectedIndex = 0;
-            if (StartupFilterComboBox != null) StartupFilterComboBox.SelectedIndex = 0;
 
             ViewModel.ClearFilters();
             DataGrid.AutoFitColumns();
         }
 
+        private void ClearProcessFilters_Click(object sender, RoutedEventArgs e)
+        {
+            ProcessSearchTextBox.Text = string.Empty;
+            if (ProcessCpuCutoffComboBox != null) ProcessCpuCutoffComboBox.SelectedIndex = 0;
+            if (ProcessBandwidthCutoffComboBox != null) ProcessBandwidthCutoffComboBox.SelectedIndex = 0;
+            if (ProcessOnlyAnomaliesCheckBox != null) ProcessOnlyAnomaliesCheckBox.IsChecked = false;
+
+            ViewModel.ClearFilters();
+            ProcessesDataGrid.AutoFitColumns();
+        }
+
+        // Live Reading Toggle (Conexões de Rede)
+        private void ConnectionsLiveReadingToggleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (ConnectionsLiveReadingToggleBtn.IsChecked == true)
+            {
+                _liveReadingTimer.Start();
+                ViewModel.IsLiveReading = true;
+                ConnectionsLiveReadingToggleBtn.Content = "⏸ Pausar";
+                ViewModel.StatusMessage = "Leitura ao vivo de conexões ativada (a cada 2s).";
+            }
+            else
+            {
+                if (LiveReadingToggleBtn?.IsChecked != true)
+                {
+                    _liveReadingTimer.Stop();
+                    ViewModel.IsLiveReading = false;
+                }
+                ConnectionsLiveReadingToggleBtn.Content = "▶ Ao Vivo (2s)";
+                ViewModel.StatusMessage = "Leitura ao vivo pausada.";
+            }
+        }
+
+        // Live Reading Toggle (Processos & Consumo)
+        private void LiveReadingToggleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (LiveReadingToggleBtn.IsChecked == true)
+            {
+                _liveReadingTimer.Start();
+                ViewModel.IsLiveReading = true;
+                LiveReadingToggleBtn.Content = "⏸ Pausar";
+                ViewModel.StatusMessage = "Leitura ao vivo de processos ativada (a cada 2s).";
+            }
+            else
+            {
+                if (ConnectionsLiveReadingToggleBtn?.IsChecked != true)
+                {
+                    _liveReadingTimer.Stop();
+                    ViewModel.IsLiveReading = false;
+                }
+                LiveReadingToggleBtn.Content = "▶ Ao Vivo (2s)";
+                ViewModel.StatusMessage = "Leitura ao vivo pausada.";
+            }
+        }
+
+        // Dynamic Refresh Handlers
         private async void Reload_Click(object sender, RoutedEventArgs e)
         {
+            await ViewModel.RefreshCurrentTabAsync();
+            AutoFitActiveTabGrid();
+        }
+
+        private async void ReloadAll_Click(object sender, RoutedEventArgs e)
+        {
             await ViewModel.LoadAllDataAsync();
-            DataGrid.AutoFitColumns();
+            AutoFitActiveTabGrid();
+        }
+
+        private async void RefreshProcesses_Click(object sender, RoutedEventArgs e)
+        {
+            await ViewModel.RefreshProcessesAsync();
             ProcessesDataGrid.AutoFitColumns();
+        }
+
+        private async void RefreshTasks_Click(object sender, RoutedEventArgs e)
+        {
+            await ViewModel.RefreshTasksAsync();
             TasksDataGrid.AutoFitColumns();
+        }
+
+        private async void RefreshStartup_Click(object sender, RoutedEventArgs e)
+        {
+            await ViewModel.RefreshStartupItemsAsync();
             StartupDataGrid.AutoFitColumns();
         }
 
@@ -326,7 +476,7 @@ namespace NetStatAnalyzer
             {
                 if (ViewModel.FilteredEntries.Count == 0)
                 {
-                    MessageBox.Show("Não há conexões na lista para exportar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Não há conexões visíveis para exportar com os filtros atuais.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -352,41 +502,63 @@ namespace NetStatAnalyzer
         }
 
         // Windows Tools Launchers
-        private void OpenResourceMonitor_Click(object sender, RoutedEventArgs e)
+        private void OpenResourceMonitor_Click(object sender, RoutedEventArgs e) => ViewModel.OpenResourceMonitorCommand.Execute(null);
+        private void OpenTaskScheduler_Click(object sender, RoutedEventArgs e) => ViewModel.OpenTaskSchedulerCommand.Execute(null);
+        private void OpenStartupSettings_Click(object sender, RoutedEventArgs e) => ViewModel.OpenStartupSettingsCommand.Execute(null);
+        private void OpenTaskManager_Click(object sender, RoutedEventArgs e) => ViewModel.OpenTaskManagerCommand.Execute(null);
+        private void OpenStartupFolder_Click(object sender, RoutedEventArgs e) => ViewModel.OpenStartupFolderCommand.Execute(null);
+        private void OpenRegistryEditor_Click(object sender, RoutedEventArgs e) => ViewModel.OpenRegistryEditorCommand.Execute(null);
+
+        // File Location Inspection (Shared Explorer Launcher)
+        public static void OpenFileInExplorer(string? rawPath, string itemName)
         {
-            ViewModel.OpenResourceMonitorCommand.Execute(null);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(rawPath))
+                {
+                    MessageBox.Show($"Caminho não disponível para '{itemName}'.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                string cleanPath = FileSecurityInspector.ExtractExecutablePath(rawPath);
+                if (File.Exists(cleanPath))
+                {
+                    Process.Start("explorer.exe", $"/select,\"{cleanPath}\"");
+                    return;
+                }
+
+                if (Directory.Exists(cleanPath))
+                {
+                    Process.Start("explorer.exe", $"\"{cleanPath}\"");
+                    return;
+                }
+
+                MessageBox.Show($"O arquivo não foi encontrado no disco:\n{cleanPath}\nPode ser um executável órfão ou requerer elevação de privilégios.", "Arquivo Inexistente", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao abrir o local do arquivo: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void OpenTaskScheduler_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.OpenTaskSchedulerCommand.Execute(null);
-        }
-
-        private void OpenStartupSettings_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.OpenStartupSettingsCommand.Execute(null);
-        }
-
-        private void OpenTaskManager_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.OpenTaskManagerCommand.Execute(null);
-        }
-
-        private void OpenStartupFolder_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.OpenStartupFolderCommand.Execute(null);
-        }
-
-        private void OpenRegistryEditor_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.OpenRegistryEditorCommand.Execute(null);
-        }
-
+        // Tab 0: Conexões Row Actions
         private void RowOpenFileLocation_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is ConnectionItemViewModel entry)
             {
-                OpenFileLocation(entry);
+                OpenFileInExplorer(entry.ProcessPath, entry.ProcessName);
+            }
+        }
+
+        private void OpenFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataGrid.SelectedItem is ConnectionItemViewModel entry)
+            {
+                OpenFileInExplorer(entry.ProcessPath, entry.ProcessName);
+            }
+            else
+            {
+                MessageBox.Show("Selecione um processo na tabela para abrir o local do arquivo.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -397,38 +569,6 @@ namespace NetStatAnalyzer
                 string details = $"Processo: {entry.ProcessName} (PID: {entry.PID})\nCPU: {entry.DisplayCpu}\nBanda: {entry.DisplayBandwidth}\nProtocolo: {entry.Protocol}\nLocal: {entry.LocalAddress}\nRemoto: {entry.ForeignAddress}\nEstado: {entry.State}\nConfiável: {(entry.IsAllowed ? "Sim" : "Não")}\nAlerta: {entry.ThreatReason}\nCaminho: {entry.ProcessPath ?? "N/A"}";
                 Clipboard.SetText(details);
                 ViewModel.StatusMessage = $"Detalhes de '{entry.ProcessName}' (PID {entry.PID}) copiados!";
-            }
-        }
-
-        private void OpenFileLocation_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataGrid.SelectedItem is ConnectionItemViewModel entry)
-            {
-                OpenFileLocation(entry);
-            }
-            else
-            {
-                MessageBox.Show("Selecione um processo na tabela para abrir o local do arquivo.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-
-        private static void OpenFileLocation(ConnectionItemViewModel entry)
-        {
-            try
-            {
-                string? path = entry.ProcessPath;
-                if (!string.IsNullOrEmpty(path) && File.Exists(path))
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
-                }
-                else
-                {
-                    MessageBox.Show($"Não foi possível obter o local do arquivo para o processo '{entry.ProcessName}' (PID {entry.PID}). Pode requerer execução como Administrador.", "Informação", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro ao abrir local do arquivo: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -499,6 +639,200 @@ namespace NetStatAnalyzer
             ViewModel.StatusMessage = $"{selected.Count} PID(s) copiado(s).";
         }
 
+        private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                DependencyObject? current = dep;
+                while (current != null && current != DataGrid)
+                {
+                    if (current is DataGridColumnHeader || current is ScrollBar || current is Button) return;
+                    if (current is DataGridRow row && row.Item is ConnectionItemViewModel clickedEntry)
+                    {
+                        OpenFileInExplorer(clickedEntry.ProcessPath, clickedEntry.ProcessName);
+                        e.Handled = true;
+                        return;
+                    }
+                    current = VisualTreeHelper.GetParent(current);
+                }
+            }
+        }
+
+        // Tab 1: Processos Row Actions
+        private void RowOpenProcessFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is ProcessAggregateItemViewModel item)
+            {
+                OpenFileInExplorer(item.ProcessPath, item.ProcessName);
+            }
+        }
+
+        private void ProcessOpenFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProcessesDataGrid.SelectedItem is ProcessAggregateItemViewModel item)
+            {
+                OpenFileInExplorer(item.ProcessPath, item.ProcessName);
+            }
+        }
+
+        private void RowCopyProcessDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is ProcessAggregateItemViewModel item)
+            {
+                string text = $"Processo: {item.ProcessName} (PID: {item.PID})\nCPU: {item.FormattedCpu}\nDownload: {item.FormattedReadBandwidth}\nUpload: {item.FormattedWriteBandwidth}\nBanda Total: {item.FormattedTotalBandwidth}\nConexões: {item.ActiveConnectionsCount}\nDiagnóstico: {item.ThreatBadgeText} - {item.ThreatReason}\nCaminho: {item.ProcessPath ?? "N/A"}";
+                Clipboard.SetText(text);
+                ViewModel.StatusMessage = $"Detalhes de '{item.ProcessName}' copiados!";
+            }
+        }
+
+        private void CopyProcessDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProcessesDataGrid.SelectedItem is ProcessAggregateItemViewModel item)
+            {
+                string text = $"Processo: {item.ProcessName} (PID: {item.PID})\nCPU: {item.FormattedCpu}\nDownload: {item.FormattedReadBandwidth}\nUpload: {item.FormattedWriteBandwidth}\nBanda Total: {item.FormattedTotalBandwidth}\nConexões: {item.ActiveConnectionsCount}\nDiagnóstico: {item.ThreatBadgeText} - {item.ThreatReason}\nCaminho: {item.ProcessPath ?? "N/A"}";
+                Clipboard.SetText(text);
+                ViewModel.StatusMessage = $"Detalhes de '{item.ProcessName}' copiados!";
+            }
+        }
+
+        private void CopyProcessPID_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProcessesDataGrid.SelectedItem is ProcessAggregateItemViewModel item)
+            {
+                Clipboard.SetText(item.PID.ToString());
+                ViewModel.StatusMessage = $"PID {item.PID} copiado!";
+            }
+        }
+
+        private void ProcessesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                DependencyObject? current = dep;
+                while (current != null && current != ProcessesDataGrid)
+                {
+                    if (current is DataGridColumnHeader || current is ScrollBar || current is Button) return;
+                    if (current is DataGridRow row && row.Item is ProcessAggregateItemViewModel item)
+                    {
+                        OpenFileInExplorer(item.ProcessPath, item.ProcessName);
+                        e.Handled = true;
+                        return;
+                    }
+                    current = VisualTreeHelper.GetParent(current);
+                }
+            }
+        }
+
+        // Tab 2: Tarefas Agendadas Row Actions
+        private void RowOpenTaskFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is ScheduledTaskItemViewModel item)
+            {
+                OpenFileInExplorer(item.TaskToRun, item.TaskName);
+            }
+        }
+
+        private void TaskOpenFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            if (TasksDataGrid.SelectedItem is ScheduledTaskItemViewModel item)
+            {
+                OpenFileInExplorer(item.TaskToRun, item.TaskName);
+            }
+        }
+
+        private void CopyTaskDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if (TasksDataGrid.SelectedItem is ScheduledTaskItemViewModel item)
+            {
+                string text = $"Tarefa: {item.TaskName}\nPasta: {item.TaskPath}\nStatus: {item.State}\nAção: {item.TaskToRun}\nAutor: {item.Author}\nPróxima: {item.NextRunTime}\nÚltima: {item.LastRunTime}\nAuditoria: {item.ThreatBadgeText} - {item.ThreatReason}";
+                Clipboard.SetText(text);
+                ViewModel.StatusMessage = $"Detalhes da tarefa '{item.TaskName}' copiados!";
+            }
+        }
+
+        private void CopyTaskCommand_Click(object sender, RoutedEventArgs e)
+        {
+            if (TasksDataGrid.SelectedItem is ScheduledTaskItemViewModel item)
+            {
+                Clipboard.SetText(item.TaskToRun);
+                ViewModel.StatusMessage = "Comando da tarefa copiado!";
+            }
+        }
+
+        private void TasksDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                DependencyObject? current = dep;
+                while (current != null && current != TasksDataGrid)
+                {
+                    if (current is DataGridColumnHeader || current is ScrollBar || current is Button) return;
+                    if (current is DataGridRow row && row.Item is ScheduledTaskItemViewModel item)
+                    {
+                        OpenFileInExplorer(item.TaskToRun, item.TaskName);
+                        e.Handled = true;
+                        return;
+                    }
+                    current = VisualTreeHelper.GetParent(current);
+                }
+            }
+        }
+
+        // Tab 3: Itens de Inicialização Row Actions
+        private void RowOpenStartupFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is StartupItemViewModel item)
+            {
+                OpenFileInExplorer(item.Command, item.Name);
+            }
+        }
+
+        private void StartupOpenFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            if (StartupDataGrid.SelectedItem is StartupItemViewModel item)
+            {
+                OpenFileInExplorer(item.Command, item.Name);
+            }
+        }
+
+        private void CopyStartupDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if (StartupDataGrid.SelectedItem is StartupItemViewModel item)
+            {
+                string text = $"Item: {item.Name}\nOrigem: {item.SourceType}\nLocalização: {item.Location}\nComando: {item.Command}\nAuditoria: {item.ThreatBadgeText} - {item.ThreatReason}";
+                Clipboard.SetText(text);
+                ViewModel.StatusMessage = $"Detalhes do item '{item.Name}' copiados!";
+            }
+        }
+
+        private void CopyStartupCommand_Click(object sender, RoutedEventArgs e)
+        {
+            if (StartupDataGrid.SelectedItem is StartupItemViewModel item)
+            {
+                Clipboard.SetText(item.Command);
+                ViewModel.StatusMessage = "Comando copiado!";
+            }
+        }
+
+        private void StartupDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                DependencyObject? current = dep;
+                while (current != null && current != StartupDataGrid)
+                {
+                    if (current is DataGridColumnHeader || current is ScrollBar || current is Button) return;
+                    if (current is DataGridRow row && row.Item is StartupItemViewModel item)
+                    {
+                        OpenFileInExplorer(item.Command, item.Name);
+                        e.Handled = true;
+                        return;
+                    }
+                    current = VisualTreeHelper.GetParent(current);
+                }
+            }
+        }
+
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int selectedCount = DataGrid.SelectedItems.Count;
@@ -507,7 +841,7 @@ namespace NetStatAnalyzer
             {
                 SelectedSeparator.Visibility = Visibility.Visible;
                 SelectedProcessText.Visibility = Visibility.Visible;
-                string allowStatus = entry.IsAllowed ? " [Confiável]" : "";
+                string allowStatus = entry.IsAllowed ? " [Confiável]" : " [Monitorado]";
                 SelectedProcessText.Text = $"Selecionado: {entry.ProcessName} (PID: {entry.PID}){allowStatus} • CPU: {entry.DisplayCpu} • Banda: {entry.DisplayBandwidth}";
             }
             else if (selectedCount > 1)
@@ -522,30 +856,6 @@ namespace NetStatAnalyzer
                 SelectedSeparator.Visibility = Visibility.Collapsed;
                 SelectedProcessText.Visibility = Visibility.Collapsed;
                 SelectedProcessText.Text = string.Empty;
-            }
-        }
-
-        private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (e.OriginalSource is DependencyObject dep)
-            {
-                DependencyObject? current = dep;
-                while (current != null && current != DataGrid)
-                {
-                    if (current is DataGridColumnHeader || current is ScrollBar || current is Button)
-                    {
-                        return;
-                    }
-
-                    if (current is DataGridRow row && row.Item is ConnectionItemViewModel clickedEntry)
-                    {
-                        OpenFileLocation(clickedEntry);
-                        e.Handled = true;
-                        return;
-                    }
-
-                    current = VisualTreeHelper.GetParent(current);
-                }
             }
         }
     }

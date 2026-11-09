@@ -101,19 +101,9 @@ Relatórios recentes de inteligência de ameaças (como os detalhados pela *Micr
 
 ---
 
-### 5. 🛡️ Central de Insights de Ameaças & Painel Estratégico
-- Cartões explicativos com contadores de ameaças detectadas no endpoint.
-- Checklist de resposta e orientações para governança de TI.
-
-<div align="center">
-<img src="docs/images/preview-threat-insights.png" alt="Painel Estratégico de Insights de Ameaças" width="900" />
-</div>
-
----
-
 ## 🛠️ Ferramentas Oficiais do Windows Integradas
 
-O NetStatAnalyzer inclui links diretos para que o administrador ou usuário abra as ferramentas oficiais de remediação do Windows com um único clique:
+O NetStatAnalyzer inclui links diretos para que o administrador ou usuário abra as ferramentas oficiais de remediação do Windows com um único clique através do menu dropdown **`🛠️ Ferramentas do Windows ▾`**:
 
 | Ferramenta Oficial | Comando Nativo | Finalidade |
 | :--- | :--- | :--- |

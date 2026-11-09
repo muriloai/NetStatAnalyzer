@@ -186,8 +186,9 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     OnPropertyChanged(nameof(IsProcessesTabActive));
                     OnPropertyChanged(nameof(IsTasksTabActive));
                     OnPropertyChanged(nameof(IsStartupTabActive));
-                    OnPropertyChanged(nameof(IsInsightsTabActive));
                     OnPropertyChanged(nameof(CurrentTabSummary));
+                    OnPropertyChanged(nameof(CurrentTabRefreshText));
+                    OnPropertyChanged(nameof(CurrentTabRefreshToolTip));
                 }
             }
         }
@@ -196,8 +197,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public bool IsProcessesTabActive => SelectedTabIndex == 1;
         public bool IsTasksTabActive => SelectedTabIndex == 2;
         public bool IsStartupTabActive => SelectedTabIndex == 3;
-        public bool IsInsightsTabActive => SelectedTabIndex == 4;
-
+        
         public string CurrentTabSummary
         {
             get
@@ -208,10 +208,49 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     1 => ProcessCountSummary,
                     2 => TaskCountSummary,
                     3 => StartupCountSummary,
-                    4 => "Governança de TI, Análise LGPD e Prevenção de Ameaças",
                     _ => ConnectionCountSummary
                 };
             }
+        }
+
+        public string CurrentTabRefreshText => SelectedTabIndex switch
+        {
+            0 => "🔄 Atualizar Conexões",
+            1 => "🔄 Atualizar Processos",
+            2 => "🔄 Atualizar Tarefas",
+            3 => "🔄 Atualizar Inicialização",
+            _ => "🔄 Atualizar Conexões"
+        };
+
+        public string CurrentTabRefreshToolTip => SelectedTabIndex switch
+        {
+            0 => "Reexaminar conexões de rede ativas (netstat) da aba atual",
+            1 => "Coletar nova amostra instantânea de consumo de CPU e Banda dos processos",
+            2 => "Recarregar lista de tarefas agendadas do Windows",
+            3 => "Reexaminar programas de inicialização no Registro e Pastas",
+            _ => "Atualizar dados da aba atual"
+        };
+
+        // Bandwidth Cutoff Filter (Processos)
+        private double _bandwidthCutoffThreshold = 0.0;
+        public double BandwidthCutoffThreshold
+        {
+            get => _bandwidthCutoffThreshold;
+            set
+            {
+                if (SetProperty(ref _bandwidthCutoffThreshold, value))
+                {
+                    ApplyProcessFilters();
+                }
+            }
+        }
+
+        // Live Reading / Continuous Monitoring
+        private bool _isLiveReading;
+        public bool IsLiveReading
+        {
+            get => _isLiveReading;
+            set => SetProperty(ref _isLiveReading, value);
         }
 
         // Metrics & Counters - Tab 0: Conexões
@@ -451,6 +490,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public string AppVersion { get; }
 
         public ICommand ReloadCommand { get; }
+        public ICommand RefreshCurrentTabCommand { get; }
+        public ICommand RefreshAllTabsCommand { get; }
         public ICommand ClearFiltersCommand { get; }
 
         // Windows Tools Commands
@@ -481,7 +522,9 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.3.0";
 
-            ReloadCommand = new AsyncRelayCommand(LoadAllDataAsync);
+            ReloadCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
+            RefreshCurrentTabCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
+            RefreshAllTabsCommand = new AsyncRelayCommand(LoadAllDataAsync);
             ClearFiltersCommand = new RelayCommand(ClearFilters);
 
             OpenTaskSchedulerCommand = new RelayCommand(() => WindowsToolsLauncher.OpenTaskScheduler());
@@ -499,6 +542,112 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             };
         }
 
+        public async Task RefreshCurrentTabAsync()
+        {
+            switch (SelectedTabIndex)
+            {
+                case 0:
+                    await RefreshConnectionsAsync();
+                    break;
+                case 1:
+                    await RefreshProcessesAsync();
+                    break;
+                case 2:
+                    await RefreshTasksAsync();
+                    break;
+                case 3:
+                    await RefreshStartupItemsAsync();
+                    break;
+                default:
+                    await RefreshConnectionsAsync();
+                    break;
+            }
+        }
+
+        public async Task RefreshConnectionsAsync()
+        {
+            if (IsLoading) return;
+            try
+            {
+                IsLoading = true;
+                StatusMessage = "Lendo conexões de rede ativas (netstat)...";
+                await LoadConnectionsInternalAsync();
+                UpdateMetrics();
+                StatusMessage = $"Pronto - Conexões lidas via netstat. Exibindo {FilteredEntries.Count} conexões.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Erro ao carregar conexões: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        public async Task RefreshProcessesAsync()
+        {
+            if (IsLoading) return;
+            try
+            {
+                IsLoading = true;
+                StatusMessage = "Coletando amostra de consumo de CPU e banda dos processos...";
+                await LoadConnectionsInternalAsync();
+                UpdateProcessMetrics();
+                StatusMessage = $"Pronto - Amostra de processos e consumo atualizada. Exibindo {FilteredProcesses.Count} processos.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Erro ao atualizar processos: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        public async Task RefreshTasksAsync()
+        {
+            if (IsLoading) return;
+            try
+            {
+                IsLoading = true;
+                StatusMessage = "Consultando tarefas agendadas do Windows...";
+                await LoadScheduledTasksInternalAsync();
+                UpdateTaskMetrics();
+                StatusMessage = $"Pronto - Tarefas lidas do Agendador do Windows. Exibindo {FilteredTasks.Count} tarefas.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Erro ao carregar tarefas: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        public async Task RefreshStartupItemsAsync()
+        {
+            if (IsLoading) return;
+            try
+            {
+                IsLoading = true;
+                StatusMessage = "Examinando chaves de inicialização no Registro e pastas...";
+                await LoadStartupItemsInternalAsync();
+                UpdateStartupMetrics();
+                StatusMessage = $"Pronto - Programas de inicialização lidos do Registro. Exibindo {FilteredStartupItems.Count} itens.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Erro ao carregar itens de inicialização: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
         public async Task LoadAllDataAsync()
         {
             if (IsLoading) return;
@@ -506,7 +655,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             try
             {
                 IsLoading = true;
-                StatusMessage = "Carregando conexões, métricas de CPU/Banda, tarefas e itens de inicialização...";
+                StatusMessage = "Atualizando conexões, métricas de CPU/Banda, tarefas e inicialização...";
 
                 await LoadConnectionsInternalAsync();
                 await LoadScheduledTasksInternalAsync();
@@ -514,7 +663,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
                 UpdateThreatIntelligenceMetrics();
                 UpdateAllTabMetrics();
-                StatusMessage = "Pronto - Varredura completa atualizada.";
+                StatusMessage = "Pronto - Dados de rede, processos, tarefas e inicialização atualizados.";
             }
             catch (Exception ex)
             {
@@ -780,11 +929,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     return false;
                 }
 
-                if (SelectedTrustFilter == "Apenas Confiáveis" && !entry.IsAllowed)
+                if ((SelectedTrustFilter == "Apenas Confiáveis" || SelectedTrustFilter == "Apenas Confiáveis (Allowlist)") && !entry.IsAllowed)
                 {
                     return false;
                 }
-                if (SelectedTrustFilter == "Ocultar Confiáveis" && entry.IsAllowed)
+                if ((SelectedTrustFilter == "Não Cadastradas" || SelectedTrustFilter == "Não Cadastradas (Monitoradas)" || SelectedTrustFilter == "Ocultar Confiáveis") && entry.IsAllowed)
                 {
                     return false;
                 }
@@ -839,6 +988,12 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 // CPU cutoff filter
                 if (CpuCutoffThreshold > 0.0 && p.CpuPercent < CpuCutoffThreshold)
+                {
+                    return false;
+                }
+
+                // Bandwidth cutoff filter (Download/Read or Total)
+                if (BandwidthCutoffThreshold > 0.0 && p.TotalBytesPerSec < BandwidthCutoffThreshold)
                 {
                     return false;
                 }
