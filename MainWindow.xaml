@@ -407,10 +407,10 @@
 
     <Grid Margin="18">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /> <!-- Row 0: Top Header & Metrics & Tools -->
+            <RowDefinition Height="Auto" /> <!-- Row 1: Tab Navigation Bar -->
+            <RowDefinition Height="*" />    <!-- Row 2: Active Tab Content -->
+            <RowDefinition Height="Auto" /> <!-- Row 3: Bottom Status Bar -->
         </Grid.RowDefinitions>
 
         <!-- ROW 0: HEADER, METRIC CARDS & WINDOWS TOOLS LAUNCHER -->
