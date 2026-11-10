@@ -65,12 +65,12 @@ namespace NetStatAnalyzer
                 if (ViewModel.IsLoading) return;
                 if (ViewModel.SelectedTabIndex == 0 && ConnectionsLiveReadingToggleBtn.IsChecked == true)
                 {
-                    await ViewModel.RefreshConnectionsAsync();
+                    await ViewModel.RefreshConnectionsAsync(isSilent: true);
                     DataGrid.AutoFitColumns();
                 }
                 else if (ViewModel.SelectedTabIndex == 1 && LiveReadingToggleBtn.IsChecked == true)
                 {
-                    await ViewModel.RefreshProcessesAsync();
+                    await ViewModel.RefreshProcessesAsync(isSilent: true);
                     ProcessesDataGrid.AutoFitColumns();
                 }
             };
@@ -332,6 +332,7 @@ namespace NetStatAnalyzer
             }
         }
 
+        // Tab 0 Clear
         private void ClearFilters_Click(object sender, RoutedEventArgs e)
         {
             SearchTextBox.Text = string.Empty;
@@ -341,10 +342,11 @@ namespace NetStatAnalyzer
             if (CpuCutoffComboBox != null) CpuCutoffComboBox.SelectedIndex = 0;
             if (OnlyAnomaliesCheckBox != null) OnlyAnomaliesCheckBox.IsChecked = false;
 
-            ViewModel.ClearFilters();
+            ViewModel.ClearConnectionFilters();
             DataGrid.AutoFitColumns();
         }
 
+        // Tab 1 Clear
         private void ClearProcessFilters_Click(object sender, RoutedEventArgs e)
         {
             ProcessSearchTextBox.Text = string.Empty;
@@ -352,8 +354,81 @@ namespace NetStatAnalyzer
             if (ProcessBandwidthCutoffComboBox != null) ProcessBandwidthCutoffComboBox.SelectedIndex = 0;
             if (ProcessOnlyAnomaliesCheckBox != null) ProcessOnlyAnomaliesCheckBox.IsChecked = false;
 
-            ViewModel.ClearFilters();
+            ViewModel.ClearProcessFilters();
             ProcessesDataGrid.AutoFitColumns();
+        }
+
+        // Tab 2 Clear
+        private void ClearTaskFilters_Click(object sender, RoutedEventArgs e)
+        {
+            TaskSearchTextBox.Text = string.Empty;
+            if (TaskFilterComboBox != null) TaskFilterComboBox.SelectedIndex = 0;
+
+            ViewModel.ClearTaskFilters();
+            TasksDataGrid.AutoFitColumns();
+        }
+
+        // Tab 3 Clear
+        private void ClearStartupFilters_Click(object sender, RoutedEventArgs e)
+        {
+            StartupSearchTextBox.Text = string.Empty;
+            if (StartupFilterComboBox != null) StartupFilterComboBox.SelectedIndex = 0;
+
+            ViewModel.ClearStartupFilters();
+            StartupDataGrid.AutoFitColumns();
+        }
+
+        // Interactive Metric Card Filters (Tab 0)
+        private void MetricCardTotal_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ClearFilters_Click(sender, e);
+        }
+
+        private void MetricCardEstablished_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (StateComboBox != null)
+            {
+                for (int i = 0; i < StateComboBox.Items.Count; i++)
+                {
+                    if (string.Equals(StateComboBox.Items[i]?.ToString(), "ESTABLISHED", StringComparison.OrdinalIgnoreCase))
+                    {
+                        StateComboBox.SelectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void MetricCardListening_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (StateComboBox != null)
+            {
+                for (int i = 0; i < StateComboBox.Items.Count; i++)
+                {
+                    if (string.Equals(StateComboBox.Items[i]?.ToString(), "LISTENING", StringComparison.OrdinalIgnoreCase))
+                    {
+                        StateComboBox.SelectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void MetricCardAllowed_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (AllowFilterComboBox != null)
+            {
+                AllowFilterComboBox.SelectedIndex = 1;
+            }
+        }
+
+        private void MetricCardThreat_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (OnlyAnomaliesCheckBox != null)
+            {
+                OnlyAnomaliesCheckBox.IsChecked = !(OnlyAnomaliesCheckBox.IsChecked ?? false);
+                OnlyAnomaliesCheckBox_Click(sender, e);
+            }
         }
 
         // Live Reading Toggle (Conexões de Rede)
@@ -363,18 +438,20 @@ namespace NetStatAnalyzer
             {
                 _liveReadingTimer.Start();
                 ViewModel.IsLiveReading = true;
-                ConnectionsLiveReadingToggleBtn.Content = "⏸ Pausar";
-                ViewModel.StatusMessage = "Leitura ao vivo de conexões ativada (a cada 2s).";
+                ReloadButton.IsEnabled = false; // Disable companion manual refresh while live monitoring is on
+                ConnectionsLiveReadingToggleBtn.Content = "⏸ Pausar Leitura";
+                ViewModel.StatusMessage = "Leitura contínua de conexões ativada (amostragem a cada 2s).";
             }
             else
             {
+                ReloadButton.IsEnabled = true;
                 if (LiveReadingToggleBtn?.IsChecked != true)
                 {
                     _liveReadingTimer.Stop();
                     ViewModel.IsLiveReading = false;
                 }
-                ConnectionsLiveReadingToggleBtn.Content = "▶ Ao Vivo (2s)";
-                ViewModel.StatusMessage = "Leitura ao vivo pausada.";
+                ConnectionsLiveReadingToggleBtn.Content = "⏱️ Leitura Contínua (2s)";
+                ViewModel.StatusMessage = "Leitura contínua pausada.";
             }
         }
 
@@ -385,18 +462,20 @@ namespace NetStatAnalyzer
             {
                 _liveReadingTimer.Start();
                 ViewModel.IsLiveReading = true;
-                LiveReadingToggleBtn.Content = "⏸ Pausar";
-                ViewModel.StatusMessage = "Leitura ao vivo de processos ativada (a cada 2s).";
+                ProcessesReloadButton.IsEnabled = false; // Disable companion manual refresh while live monitoring is on
+                LiveReadingToggleBtn.Content = "⏸ Pausar Leitura";
+                ViewModel.StatusMessage = "Leitura contínua de processos ativada (amostragem a cada 2s).";
             }
             else
             {
+                ProcessesReloadButton.IsEnabled = true;
                 if (ConnectionsLiveReadingToggleBtn?.IsChecked != true)
                 {
                     _liveReadingTimer.Stop();
                     ViewModel.IsLiveReading = false;
                 }
-                LiveReadingToggleBtn.Content = "▶ Ao Vivo (2s)";
-                ViewModel.StatusMessage = "Leitura ao vivo pausada.";
+                LiveReadingToggleBtn.Content = "⏱️ Leitura Contínua (2s)";
+                ViewModel.StatusMessage = "Leitura contínua pausada.";
             }
         }
 

@@ -564,16 +564,22 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
         }
 
-        public async Task RefreshConnectionsAsync()
+        public async Task RefreshConnectionsAsync(bool isSilent = false)
         {
             if (IsLoading) return;
             try
             {
-                IsLoading = true;
-                StatusMessage = "Lendo conexões de rede ativas (netstat)...";
+                if (!isSilent)
+                {
+                    IsLoading = true;
+                    StatusMessage = "Lendo conexões de rede ativas (netstat)...";
+                }
                 await LoadConnectionsInternalAsync();
                 UpdateMetrics();
-                StatusMessage = $"Pronto - Conexões lidas via netstat. Exibindo {FilteredEntries.Count} conexões.";
+                if (!isSilent)
+                {
+                    StatusMessage = $"Pronto - Conexões lidas via netstat. Exibindo {FilteredEntries.Count} conexões.";
+                }
             }
             catch (Exception ex)
             {
@@ -581,20 +587,29 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
             finally
             {
-                IsLoading = false;
+                if (!isSilent)
+                {
+                    IsLoading = false;
+                }
             }
         }
 
-        public async Task RefreshProcessesAsync()
+        public async Task RefreshProcessesAsync(bool isSilent = false)
         {
             if (IsLoading) return;
             try
             {
-                IsLoading = true;
-                StatusMessage = "Coletando amostra de consumo de CPU e banda dos processos...";
+                if (!isSilent)
+                {
+                    IsLoading = true;
+                    StatusMessage = "Coletando amostra de consumo de CPU e banda dos processos...";
+                }
                 await LoadConnectionsInternalAsync();
                 UpdateProcessMetrics();
-                StatusMessage = $"Pronto - Amostra de processos e consumo atualizada. Exibindo {FilteredProcesses.Count} processos.";
+                if (!isSilent)
+                {
+                    StatusMessage = $"Pronto - Amostra de processos e consumo atualizada. Exibindo {FilteredProcesses.Count} processos.";
+                }
             }
             catch (Exception ex)
             {
@@ -602,7 +617,10 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
             finally
             {
-                IsLoading = false;
+                if (!isSilent)
+                {
+                    IsLoading = false;
+                }
             }
         }
 
@@ -1036,11 +1054,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
             var filtered = _allTasks.Where(t =>
             {
-                if (SelectedTaskFilter == "Apenas Suspeitas / Não-Microsoft" && (t.IsMicrosoftTask && !t.IsSuspicious))
+                if (SelectedTaskFilter.Contains("Suspeitas") && (t.IsMicrosoftTask && !t.IsSuspicious))
                 {
                     return false;
                 }
-                if (SelectedTaskFilter == "Apenas Habilitadas" && t.State.Equals("Desabilitado", StringComparison.OrdinalIgnoreCase))
+                if (SelectedTaskFilter.Contains("Habilitadas") && t.State.Equals("Desabilitado", StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -1079,15 +1097,15 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
             var filtered = _allStartupItems.Where(s =>
             {
-                if (SelectedStartupFilter == "Apenas Suspeitos" && !s.IsSuspicious)
+                if (SelectedStartupFilter.Contains("Suspeitos") && !s.IsSuspicious)
                 {
                     return false;
                 }
-                if (SelectedStartupFilter == "Apenas Registro" && s.SourceType != "Registro")
+                if (SelectedStartupFilter.Contains("Registro") && s.SourceType != "Registro")
                 {
                     return false;
                 }
-                if (SelectedStartupFilter == "Apenas Pastas" && s.SourceType != "Pasta Inicializar")
+                if ((SelectedStartupFilter.Contains("Pasta") || SelectedStartupFilter.Contains("Pastas")) && s.SourceType != "Pasta Inicializar")
                 {
                     return false;
                 }
@@ -1119,6 +1137,40 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             StartupCountSummary = $"Exibindo {FilteredStartupItems.Count} de {_allStartupItems.Count} itens";
         }
 
+        public void ClearConnectionFilters()
+        {
+            SearchQuery = string.Empty;
+            SelectedProtocol = "Todos";
+            SelectedState = "Todos os Estados";
+            SelectedTrustFilter = "Todas";
+            CpuCutoffThreshold = 0.0;
+            OnlyAnomalies = false;
+            ApplyFilters();
+        }
+
+        public void ClearProcessFilters()
+        {
+            SearchQuery = string.Empty;
+            CpuCutoffThreshold = 0.0;
+            BandwidthCutoffThreshold = 0.0;
+            OnlyAnomalies = false;
+            ApplyProcessFilters();
+        }
+
+        public void ClearTaskFilters()
+        {
+            SearchQuery = string.Empty;
+            SelectedTaskFilter = "Todas";
+            ApplyTaskFilters();
+        }
+
+        public void ClearStartupFilters()
+        {
+            SearchQuery = string.Empty;
+            SelectedStartupFilter = "Todos";
+            ApplyStartupFilters();
+        }
+
         public void ClearFilters()
         {
             SearchQuery = string.Empty;
@@ -1126,6 +1178,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             SelectedState = "Todos os Estados";
             SelectedTrustFilter = "Todas";
             CpuCutoffThreshold = 0.0;
+            BandwidthCutoffThreshold = 0.0;
             OnlyAnomalies = false;
             SelectedTaskFilter = "Todas";
             SelectedStartupFilter = "Todos";

@@ -128,6 +128,91 @@
             </Setter>
         </Style>
 
+        <!-- Modern Dark ScrollBar Style -->
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false" />
+            <Setter Property="Stylus.IsFlicksEnabled" Value="false" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#334155" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="8" />
+            <Setter Property="MinWidth" Value="8" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid x:Name="Bg" SnapsToDevicePixels="true" Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="true" IsEnabled="{TemplateBinding IsMouseOver}">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Focusable="false" Opacity="0" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Focusable="false" Opacity="0" />
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="{x:Type Thumb}">
+                                                <Border x:Name="thumbBorder" Background="#334155" CornerRadius="4" Margin="1,0" />
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="true">
+                                                        <Setter TargetName="thumbBorder" Property="Background" Value="#475569" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsDragging" Value="true">
+                                                        <Setter TargetName="thumbBorder" Property="Background" Value="#64748B" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Width" Value="Auto" />
+                    <Setter Property="MinWidth" Value="0" />
+                    <Setter Property="Height" Value="8" />
+                    <Setter Property="MinHeight" Value="8" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                <Grid x:Name="Bg" SnapsToDevicePixels="true" Background="Transparent">
+                                    <Track x:Name="PART_Track" IsEnabled="{TemplateBinding IsMouseOver}">
+                                        <Track.DecreaseRepeatButton>
+                                            <RepeatButton Command="{x:Static ScrollBar.PageLeftCommand}" Focusable="false" Opacity="0" />
+                                        </Track.DecreaseRepeatButton>
+                                        <Track.IncreaseRepeatButton>
+                                            <RepeatButton Command="{x:Static ScrollBar.PageRightCommand}" Focusable="false" Opacity="0" />
+                                        </Track.IncreaseRepeatButton>
+                                        <Track.Thumb>
+                                            <Thumb>
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="{x:Type Thumb}">
+                                                        <Border x:Name="thumbBorder" Background="#334155" CornerRadius="4" Margin="0,1" />
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="true">
+                                                                <Setter TargetName="thumbBorder" Property="Background" Value="#475569" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsDragging" Value="true">
+                                                                <Setter TargetName="thumbBorder" Property="Background" Value="#64748B" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                            </Thumb>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Modern Inactive Tab Button -->
         <Style x:Key="ModernTabButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
@@ -578,37 +663,42 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Background="#10141D" BorderBrush="#202735" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="0" Background="#10141D" BorderBrush="#202735" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Total de conexões TCP e portas UDP monitoradas. Clique para redefinir filtros." MouseDown="MetricCardTotal_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="TOTAL CONEXÕES" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
                                 <TextBlock x:Name="MetricTotalText" Text="{Binding MetricTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="1" Background="#0E2419" BorderBrush="#15803D" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="1" Background="#0E2419" BorderBrush="#15803D" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Conexões ativas no estado ESTABLISHED. Clique para filtrar por este estado." MouseDown="MetricCardEstablished_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="ESTABELECIDAS" FontSize="10" FontWeight="Bold" Foreground="#86EFAC" HorizontalAlignment="Center" />
+                                <TextBlock Text="ESTABLISHED" FontSize="10" FontWeight="Bold" Foreground="#86EFAC" HorizontalAlignment="Center" />
                                 <TextBlock x:Name="MetricEstablishedText" Text="{Binding MetricEstablished}" FontSize="18" FontWeight="Bold" Foreground="#4ADE80" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="2" Background="#131F33" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="2" Background="#131F33" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Portas locais abertas em escuta (LISTENING). Clique para filtrar por este estado." MouseDown="MetricCardListening_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="EM ESCUTA" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
+                                <TextBlock Text="LISTENING (EM ESCUTA)" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
                                 <TextBlock x:Name="MetricListeningText" Text="{Binding MetricListening}" FontSize="18" FontWeight="Bold" Foreground="#60A5FA" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="3" Background="#063E30" BorderBrush="#059669" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="3" Background="#063E30" BorderBrush="#059669" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Conexões autorizadas cadastradas na Lista de Confiáveis. Clique para filtrar." MouseDown="MetricCardAllowed_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="CONFIÁVEIS (ALLOWLIST)" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" HorizontalAlignment="Center" ToolTip="Conexões ativas autorizadas pelo usuário na Lista de Permissão" />
+                                <TextBlock Text="CONFIÁVEIS (ALLOWLIST)" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" HorizontalAlignment="Center" />
                                 <TextBlock x:Name="MetricAllowedText" Text="{Binding MetricAllowed}" FontSize="18" FontWeight="Bold" Foreground="#34D399" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="4" Background="#2E1313" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <Border Grid.Column="4" Background="#2E1313" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8"
+                                Cursor="Hand" ToolTip="Conexões com consumo elevado de recursos ou alertas heurísticos. Clique para filtrar." MouseDown="MetricCardThreat_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="ALERTAS / PICOS" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
+                                <TextBlock Text="ALERTAS / ANOMALIAS" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
                                 <TextBlock x:Name="MetricThreatText" Text="{Binding MetricThreatConnections}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
@@ -725,13 +815,13 @@
                                                 Content="🔄 Atualizar" 
                                                 Style="{StaticResource ModernPrimaryButton}" 
                                                 Height="28" Padding="8,0"
-                                                ToolTip="Reexaminar conexões ativas de rede (netstat) da aba atual"
+                                                ToolTip="Executar leitura instantânea manual das conexões ativas"
                                                 Click="Reload_Click" />
                                         <ToggleButton x:Name="ConnectionsLiveReadingToggleBtn" 
-                                                      Content="▶ Ao Vivo (2s)" 
+                                                      Content="⏱️ Leitura Contínua (2s)" 
                                                       Style="{StaticResource ModernToggleButtonStyle}" 
                                                       Height="28" Padding="8,0" Margin="2,0,0,0"
-                                                      ToolTip="Ativar/pausar leitura contínua automática de conexões a cada 2 segundos"
+                                                      ToolTip="Iniciar leitura contínua automática de conexões a cada 2 segundos"
                                                       Click="ConnectionsLiveReadingToggleBtn_Click" />
                                     </StackPanel>
                                 </Border>
@@ -1050,16 +1140,17 @@
                                         Click="ClearProcessFilters_Click" />
                                 <Border Background="#161B24" BorderBrush="#2B3548" BorderThickness="1" CornerRadius="6" Padding="2">
                                     <StackPanel Orientation="Horizontal">
-                                        <Button Content="🔄 Atualizar" 
+                                        <Button x:Name="ProcessesReloadButton"
+                                                Content="🔄 Atualizar" 
                                                 Style="{StaticResource ModernPrimaryButton}" 
-                                                Height="28" Padding="10,0"
-                                                ToolTip="Capturar nova amostra instantânea manual dos processos"
+                                                Height="28" Padding="8,0"
+                                                ToolTip="Capturar nova amostra manual instantânea dos processos"
                                                 Click="RefreshProcesses_Click" />
                                         <ToggleButton x:Name="LiveReadingToggleBtn" 
-                                                      Content="▶ Ao Vivo (2s)" 
+                                                      Content="⏱️ Leitura Contínua (2s)" 
                                                       Style="{StaticResource ModernToggleButtonStyle}" 
-                                                      Height="28" Padding="10,0" Margin="2,0,0,0"
-                                                      ToolTip="Ativar/pausar leitura contínua de consumo de CPU e Banda a cada 2 segundos"
+                                                      Height="28" Padding="8,0" Margin="2,0,0,0"
+                                                      ToolTip="Iniciar leitura contínua automática de CPU e Banda a cada 2 segundos"
                                                       Click="LiveReadingToggleBtn_Click" />
                                     </StackPanel>
                                 </Border>
@@ -1251,12 +1342,17 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="Limpar" 
+                                        Style="{StaticResource ModernSecondaryButton}" 
+                                        Height="32" Margin="0,0,6,0"
+                                        ToolTip="Redefinir busca e filtros de tarefas agendadas"
+                                        Click="ClearTaskFilters_Click" />
                                 <Button Content="🔄 Atualizar" 
                                         Style="{StaticResource ModernPrimaryButton}" 
                                         Height="32" Margin="0,0,6,0"
                                         ToolTip="Recarregar a lista de tarefas agendadas do Windows" 
                                         Click="RefreshTasks_Click" />
-                                <Button Content="⚙️ Agendador Oficial (taskschd.msc)" 
+                                <Button Content="⚙️ Agendador de Tarefas do Windows" 
                                         Style="{StaticResource ModernSecondaryButton}" 
                                         Height="32" 
                                         ToolTip="Abrir o utilitário oficial do Agendador de Tarefas do Windows (taskschd.msc)" 
@@ -1298,7 +1394,7 @@
                                 <DataGridTemplateColumn Header="INTEGRIDADE" SortMemberPath="ThreatLevel" Width="120" MinWidth="105">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border Background="{Binding ThreatBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                            <Border Background="{Binding ThreatBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" ToolTip="{Binding ThreatBadgeToolTip}">
                                                 <TextBlock Text="{Binding ThreatBadgeText}" FontSize="10" FontWeight="Bold" Foreground="{Binding ThreatBadgeForeground}" />
                                             </Border>
                                         </DataTemplate>
@@ -1427,15 +1523,20 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="Limpar" 
+                                        Style="{StaticResource ModernSecondaryButton}" 
+                                        Height="32" Margin="0,0,6,0"
+                                        ToolTip="Redefinir busca e filtros de inicialização"
+                                        Click="ClearStartupFilters_Click" />
                                 <Button Content="🔄 Atualizar" 
                                         Style="{StaticResource ModernPrimaryButton}" 
                                         Height="32" Margin="0,0,6,0"
                                         ToolTip="Reexaminar chaves do Registro e pastas de inicialização do Windows" 
                                         Click="RefreshStartup_Click" />
-                                <Button Content="⚙️ Configurações de Inicialização (ms-settings)" 
+                                <Button Content="⚙️ Aplicativos de Inicialização do Windows" 
                                         Style="{StaticResource ModernSecondaryButton}" 
                                         Height="32" 
-                                        ToolTip="Abrir o painel oficial de aplicativos de inicialização do Windows (ms-settings:startupapps)" 
+                                        ToolTip="Abrir o painel oficial do Windows de Aplicativos de Inicialização (Configurações > Aplicativos > Inicialização)" 
                                         Click="OpenStartupSettings_Click" />
                             </StackPanel>
                         </Grid>
@@ -1474,7 +1575,7 @@
                                 <DataGridTemplateColumn Header="INTEGRIDADE" SortMemberPath="ThreatLevel" Width="120" MinWidth="105">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border Background="{Binding ThreatBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                            <Border Background="{Binding ThreatBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" ToolTip="{Binding ThreatBadgeToolTip}">
                                                 <TextBlock Text="{Binding ThreatBadgeText}" FontSize="10" FontWeight="Bold" Foreground="{Binding ThreatBadgeForeground}" />
                                             </Border>
                                         </DataTemplate>

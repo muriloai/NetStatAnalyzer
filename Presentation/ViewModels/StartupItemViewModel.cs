@@ -33,32 +33,46 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ThreatLevel.Medium => "⚠️ SUSPEITO",
             ThreatLevel.Low when !IsSigned => "⚠️ NÃO ASSINADO",
             ThreatLevel.Low => "ℹ️ ATENÇÃO",
-            _ when IsMicrosoft => "🛡️ MICROSOFT",
+            _ when IsMicrosoft => "🛡️ SISTEMA",
             _ when IsSigned => "🛡️ ASSINADO",
-            _ => "ℹ️ NÃO ASSINADO"
+            _ => "⚠️ NÃO ASSINADO"
         };
 
         public string ThreatBadgeBackground => ThreatLevel switch
         {
             ThreatLevel.Critical => "#7F1D1D",
             ThreatLevel.High => "#991B1B",
-            ThreatLevel.Medium => "#854D0E",
-            ThreatLevel.Low when !IsSigned => "#78350F",
+            ThreatLevel.Medium when !FileExists => "#7C2D12",
+            ThreatLevel.Medium => "#713F12",
+            ThreatLevel.Low when !IsSigned => "#451A03",
             ThreatLevel.Low => "#1E3A8A",
-            _ when IsMicrosoft => "#14532D",
-            _ when IsSigned => "#064E3B",
-            _ => "#78350F"
+            _ when IsMicrosoft => "#064E3B", // Emerald green for OS component
+            _ when IsSigned => "#0C3B5E",   // Distinct Tech Blue for signed third-party
+            _ => "#451A03"
         };
 
         public string ThreatBadgeForeground => ThreatLevel switch
         {
             ThreatLevel.Critical or ThreatLevel.High => "#FCA5A5",
+            ThreatLevel.Medium when !FileExists => "#FDBA74",
             ThreatLevel.Medium => "#FDE047",
             ThreatLevel.Low when !IsSigned => "#FCD34D",
             ThreatLevel.Low => "#93C5FD",
-            _ when IsMicrosoft => "#86EFAC",
-            _ when IsSigned => "#6EE7B7",
+            _ when IsMicrosoft => "#6EE7B7",
+            _ when IsSigned => "#7DD3FC",
             _ => "#FCD34D"
+        };
+
+        public string ThreatBadgeToolTip => ThreatLevel switch
+        {
+            ThreatLevel.Critical or ThreatLevel.High => ThreatReason,
+            ThreatLevel.Medium when !FileExists => "Arquivo executável não foi encontrado no disco (Órfão)",
+            ThreatLevel.Medium => ThreatReason,
+            ThreatLevel.Low when !IsSigned => "Executável de terceiro sem assinatura digital detectada",
+            ThreatLevel.Low => ThreatReason,
+            _ when IsMicrosoft => "Componente oficial do sistema operacional Windows (Microsoft)",
+            _ when IsSigned => !string.IsNullOrWhiteSpace(SignerName) ? $"Assinado digitalmente por: {SignerName}" : "Executável de terceiro com assinatura digital válida",
+            _ => "Executável de terceiro sem assinatura digital detectada"
         };
 
         public Visibility ThreatReasonVisibility => string.IsNullOrWhiteSpace(ThreatReason) ? Visibility.Collapsed : Visibility.Visible;
