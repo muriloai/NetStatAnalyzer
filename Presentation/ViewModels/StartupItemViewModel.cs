@@ -75,6 +75,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _ => "Executável de terceiro sem assinatura digital detectada"
         };
 
+        public Visibility ThreatBadgeVisibility => Visibility.Visible;
         public Visibility ThreatReasonVisibility => string.IsNullOrWhiteSpace(ThreatReason) ? Visibility.Collapsed : Visibility.Visible;
 
         public StartupItemViewModel(StartupItem model)

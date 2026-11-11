@@ -131,6 +131,7 @@ namespace NetStatAnalyzer.Infrastructure.System
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Erro ao consultar tarefas agendadas: {ex.Message}");
+                    throw new InvalidOperationException($"Não foi possível consultar as tarefas agendadas: {ex.Message}", ex);
                 }
 
                 return (IReadOnlyList<ScheduledTaskItem>)tasks;
@@ -161,15 +162,28 @@ namespace NetStatAnalyzer.Infrastructure.System
                         FileName = "schtasks.exe",
                         Arguments = "/query /fo CSV /v",
                         StandardOutputEncoding = encoding,
+                        StandardErrorEncoding = encoding,
                         RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         UseShellExecute = false,
                         CreateNoWindow = true
                     }
                 };
 
                 process.Start();
-                string output = process.StandardOutput.ReadToEnd();
+                Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+                Task<string> errorTask = process.StandardError.ReadToEndAsync();
                 process.WaitForExit();
+                string output = outputTask.GetAwaiter().GetResult();
+                string error = errorTask.GetAwaiter().GetResult();
+
+                if (process.ExitCode != 0)
+                {
+                    string detail = string.IsNullOrWhiteSpace(error)
+                        ? $"schtasks.exe encerrou com código {process.ExitCode}."
+                        : error.Trim();
+                    throw new InvalidOperationException(detail);
+                }
 
                 using var reader = new StringReader(output);
                 string? line;
@@ -184,6 +198,7 @@ namespace NetStatAnalyzer.Infrastructure.System
             catch (Exception ex)
             {
                 Debug.WriteLine($"Erro ao rodar schtasks: {ex.Message}");
+                throw;
             }
 
             return lines;

@@ -36,9 +36,6 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     Model.IsTrusted = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(AllowBadgeText));
-                    OnPropertyChanged(nameof(AllowBadgeBackground));
-                    OnPropertyChanged(nameof(AllowBadgeForeground));
-                    OnPropertyChanged(nameof(AllowBadgeBorder));
                     OnPropertyChanged(nameof(AllowBadgeToolTip));
                     OnPropertyChanged(nameof(AllowBadgeVisibility));
                 }
@@ -47,13 +44,10 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public BitmapImage? ProcessIcon => ProcessIconCache.Instance.GetIcon(Model.ProcessPath);
 
-        public string AllowBadgeText => IsAllowed ? "🛡️ Confiável" : "Monitorado";
-        public string AllowBadgeBackground => IsAllowed ? "#064E3B" : "#141A24";
-        public string AllowBadgeForeground => IsAllowed ? "#34D399" : "#64748B";
-        public string AllowBadgeBorder => IsAllowed ? "#059669" : "#263244";
-        public string AllowBadgeToolTip => IsAllowed 
-            ? "Conexão autorizada pelo usuário na Lista de Permissão (Allowlist)" 
-            : "Conexão sob monitoramento padrão. Clique com botão direito ou em 'Marcar como Confiável' para autorizar.";
+        public string AllowBadgeText => IsAllowed ? "Confiável" : "Não verificada";
+        public string AllowBadgeToolTip => IsAllowed
+            ? "Esta conexão corresponde a uma regra adicionada à lista de confiança."
+            : "Sem regra de confiança cadastrada. A conexão continua sendo monitorada; isso, por si só, não significa que seja maliciosa.";
         public Visibility AllowBadgeVisibility => Visibility.Visible;
 
         public string CpuBadgeBackground => CpuPercent switch
@@ -98,6 +92,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _ => "Transparent"
         };
 
+        public string ThreatBadgeToolTip => ThreatReason;
         public Visibility ThreatBadgeVisibility => ThreatLevel != ThreatLevel.Normal ? Visibility.Visible : Visibility.Collapsed;
 
         public string StateBadgeBackground => Model.State switch
@@ -147,6 +142,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             OnPropertyChanged(nameof(ThreatBadgeText));
             OnPropertyChanged(nameof(ThreatBadgeBackground));
             OnPropertyChanged(nameof(ThreatBadgeForeground));
+            OnPropertyChanged(nameof(ThreatBadgeToolTip));
             OnPropertyChanged(nameof(ThreatBadgeVisibility));
         }
     }

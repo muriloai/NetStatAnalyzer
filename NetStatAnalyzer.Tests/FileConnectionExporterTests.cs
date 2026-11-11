@@ -57,7 +57,7 @@ namespace NetStatAnalyzer.Tests
 
             Assert.True(File.Exists(filePath));
             string content = File.ReadAllText(filePath);
-            Assert.Contains("Processo;PID;Caminho;Protocolo;Endereço Local;Endereço Remoto;Estado;Confiável", content);
+            Assert.Contains("Processo;PID;Caminho;Protocolo;Endereço Local;Endereço Remoto;Estado;Na lista de confiança", content);
             Assert.Contains("\"chrome.exe\";1234;", content);
             Assert.Contains("\"Sim\"", content);
         }

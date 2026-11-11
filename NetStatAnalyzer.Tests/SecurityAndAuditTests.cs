@@ -95,12 +95,12 @@ namespace NetStatAnalyzer.Tests
 
             var vm = new ConnectionItemViewModel(conn);
 
-            Assert.Equal("Monitorado", vm.AllowBadgeText);
+            Assert.Equal("Não verificada", vm.AllowBadgeText);
             Assert.Equal(System.Windows.Visibility.Visible, vm.AllowBadgeVisibility);
 
             conn.IsTrusted = true;
             vm.IsAllowed = true;
-            Assert.Equal("🛡️ Confiável", vm.AllowBadgeText);
+            Assert.Equal("Confiável", vm.AllowBadgeText);
         }
     }
 }

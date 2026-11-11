@@ -18,7 +18,7 @@ namespace NetStatAnalyzer.Tests
             _rules = rules.ToList();
         }
 
-        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.2.1")
+        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.3.0")
         {
             return "{}";
         }
@@ -28,7 +28,7 @@ namespace NetStatAnalyzer.Tests
             return (true, new List<AllowlistRule>
             {
                 new AllowlistRule { ProcessName = "imported.exe", IP = "10.0.0.1", ForeignAddress = "10.0.0.1:80" }
-            }, "1.2.1", "OK");
+            }, "1.3.0", "OK");
         }
     }
 

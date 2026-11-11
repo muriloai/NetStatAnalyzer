@@ -14,7 +14,7 @@ namespace NetStatAnalyzer.Infrastructure.Exporting
         public void ExportToCsv(string filePath, IEnumerable<NetworkConnection> connections)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("Processo;PID;Caminho;Protocolo;Endereço Local;Endereço Remoto;Estado;Confiável");
+            sb.AppendLine("Processo;PID;Caminho;Protocolo;Endereço Local;Endereço Remoto;Estado;Na lista de confiança");
 
             foreach (var entry in connections)
             {
@@ -33,7 +33,7 @@ namespace NetStatAnalyzer.Infrastructure.Exporting
             sb.AppendLine($"Data/Hora: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
             sb.AppendLine($"Total de Conexões Exibidas: {list.Count}");
             sb.AppendLine(new string('-', 120));
-            sb.AppendLine($"{"PROCESSO",-24} {"PID",-8} {"PROTO",-7} {"ENDEREÇO LOCAL",-24} {"ENDEREÇO REMOTO",-24} {"ESTADO",-14} {"CONFIÁVEL",-10}");
+            sb.AppendLine($"{"PROCESSO",-24} {"PID",-8} {"PROTO",-7} {"ENDEREÇO LOCAL",-24} {"ENDEREÇO REMOTO",-24} {"ESTADO",-14} {"LISTA DE CONFIANÇA",-18}");
             sb.AppendLine(new string('-', 120));
 
             foreach (var entry in list)
