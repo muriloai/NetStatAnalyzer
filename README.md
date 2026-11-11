@@ -29,22 +29,22 @@ O <strong>NetStatAnalyzer</strong> é uma solução avançada de <strong>seguran
 
 O NetStatAnalyzer é otimizado exclusivamente para o sistema operacional Windows | Windows 10 versão 19041+ e Windows 11 x64.
 
-A solução integra-se diretamente com subsistemas e APIs nativas do kernel do Windows:
+A solução integra-se a APIs e componentes nativos do Windows:
 
-- **Win32 Netstat e IP Helper API**
-  Mapeamento em tempo real de sockets de rede, portas e endpoints remotos.
+- **Win32 Netstat e IP Helper API**<br>
+  Mapeia sockets de rede, portas e endpoints remotos em tempo real.
 
-- **Win32 `GetProcessIoCounters` e `TotalProcessorTime`**
-  Medição precisa de consumo de I/O de rede (leitura/escrita em bytes/s) e utilização percentual de processamento por PID.
+- **Win32 `GetProcessIoCounters` e `TotalProcessorTime`**<br>
+  Consulta contadores de I/O e tempo acumulado de CPU por processo. Taxas e percentuais são derivados por amostragem.
 
-- **Windows Task Scheduler Engine**
-  Levantamento e auditoria estruturada de tarefas agendadas em nível de usuário e sistema.
+- **Windows Task Scheduler Engine**<br>
+  Lista e audita tarefas agendadas nos níveis de usuário e sistema.
 
-- **Windows Registry (`HKCU` e `HKLM` Run/RunOnce) e Pastas de Inicialização**
-  Identificação de componentes configurados para inicialização automática com validação de assinatura digital e checagem de binários órfãos.
+- **Windows Registry (`HKCU` e `HKLM` Run/RunOnce) e pastas de inicialização**<br>
+  Identifica componentes configurados para inicialização automática, verifica assinaturas digitais e detecta binários órfãos.
 
-- **Integração Administrativa Nativa**
-  Acesso com um clique às ferramentas administrativas oficiais do sistema (`resmon.exe`, `taskschd.msc`, `ms-settings:startupapps`, `taskmgr.exe`, `shell:startup` e `regedit.exe`).
+- **Integração administrativa nativa**<br>
+  Abre ferramentas oficiais do Windows, como `resmon.exe`, `taskschd.msc`, `ms-settings:startupapps`, `taskmgr.exe`, `shell:startup` e `regedit.exe`.
 
 ---
 
@@ -52,14 +52,14 @@ A solução integra-se diretamente com subsistemas e APIs nativas do kernel do W
 
 Relatórios de inteligência de ameaças alertam sobre o risco decorrente de softwares e utilitários não homologados instalados em estações de trabalho. Módulos secundários frequentemente convertem o endpoint corporativo em um ativo compartilhado por terceiros:
 
-1. **Monetização de Banda (Proxies Residenciais)**
-   Aplicações como `WorldProxyPool`, `PacketStream` e similares utilizam a conexão corporativa para encaminhamento de tráfego anônimo externo, transformando a máquina em nó de saída não autorizado.
+1. **Monetização de banda por proxies residenciais**<br>
+   Aplicações como `WorldProxyPool`, `PacketStream` e similares podem usar a conexão corporativa para encaminhar tráfego anônimo externo, transformando a máquina em um nó de saída não autorizado.
 
-2. **Mineração e Processamento Distribuído**
-   Utilitários de computação distribuída degradam o desempenho operacional do hardware e ampliam o consumo de recursos.
+2. **Mineração e processamento distribuído**<br>
+   Utilitários de computação distribuída podem degradar o desempenho do hardware e ampliar o consumo de recursos.
 
-3. **Persistência Oculta**
-   Scripts executados em segundo plano via PowerShell (`-WindowStyle Hidden`), associados a gatilhos de tarefas agendadas ou chaves de registro sem visibilidade direta para o usuário.
+3. **Persistência oculta**<br>
+   Scripts executados em segundo plano via PowerShell (`-WindowStyle Hidden`) podem estar associados a tarefas agendadas ou chaves de registro sem visibilidade direta para o usuário.
 
 > [!IMPORTANT]
 > Sob diretrizes de governança, **LGPD** e controles **ISO 27001**, qualquer estação que opere como roteador de tráfego de terceiros configura violação crítica de rastreabilidade, confidencialidade e controle de ativos. O NetStatAnalyzer centraliza a visibilidade operacional para permitir identificação e resposta imediatas.
@@ -70,20 +70,20 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 
 ### Monitoramento de Conexões de Rede
 
-- **Taxa de Transferência em Tempo Real**
-  Medição dinâmica de leitura e escrita por socket e processo (`B/s`, `KB/s`, `MB/s`, `GB/s`).
+- **Taxa de transferência em tempo real**<br>
+  Mede leitura e escrita por socket e processo (`B/s`, `KB/s`, `MB/s`, `GB/s`).
 
-- **Consumo de CPU**
-  Indicadores percentuais individuais atualizados em tempo real.
+- **Consumo de CPU**<br>
+  Exibe indicadores percentuais individuais atualizados em tempo real.
 
-- **Filtro Dinâmico de Utilização de CPU**
-  Seletor de corte imediato para visualizar processos que ultrapassem faixas predeterminadas (`> 1%`, `> 5%`, `> 10%`, `> 25%`, `> 50%`).
+- **Filtro dinâmico de utilização de CPU**<br>
+  Permite visualizar processos acima de faixas predeterminadas (`> 1%`, `> 5%`, `> 10%`, `> 25%`, `> 50%`).
 
-- **Filtro de Anomalias**
-  Isolamento instantâneo de conexões que apresentem picos ou comportamentos atípicos.
+- **Filtro de anomalias**<br>
+  Isola conexões que apresentem picos ou comportamentos atípicos.
 
-- **Leitura Contínua**
-  Modo de amostragem automática a cada 2 segundos com indicador visual animado de status.
+- **Leitura contínua**<br>
+  Faz amostragem automática a cada 2 segundos e exibe um indicador visual animado de status.
 
 <div align="center">
 <img src="docs/images/preview-main.png" alt="Aba de Conexões de Rede" width="900" />
@@ -93,13 +93,17 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 
 ### Painel Agregado de Processos
 
-- Consolidação de sockets por executável e PID.
+- **Consolidação por processo**<br>
+  Agrupa sockets por executável e PID.
 
-- Segregação de volumes de **Download / Leitura** e **Upload / Escrita**.
+- **Volumes de tráfego**<br>
+  Separa **Download / Leitura** de **Upload / Escrita**.
 
-- Contagem total de conexões ativas por processo.
+- **Conexões ativas**<br>
+  Exibe a contagem total por processo.
 
-- Diagnóstico de integridade com badges categorizados (Crítico, Alto Risco, Suspeito, Atenção, Normal) com detalhes técnicos disponíveis via tooltip contextual.
+- **Diagnóstico de integridade**<br>
+  Classifica processos como Crítico, Alto Risco, Suspeito, Atenção ou Normal, com detalhes técnicos em tooltips contextuais.
 
 <div align="center">
 <img src="docs/images/preview-processes.png" alt="Aba de Processos" width="900" />
@@ -109,13 +113,14 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 
 ### Auditoria de Tarefas Agendadas
 
-- Varredura e classificação de tarefas agendadas locais.
+- **Varredura de tarefas**<br>
+  Lista e classifica tarefas agendadas locais.
 
-- **Detecção de Persistência**
-  Identificação de scripts PowerShell em modo oculto, intervalos de execução de alta frequência (inferiores a 15 minutos), binários em diretórios temporários
-  (`%AppData%`, `%Temp%`) e executáveis sem assinatura digital válida.
+- **Detecção de persistência**<br>
+  Identifica scripts PowerShell em modo oculto, intervalos de execução inferiores a 15 minutos, binários em diretórios temporários (`%AppData%`, `%Temp%`) e executáveis sem assinatura digital válida.
 
-- Acesso direto ao console nativo de gestão de tarefas (`taskschd.msc`).
+- **Acesso ao console de gestão**<br>
+  Abre o Agendador de Tarefas nativo (`taskschd.msc`).
 
 <div align="center">
 <img src="docs/images/preview-scheduled-tasks.png" alt="Aba de Tarefas Agendadas" width="900" />
@@ -125,12 +130,14 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 
 ### Auditoria de Inicialização do Sistema
 
-- Inspeção das chaves de registro `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, `HKLM`, `RunOnce` e ramos `WOW6432Node`.
+- **Inspeção do Registro**<br>
+  Verifica as chaves `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, `HKLM`, `RunOnce` e os ramos `WOW6432Node`.
 
-- Mapeamento das pastas de inicialização de usuário e global (`shell:startup`).
+- **Pastas de inicialização**<br>
+  Mapeia as pastas de inicialização do usuário e do sistema (`shell:startup`).
 
-- **Validação de Integridade**
-  Alerta para arquivos órfãos (entradas apontando para executáveis ausentes no disco) e executáveis de terceiros sem assinatura corporativa.
+- **Validação de integridade**<br>
+  Alerta sobre arquivos órfãos, cujas entradas apontam para executáveis ausentes, e executáveis de terceiros sem assinatura corporativa.
 
 <div align="center">
 <img src="docs/images/preview-startup-items.png" alt="Aba de Itens de Inicialização" width="900" />
@@ -226,8 +233,11 @@ flowchart TD
 
 ### Requisitos de Sistema
 
-- **Plataforma:** Windows 10 (versão 19041+) ou Windows 11 (64-bit).
-- **Ambiente de Desenvolvimento:** [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+- **Plataforma**<br>
+  Windows 10 (versão 19041+) ou Windows 11 (64-bit).
+
+- **Ambiente de desenvolvimento**<br>
+  [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 
 ### Execução em Modo de Desenvolvimento
 
@@ -251,20 +261,20 @@ O binário será gerado em: `./publish/NetStatAnalyzer.exe`.
 
 A base de código conta com **52 testes automatizados** usando xUnit, cobrindo regras de negócio, integridade e políticas de segurança:
 
-- **Políticas de Detecção de Ameaças (`ThreatDetectionPolicy`)**
-  Validação de proxies residenciais, rotinas de mineração, scripts PowerShell ocultos e picos anômalos.
+- **Políticas de detecção de ameaças (`ThreatDetectionPolicy`)**<br>
+  Validam proxies residenciais, rotinas de mineração, scripts PowerShell ocultos e picos anômalos.
 
-- **Cálculo de Métricas (`ProcessMetricInfo`)**
-  Validação de taxas de transferência e formatação proporcional de unidades.
+- **Cálculo de métricas (`ProcessMetricInfo`)**<br>
+  Valida taxas de transferência e formatação proporcional de unidades.
 
-- **Filtros de Utilização de CPU**
-  Testes de corte dinâmico no `MainViewModel`.
+- **Filtros de utilização de CPU**<br>
+  Verificam os cortes dinâmicos no `MainViewModel`.
 
-- **Integridade da Allowlist (`TrustEvaluationPolicy` e `ManageAllowlistUseCase`)**
-  Sanitização de endereços IPv4/IPv6, portas e máscaras curinga.
+- **Integridade da Allowlist (`TrustEvaluationPolicy` e `ManageAllowlistUseCase`)**<br>
+  Valida a sanitização de endereços IPv4/IPv6, portas e máscaras curinga.
 
-- **Exportação de Dados (`FileConnectionExporter`)**
-  Validação de arquivos nos formatos JSON, CSV e TXT.
+- **Exportação de dados (`FileConnectionExporter`)**<br>
+  Valida arquivos nos formatos JSON, CSV e TXT.
 
 Para executar a suíte de testes:
 
