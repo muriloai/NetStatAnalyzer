@@ -69,7 +69,12 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _ => "#94A3B8"
         };
 
-        public Visibility ThreatBadgeVisibility => ThreatLevel != ThreatLevel.Normal ? Visibility.Visible : Visibility.Collapsed;
+        public string ThreatBadgeToolTip => ThreatLevel switch
+        {
+            ThreatLevel.Critical or ThreatLevel.High or ThreatLevel.Medium or ThreatLevel.Low when !string.IsNullOrWhiteSpace(ThreatReason) => ThreatReason,
+            _ => ThreatLevel == ThreatLevel.Normal ? "Processo íntegro e sem anomalias detectadas" : ThreatBadgeText
+        };
+        public Visibility ThreatBadgeVisibility => Visibility.Visible;
         public Visibility ThreatReasonVisibility => string.IsNullOrWhiteSpace(ThreatReason) ? Visibility.Collapsed : Visibility.Visible;
     }
 }

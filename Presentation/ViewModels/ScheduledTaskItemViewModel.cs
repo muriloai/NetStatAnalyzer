@@ -78,6 +78,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _ => "Tarefa agendada em conformidade"
         };
 
+        public Visibility ThreatBadgeVisibility => Visibility.Visible;
         public Visibility ThreatReasonVisibility => string.IsNullOrWhiteSpace(ThreatReason) ? Visibility.Collapsed : Visibility.Visible;
 
         public ScheduledTaskItemViewModel(ScheduledTaskItem model)

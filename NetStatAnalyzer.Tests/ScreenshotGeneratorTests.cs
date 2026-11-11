@@ -13,7 +13,12 @@ namespace NetStatAnalyzer.Tests
         [Fact]
         public void GenerateScreenshots_ShouldProduceImages()
         {
-            var outputDir = @"C:\GITHUB\NetStatAnalyzer\docs\images";
+            var dirInfo = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dirInfo != null && !File.Exists(Path.Combine(dirInfo.FullName, "NetStatAnalyzer.sln")))
+            {
+                dirInfo = dirInfo.Parent;
+            }
+            var outputDir = dirInfo != null ? Path.Combine(dirInfo.FullName, "docs", "images") : @"C:\GITHUB\NetStatAnalyzer\docs\images";
             Directory.CreateDirectory(outputDir);
 
             Exception? error = null;
@@ -24,10 +29,11 @@ namespace NetStatAnalyzer.Tests
                 {
                     if (System.Windows.Application.Current == null)
                     {
-                        new System.Windows.Application();
+                        var app = new NetStatAnalyzer.App();
+                        app.InitializeComponent();
                     }
 
-                    var window = new MainWindow();
+                    var window = ApplicationCompositionRoot.CreateMainWindow();
                     window.Width = 1260;
                     window.Height = 800;
                     window.Show();

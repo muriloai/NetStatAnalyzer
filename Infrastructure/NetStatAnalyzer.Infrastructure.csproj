@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>NetStatAnalyzer.Infrastructure</AssemblyName>
+    <RootNamespace>NetStatAnalyzer.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\NetStatAnalyzer.Application.csproj" />
+    <ProjectReference Include="..\Domain\NetStatAnalyzer.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

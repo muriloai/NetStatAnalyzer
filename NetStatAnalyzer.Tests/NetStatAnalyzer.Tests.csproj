@@ -17,6 +17,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NetStatAnalyzer.csproj" />
+    <ProjectReference Include="..\Application\NetStatAnalyzer.Application.csproj" />
+    <ProjectReference Include="..\Domain\NetStatAnalyzer.Domain.csproj" />
+    <ProjectReference Include="..\Infrastructure\NetStatAnalyzer.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

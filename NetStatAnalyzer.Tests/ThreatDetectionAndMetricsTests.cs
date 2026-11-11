@@ -155,7 +155,7 @@ namespace NetStatAnalyzer.Tests
             var tasksUseCase = new ScanScheduledTasksUseCase(new MockScheduledTaskScanner());
             var startupUseCase = new ScanStartupItemsUseCase(new MockStartupItemScanner());
 
-            var vm = new MainViewModel(scanUseCase, allowlistUseCase, exportUseCase, metricsUseCase, tasksUseCase, startupUseCase);
+            var vm = new MainViewModel(scanUseCase, allowlistUseCase, exportUseCase, metricsUseCase, tasksUseCase, startupUseCase, new MockWindowsToolsLauncher());
 
             // Initial load
             await vm.LoadAllDataAsync();
@@ -218,5 +218,15 @@ namespace NetStatAnalyzer.Tests
         public void ExportToJson(string path, IEnumerable<NetworkConnection> connections, string version) { }
         public void ExportToCsv(string path, IEnumerable<NetworkConnection> connections) { }
         public void ExportToTxt(string path, IEnumerable<NetworkConnection> connections) { }
+    }
+
+    public class MockWindowsToolsLauncher : IWindowsToolsLauncher
+    {
+        public bool OpenTaskScheduler() => true;
+        public bool OpenStartupAppsSettings() => true;
+        public bool OpenTaskManager() => true;
+        public bool OpenResourceMonitor() => true;
+        public bool OpenStartupFolder() => true;
+        public bool OpenRegistryEditor() => true;
     }
 }

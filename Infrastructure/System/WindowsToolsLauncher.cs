@@ -1,32 +1,33 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using NetStatAnalyzer.Application.Contracts;
 
 namespace NetStatAnalyzer.Infrastructure.System
 {
-    public static class WindowsToolsLauncher
+    public sealed class WindowsToolsLauncher : IWindowsToolsLauncher
     {
-        public static bool OpenTaskScheduler()
+        public bool OpenTaskScheduler()
         {
             return LaunchTool("taskschd.msc");
         }
 
-        public static bool OpenStartupAppsSettings()
+        public bool OpenStartupAppsSettings()
         {
             return LaunchTool("ms-settings:startupapps");
         }
 
-        public static bool OpenTaskManager(string? tab = null)
+        public bool OpenTaskManager()
         {
             return LaunchTool("taskmgr.exe");
         }
 
-        public static bool OpenResourceMonitor()
+        public bool OpenResourceMonitor()
         {
             return LaunchTool("resmon.exe");
         }
 
-        public static bool OpenStartupFolder()
+        public bool OpenStartupFolder()
         {
             string userStartup = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
             if (Directory.Exists(userStartup))
@@ -36,12 +37,12 @@ namespace NetStatAnalyzer.Infrastructure.System
             return LaunchTool("explorer.exe", "shell:startup");
         }
 
-        public static bool OpenRegistryEditor()
+        public bool OpenRegistryEditor()
         {
             return LaunchTool("regedit.exe");
         }
 
-        private static bool LaunchTool(string fileName, string arguments = "")
+        private bool LaunchTool(string fileName, string arguments = "")
         {
             try
             {
