@@ -27,6 +27,10 @@ namespace NetStatAnalyzer
                 LogAndShowError("Unobserved Task Exception", args.Exception);
                 args.SetObserved();
             };
+
+            var mainWindow = ApplicationCompositionRoot.CreateMainWindow();
+            MainWindow = mainWindow;
+            mainWindow.Show();
         }
 
         private static void LogAndShowError(string title, Exception? ex)
