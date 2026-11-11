@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NetStatAnalyzer.Application.Contracts;
 using NetStatAnalyzer.Domain.Entities;
+using NetStatAnalyzer.Domain.Enums;
 using NetStatAnalyzer.Domain.Policies;
 
 namespace NetStatAnalyzer.Infrastructure.System
@@ -33,13 +35,30 @@ namespace NetStatAnalyzer.Infrastructure.System
                     int cmdIdx = FindColumnIndex(header, 8, "executada", "task to run", "action");
                     int schedTypeIdx = FindColumnIndex(header, 18, "tipo de agendamento", "schedule type");
 
+                    var seenTasks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                     for (int i = 1; i < lines.Count; i++)
                     {
                         var cols = ParseCsvLine(lines[i]);
                         if (cols.Count <= taskNameIdx) continue;
 
-                        string taskFullName = GetCol(cols, taskNameIdx);
+                        string taskFullName = GetCol(cols, taskNameIdx).Trim().Trim('"');
                         if (string.IsNullOrWhiteSpace(taskFullName)) continue;
+
+                        string firstCol = GetCol(cols, 0).Trim().Trim('"');
+                        if (firstCol.Equals("Nome do host", StringComparison.OrdinalIgnoreCase) ||
+                            firstCol.Equals("HostName", StringComparison.OrdinalIgnoreCase) ||
+                            taskFullName.Equals("Nome da tarefa", StringComparison.OrdinalIgnoreCase) ||
+                            taskFullName.Equals("TaskName", StringComparison.OrdinalIgnoreCase) ||
+                            taskFullName.Equals("Task Name", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue; // Skip repeated CSV headers from subfolders!
+                        }
+
+                        if (!seenTasks.Add(taskFullName))
+                        {
+                            continue; // Avoid duplicate rows for multi-trigger tasks
+                        }
 
                         string nextRun = GetCol(cols, nextRunIdx);
                         string status = GetCol(cols, statusIdx);
@@ -64,6 +83,30 @@ namespace NetStatAnalyzer.Infrastructure.System
                             author,
                             schedType);
 
+                        var sec = FileSecurityInspector.Inspect(cmd);
+                        ThreatLevel threat = evaluation.Level;
+                        string reason = evaluation.Reason;
+
+                        if (threat == ThreatLevel.Normal && !evaluation.IsMicrosoft && !string.IsNullOrWhiteSpace(sec.ResolvedPath))
+                        {
+                            bool looksLikeFile = sec.ResolvedPath.Contains('\\') ||
+                                                 sec.ResolvedPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
+                                                 sec.ResolvedPath.EndsWith(".bat", StringComparison.OrdinalIgnoreCase) ||
+                                                 sec.ResolvedPath.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase) ||
+                                                 sec.ResolvedPath.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase);
+
+                            if (looksLikeFile && !sec.Exists)
+                            {
+                                threat = ThreatLevel.Medium;
+                                reason = "Arquivo executável da tarefa não foi encontrado no disco (Órfão)";
+                            }
+                            else if (sec.Exists && !sec.IsSigned)
+                            {
+                                threat = ThreatLevel.Low;
+                                reason = "Executável de terceiro sem assinatura digital detectada";
+                            }
+                        }
+
                         tasks.Add(new ScheduledTaskItem
                         {
                             TaskName = taskName,
@@ -74,15 +117,21 @@ namespace NetStatAnalyzer.Infrastructure.System
                             Author = author,
                             TaskToRun = cmd,
                             ScheduleType = schedType,
-                            IsMicrosoftTask = evaluation.IsMicrosoft,
-                            ThreatLevel = evaluation.Level,
-                            ThreatReason = evaluation.Reason
+                            IsMicrosoftTask = evaluation.IsMicrosoft || sec.IsMicrosoft,
+                            ThreatLevel = threat,
+                            ThreatReason = reason,
+                            ResolvedPath = sec.ResolvedPath,
+                            FileExists = sec.Exists,
+                            IsSigned = sec.IsSigned,
+                            SignerName = sec.SignerName,
+                            CompanyName = sec.CompanyName
                         });
                     }
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Erro ao consultar tarefas agendadas: {ex.Message}");
+                    throw new InvalidOperationException($"Não foi possível consultar as tarefas agendadas: {ex.Message}", ex);
                 }
 
                 return (IReadOnlyList<ScheduledTaskItem>)tasks;
@@ -94,22 +143,47 @@ namespace NetStatAnalyzer.Infrastructure.System
             var lines = new List<string>();
             try
             {
+                Encoding encoding;
+                try
+                {
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                    int oemCp = CultureInfo.CurrentCulture.TextInfo.OEMCodePage;
+                    encoding = Encoding.GetEncoding(oemCp > 0 ? oemCp : 850);
+                }
+                catch
+                {
+                    encoding = Encoding.Default;
+                }
+
                 using var process = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = "schtasks.exe",
                         Arguments = "/query /fo CSV /v",
-                        StandardOutputEncoding = Encoding.Default,
+                        StandardOutputEncoding = encoding,
+                        StandardErrorEncoding = encoding,
                         RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         UseShellExecute = false,
                         CreateNoWindow = true
                     }
                 };
 
                 process.Start();
-                string output = process.StandardOutput.ReadToEnd();
+                Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+                Task<string> errorTask = process.StandardError.ReadToEndAsync();
                 process.WaitForExit();
+                string output = outputTask.GetAwaiter().GetResult();
+                string error = errorTask.GetAwaiter().GetResult();
+
+                if (process.ExitCode != 0)
+                {
+                    string detail = string.IsNullOrWhiteSpace(error)
+                        ? $"schtasks.exe encerrou com código {process.ExitCode}."
+                        : error.Trim();
+                    throw new InvalidOperationException(detail);
+                }
 
                 using var reader = new StringReader(output);
                 string? line;
@@ -124,6 +198,7 @@ namespace NetStatAnalyzer.Infrastructure.System
             catch (Exception ex)
             {
                 Debug.WriteLine($"Erro ao rodar schtasks: {ex.Message}");
+                throw;
             }
 
             return lines;

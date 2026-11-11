@@ -10,730 +10,584 @@
         Height="800" Width="1260"
         MinHeight="600" MinWidth="1080"
         WindowStartupLocation="CenterScreen"
-        Background="#14171F"
-        Foreground="#F8FAFC"
+        Background="{StaticResource BgPrimary}"
+        Foreground="{StaticResource TextPrimary}"
         FontFamily="Segoe UI, Arial, sans-serif"
         Loaded="Window_Loaded">
-
-    <Window.Resources>
-        <!-- Primary Button -->
-        <Style x:Key="ModernPrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#2563EB" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="14,7" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#1D4ED8" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#1E40AF" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#2D3344" />
-                                <Setter Property="Foreground" Value="#64748B" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Secondary Button -->
-        <Style x:Key="ModernSecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#1F2533" />
-            <Setter Property="Foreground" Value="#F1F5F9" />
-            <Setter Property="BorderBrush" Value="#353E54" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="secBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="secBorder" Property="Background" Value="#2F384C" />
-                                <Setter TargetName="secBorder" Property="BorderBrush" Value="#4B556E" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="secBorder" Property="Background" Value="#1C212E" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="secBorder" Property="Background" Value="#14171F" />
-                                <Setter Property="Foreground" Value="#4B556E" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Modern Tab Button (Inactive) -->
-        <Style x:Key="ModernTabButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="#94A3B8" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="18,10" />
-            <Setter Property="BorderThickness" Value="0,0,0,3" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="tabBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6,6,0,0"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="tabBorder" Property="Background" Value="#1F2636" />
-                                <Setter Property="Foreground" Value="#FFFFFF" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Modern Active Tab Button -->
-        <Style x:Key="ModernActiveTabButton" BasedOn="{StaticResource ModernTabButton}" TargetType="Button">
-            <Setter Property="Background" Value="#1A2130" />
-            <Setter Property="Foreground" Value="#60A5FA" />
-            <Setter Property="BorderBrush" Value="#3B82F6" />
-        </Style>
-
-        <!-- Permission Button -->
-        <Style x:Key="ModernPermissionButton" TargetType="Button">
-            <Setter Property="Background" Value="#065F46" />
-            <Setter Property="Foreground" Value="#ECFDF5" />
-            <Setter Property="BorderBrush" Value="#059669" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="wlBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="wlBorder" Property="Background" Value="#047857" />
-                                <Setter TargetName="wlBorder" Property="BorderBrush" Value="#10B981" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="wlBorder" Property="Background" Value="#064E3B" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Row Icon Button -->
-        <Style x:Key="RowIconButton" TargetType="Button">
-            <Setter Property="Background" Value="#222836" />
-            <Setter Property="Foreground" Value="#CBD5E1" />
-            <Setter Property="BorderBrush" Value="#353E54" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="7,4" />
-            <Setter Property="Margin" Value="2,0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="btnBorder" 
-                                Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="5" 
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="btnBorder" Property="Background" Value="#2563EB" />
-                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="#60A5FA" />
-                                <Setter Property="Foreground" Value="#FFFFFF" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Modern TextBox -->
-        <Style x:Key="ModernTextBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#12151D" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="CaretBrush" Value="#60A5FA" />
-            <Setter Property="BorderBrush" Value="#2E374A" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="tbBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="tbBorder" Property="BorderBrush" Value="#3B82F6" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- ComboBox Styles -->
-        <Style TargetType="ComboBoxItem">
-            <Setter Property="Background" Value="#151821" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="Padding" Value="12,8" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ComboBoxItem">
-                        <Border x:Name="itemBorder" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="itemBorder" Property="Background" Value="#2C3345" />
-                                <Setter Property="Foreground" Value="#FFFFFF" />
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="itemBorder" Property="Background" Value="#2563EB" />
-                                <Setter Property="Foreground" Value="#FFFFFF" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <ControlTemplate x:Key="ComboBoxToggleButtonTemplate" TargetType="ToggleButton">
-            <Border x:Name="border" 
-                    Background="{TemplateBinding Background}" 
-                    BorderBrush="{TemplateBinding BorderBrush}" 
-                    BorderThickness="{TemplateBinding BorderThickness}" 
-                    CornerRadius="6">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="28" />
-                    </Grid.ColumnDefinitions>
-                    <Path x:Name="arrow" 
-                          Grid.Column="1" 
-                          HorizontalAlignment="Center" 
-                          VerticalAlignment="Center" 
-                          Fill="#CBD5E1" 
-                          Data="M 0 0 L 4 4 L 8 0 Z" />
-                </Grid>
-            </Border>
-            <ControlTemplate.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="border" Property="Background" Value="#1E2330" />
-                    <Setter TargetName="border" Property="BorderBrush" Value="#4B556E" />
-                    <Setter TargetName="arrow" Property="Fill" Value="#FFFFFF" />
-                </Trigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
-
-        <Style x:Key="ModernComboBox" TargetType="ComboBox">
-            <Setter Property="Background" Value="#12151D" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="#2E374A" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ComboBox">
-                        <Grid>
-                            <ToggleButton x:Name="ToggleButton"
-                                          Template="{StaticResource ComboBoxToggleButtonTemplate}"
-                                          Background="{TemplateBinding Background}"
-                                          BorderBrush="{TemplateBinding BorderBrush}"
-                                          BorderThickness="{TemplateBinding BorderThickness}"
-                                          Focusable="False"
-                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                          ClickMode="Press" />
-                            <ContentPresenter x:Name="ContentSite"
-                                              IsHitTestVisible="False"
-                                              Content="{TemplateBinding SelectionBoxItem}"
-                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                                              Margin="10,0,28,0"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Left">
-                                <ContentPresenter.Resources>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="#FFFFFF" />
-                                        <Setter Property="FontWeight" Value="SemiBold" />
-                                    </Style>
-                                </ContentPresenter.Resources>
-                            </ContentPresenter>
-                            <Popup x:Name="Popup"
-                                   Placement="Bottom"
-                                   IsOpen="{TemplateBinding IsDropDownOpen}"
-                                   AllowsTransparency="True"
-                                   Focusable="False"
-                                   PopupAnimation="Slide">
-                                <Border x:Name="DropDown"
-                                        MinWidth="{TemplateBinding ActualWidth}"
-                                        MaxHeight="260"
-                                        Background="#12151D"
-                                        BorderBrush="#2E374A"
-                                        BorderThickness="1"
-                                        CornerRadius="6"
-                                        Margin="0,2,0,0">
-                                    <ScrollViewer SnapsToDevicePixels="True">
-                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
-                                    </ScrollViewer>
-                                </Border>
-                            </Popup>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- DataGrid Styles -->
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#10121A" />
-            <Setter Property="Foreground" Value="#94A3B8" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Padding" Value="8,6" />
-            <Setter Property="BorderBrush" Value="#222836" />
-            <Setter Property="BorderThickness" Value="0,0,1,1" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="MinHeight" Value="36" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1A202C" />
-                    <Setter Property="Foreground" Value="#FFFFFF" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style TargetType="DataGridRow">
-            <Setter Property="Background" Value="#161A24" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="BorderThickness" Value="0,1,0,1" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="MinHeight" Value="38" />
-            <Style.Triggers>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                    <Setter Property="Background" Value="#1B202D" />
-                </Trigger>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#252E42" />
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#1D4ED8" />
-                    <Setter Property="BorderBrush" Value="#60A5FA" />
-                    <Setter Property="Foreground" Value="#FFFFFF" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style TargetType="DataGridCell">
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="DataGridCell">
-                        <Border Padding="{TemplateBinding Padding}" Background="Transparent">
-                            <ContentPresenter VerticalAlignment="Center" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="Foreground" Value="#FFFFFF" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Resources>
 
     <Grid Margin="18">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- Row 0: Header & Windows Tools -->
-            <RowDefinition Height="Auto" /> <!-- Row 1: Connected Tab Bar -->
-            <RowDefinition Height="*" />    <!-- Row 2: Active Tab Content (With its own Contextual Metrics) -->
+            <RowDefinition Height="Auto" /> <!-- Row 1: Connected Tab Bar (Header Strip) -->
+            <RowDefinition Height="*" />    <!-- Row 2: Active Tab Embracing Card Container -->
             <RowDefinition Height="Auto" /> <!-- Row 3: Scoped Bottom Status Bar -->
         </Grid.RowDefinitions>
 
-        <!-- ROW 0: CLEAN HEADER & WINDOWS TOOLS LAUNCHER -->
+        <!-- ROW 0: CLEAN HEADER (Discreet version & Tools Dropdown) -->
         <Grid Grid.Row="0" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Title & Subtitle (No buzzwords) -->
+            <!-- Title & Discreet Version (Foto 3) -->
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="NetStatAnalyzer" FontSize="22" FontWeight="Bold" Foreground="#FFFFFF" />
-                    <Border Background="#2563EB" CornerRadius="4" Margin="10,0,0,0" Padding="8,2" VerticalAlignment="Center">
-                        <TextBlock x:Name="VersionTextBlock" Text="v1.3.0" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF" />
-                    </Border>
+                    <TextBlock Text="NetStatAnalyzer" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" />
+                    <TextBlock x:Name="VersionTextBlock" Text="v1.3.0" FontSize="11" FontWeight="Normal" Foreground="{StaticResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="Auditoria de conexões de rede, processos ativos, consumo de banda e CPU, tarefas agendadas e inicialização" FontSize="12" Foreground="#94A3B8" Margin="0,4,0,0" />
+                <TextBlock Text="Auditoria de conexões de rede, processos ativos, consumo de banda e CPU, tarefas agendadas e inicialização" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,3,0,0" />
             </StackPanel>
 
-            <!-- Actions Header: Windows Tools Dropdown & Global Refresh -->
+            <!-- Top Right Actions: Dropdown Tools & Single Global Refresh (No button repetition) -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Windows Native Tools Dropdown Menu -->
                 <Button x:Name="WindowsToolsBtn" 
-                        Content="🛠️ Ferramentas do Windows ▾" 
+                        Content="Ferramentas do Windows ▾"
                         Style="{StaticResource ModernSecondaryButton}" 
                         ToolTip="Menu rápido para abrir utilitários oficiais do sistema operacional Windows"
-                        Margin="0,0,8,0" 
                         Click="WindowsToolsBtn_Click">
                     <Button.ContextMenu>
-                        <ContextMenu x:Name="WindowsToolsMenu" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1">
-                            <MenuItem Header="📊 Monitor de Recursos" 
+                        <ContextMenu x:Name="WindowsToolsMenu" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <MenuItem Header="Monitor de Recursos"
                                       ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)" 
-                                      Foreground="#F8FAFC" Click="OpenResourceMonitor_Click" />
-                            <MenuItem Header="⏱️ Agendador de Tarefas" 
+                                      Foreground="{StaticResource TextPrimary}" Click="OpenResourceMonitor_Click" />
+                            <MenuItem Header="Agendador de Tarefas"
                                       ToolTip="Abrir o Agendador de Tarefas oficial do Windows (taskschd.msc)" 
-                                      Foreground="#F8FAFC" Click="OpenTaskScheduler_Click" />
-                            <MenuItem Header="🚀 Aplicativos de Inicialização" 
+                                      Foreground="{StaticResource TextPrimary}" Click="OpenTaskScheduler_Click" />
+                            <MenuItem Header="Aplicativos de Inicialização"
                                       ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)" 
-                                      Foreground="#F8FAFC" Click="OpenStartupSettings_Click" />
-                            <MenuItem Header="📋 Gerenciador de Tarefas" 
+                                      Foreground="{StaticResource TextPrimary}" Click="OpenStartupSettings_Click" />
+                            <MenuItem Header="Gerenciador de Tarefas"
                                       ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)" 
-                                      Foreground="#F8FAFC" Click="OpenTaskManager_Click" />
-                            <Separator Background="#283144" />
-                            <MenuItem Header="📁 Pasta de Inicialização" 
+                                      Foreground="{StaticResource TextPrimary}" Click="OpenTaskManager_Click" />
+                            <Separator Background="{StaticResource BorderBrush}" />
+                            <MenuItem Header="Pasta de Inicialização"
                                       ToolTip="Abrir a pasta de inicialização do usuário (shell:startup)" 
-                                      Foreground="#F8FAFC" Click="OpenStartupFolder_Click" />
-                            <MenuItem Header="🔑 Editor do Registro" 
+                                      Foreground="{StaticResource TextPrimary}" Click="OpenStartupFolder_Click" />
+                            <MenuItem Header="Editor do Registro"
                                       ToolTip="Abrir o Editor do Registro do Windows (regedit.exe)" 
-                                      Foreground="#F8FAFC" Click="OpenRegistryEditor_Click" />
+                                      Foreground="{StaticResource TextPrimary}" Click="OpenRegistryEditor_Click" />
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
-
-                <!-- Global Refresh Button -->
-                <Button x:Name="ReloadButton" 
-                        Content="🔄 Atualizar Tudo" 
-                        Style="{StaticResource ModernPrimaryButton}" 
-                        ToolTip="Executar nova varredura completa de rede, processos, agendador e inicialização"
-                        Click="Reload_Click" />
             </StackPanel>
         </Grid>
 
-        <!-- ROW 1: CONNECTED TAB BAR (Looks like genuine modern tabs) -->
-        <Border Grid.Row="1" Background="#161B26" BorderBrush="#283144" BorderThickness="0,0,0,1" Margin="0,0,0,12" Padding="4,0,4,0">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                <Button x:Name="TabConnectionsBtn" Content="🌐 Conexões de Rede" 
-                        Style="{StaticResource ModernActiveTabButton}" 
-                        Margin="0,0,4,0" Click="TabButton_Click" Tag="0" />
+        <!-- ROW 1: TAB NAVIGATION STRIP (Directly attached to the container below) -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,-1" Panel.ZIndex="10">
+            <Button x:Name="TabConnectionsBtn" Content="🌐 Conexões de Rede" 
+                    Style="{StaticResource ModernActiveTabButton}" 
+                    Click="TabButton_Click" Tag="0" />
 
-                <Button x:Name="TabProcessesBtn" Content="⚡ Processos &amp; Consumo" 
-                        Style="{StaticResource ModernTabButton}" 
-                        Margin="0,0,4,0" Click="TabButton_Click" Tag="1" />
+            <Button x:Name="TabProcessesBtn" Content="⚡ Processos &amp; Consumo" 
+                    Style="{StaticResource ModernTabButton}" 
+                    Click="TabButton_Click" Tag="1" />
 
-                <Button x:Name="TabTasksBtn" Content="⏱️ Tarefas Agendadas" 
-                        Style="{StaticResource ModernTabButton}" 
-                        Margin="0,0,4,0" Click="TabButton_Click" Tag="2" />
+            <Button x:Name="TabTasksBtn" Content="⏱️ Tarefas Agendadas" 
+                    Style="{StaticResource ModernTabButton}" 
+                    Click="TabButton_Click" Tag="2" />
 
-                <Button x:Name="TabStartupBtn" Content="🚀 Itens de Inicialização" 
-                        Style="{StaticResource ModernTabButton}" 
-                        Margin="0,0,4,0" Click="TabButton_Click" Tag="3" />
+            <Button x:Name="TabStartupBtn" Content="🚀 Itens de Inicialização" 
+                    Style="{StaticResource ModernTabButton}" 
+                    Click="TabButton_Click" Tag="3" />
+        </StackPanel>
 
-                <Button x:Name="TabInsightsBtn" Content="🛡️ Insights &amp; Governança" 
-                        Style="{StaticResource ModernTabButton}" 
-                        Click="TabButton_Click" Tag="4" />
-            </StackPanel>
-        </Border>
+        <!-- ROW 2: ACTIVE TAB EMBRACING CARD CONTAINER (Foto 2: Delimiting frame that visually unites the active tab) -->
+        <Border Grid.Row="2" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="0,8,8,8" Padding="14">
+            <Grid>
 
-        <!-- ROW 2: ACTIVE TAB CONTENT CONTAINER (With Isolated Per-Tab Metrics) -->
-        <Grid Grid.Row="2">
+                <!-- ========================================== -->
+                <!-- TAB 0: CONEXÕES DE REDE (COM MÉTRICAS PRÓPRIAS) -->
+                <!-- ========================================== -->
+                <Grid x:Name="TabContentConnections" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /> <!-- Contextual Network Metric Cards -->
+                        <RowDefinition Height="Auto" /> <!-- Filters Bar -->
+                        <RowDefinition Height="*" />    <!-- DataGrid -->
+                    </Grid.RowDefinitions>
 
-            <!-- ========================================== -->
-            <!-- TAB 0: CONEXÕES DE REDE (COM MÉTRICAS PRÓPRIAS) -->
-            <!-- ========================================== -->
-            <Grid x:Name="TabContentConnections" Visibility="Visible">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" /> <!-- Contextual Network Metric Cards -->
-                    <RowDefinition Height="Auto" /> <!-- Filters Bar -->
-                    <RowDefinition Height="*" />    <!-- DataGrid -->
-                </Grid.RowDefinitions>
+                    <!-- Contextual Metrics: Network Connections -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                <!-- Contextual Metrics: Network Connections -->
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Total de conexões TCP e portas UDP monitoradas. Clique para redefinir filtros." MouseDown="MetricCardTotal_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="TOTAL CONEXÕES" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTotalText" Text="{Binding MetricTotal}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
 
-                    <Border Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="TOTAL CONEXÕES" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricTotalText" Text="{Binding MetricTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Column="1" Background="{StaticResource SuccessSurface}" BorderBrush="{StaticResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Conexões ativas no estado ESTABLISHED. Clique para filtrar por este estado." MouseDown="MetricCardEstablished_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="ESTABLISHED" FontSize="10" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricEstablishedText" Text="{Binding MetricEstablished}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
 
-                    <Border Grid.Column="1" Background="#132F20" BorderBrush="#15803D" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="ESTABELECIDAS" FontSize="10" FontWeight="Bold" Foreground="#86EFAC" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricEstablishedText" Text="{Binding MetricEstablished}" FontSize="18" FontWeight="Bold" Foreground="#4ADE80" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Column="2" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Portas locais abertas em escuta (LISTENING). Clique para filtrar por este estado." MouseDown="MetricCardListening_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="LISTENING (EM ESCUTA)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricListeningText" Text="{Binding MetricListening}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
 
-                    <Border Grid.Column="2" Background="#1A2740" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="EM ESCUTA" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricListeningText" Text="{Binding MetricListening}" FontSize="18" FontWeight="Bold" Foreground="#60A5FA" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Column="3" Background="{StaticResource SuccessSurface}" BorderBrush="{StaticResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Conexões autorizadas cadastradas na Lista de Confiáveis. Clique para filtrar." MouseDown="MetricCardAllowed_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="CONEXÕES CONFIÁVEIS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricAllowedText" Text="{Binding MetricAllowed}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
 
-                    <Border Grid.Column="3" Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="CONFIÁVEIS" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricAllowedText" Text="{Binding MetricAllowed}" FontSize="18" FontWeight="Bold" Foreground="#34D399" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Column="4" Background="{StaticResource DangerSurface}" BorderBrush="{StaticResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8"
+                                Cursor="Hand" ToolTip="Conexões com consumo elevado de recursos ou alertas heurísticos. Clique para filtrar." MouseDown="MetricCardThreat_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="ALERTAS / ANOMALIAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricThreatText" Text="{Binding MetricThreatConnections}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
 
-                    <Border Grid.Column="4" Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="ALERTAS / PICOS" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricThreatText" Text="{Binding MetricThreatConnections}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
+                    <!-- Filters Bar: Conexões -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,8,0">
+                          <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="130" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Search -->
+                            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
+                                <TextBlock Text="Buscar conexões por processo, IP, porta ou PID" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBox x:Name="SearchTextBox" 
+                                         Style="{StaticResource ModernTextBox}" 
+                                         Height="32" 
+                                         TextChanged="SearchTextBox_TextChanged" />
+                            </StackPanel>
+
+                            <!-- Protocol -->
+                            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,6,0">
+                                <TextBlock Text="Protocolo" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="ProtocolComboBox" 
+                                          Style="{StaticResource ModernComboBox}" 
+                                          SelectedIndex="0" 
+                                          Width="80" Height="32" 
+                                          SelectionChanged="FilterComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Todos" IsSelected="True" />
+                                    <ComboBoxItem Content="TCP" />
+                                    <ComboBoxItem Content="UDP" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- State -->
+                            <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,6,0">
+                                <TextBlock Text="Estado" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="StateComboBox" 
+                                          Style="{StaticResource ModernComboBox}" 
+                                          ItemsSource="{Binding StateOptions}" 
+                                          SelectedItem="{Binding SelectedState, Mode=TwoWay}" 
+                                          Width="120" Height="32" 
+                                          SelectionChanged="FilterComboBox_SelectionChanged" />
+                            </StackPanel>
+
+                            <!-- Trust Filter -->
+                            <StackPanel Grid.Column="3" Orientation="Vertical" Margin="0,0,6,0">
+                                <TextBlock Text="Confiança" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="AllowFilterComboBox" 
+                                          Style="{StaticResource ModernComboBox}" 
+                                          SelectedIndex="0" 
+                                          Width="135" Height="32" 
+                                          SelectionChanged="FilterComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Todas" IsSelected="True" />
+                                    <ComboBoxItem Content="Apenas confiáveis" />
+                                    <ComboBoxItem Content="Não verificadas" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Live CPU Cutoff Filter -->
+                            <StackPanel Grid.Column="4" Orientation="Vertical" Margin="0,0,6,0">
+                                <TextBlock Text="Corte de CPU" FontSize="11" FontWeight="Medium" Foreground="{StaticResource WarningColor}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="CpuCutoffComboBox" 
+                                          Style="{StaticResource ModernComboBox}" 
+                                          SelectedIndex="0" 
+                                          Width="105" Height="32" 
+                                          SelectionChanged="CpuCutoffComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Todos (0%)" IsSelected="True" Tag="0" />
+                                    <ComboBoxItem Content="CPU &gt; 1%" Tag="1" />
+                                    <ComboBoxItem Content="CPU &gt; 5%" Tag="5" />
+                                    <ComboBoxItem Content="CPU &gt; 10%" Tag="10" />
+                                    <ComboBoxItem Content="CPU &gt; 25%" Tag="25" />
+                                    <ComboBoxItem Content="CPU &gt; 50%" Tag="50" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Only Anomalies Checkbox -->
+                            <StackPanel Grid.Column="5" Orientation="Vertical" VerticalAlignment="Center" Margin="0,16,6,0">
+                                <CheckBox x:Name="OnlyAnomaliesCheckBox" 
+                                          Content="Apenas alertas"
+                                          Foreground="{StaticResource DangerColor}"
+                                          FontWeight="SemiBold" 
+                                          FontSize="11" 
+                                          Click="OnlyAnomaliesCheckBox_Click" />
+                            </StackPanel>
+
+                            <!-- Redefinição dos filtros -->
+                            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="Limpar" 
+                                        Style="{StaticResource ModernSecondaryButton}" 
+                                        Height="32" Margin="0,0,4,0" 
+                                        ToolTip="Redefinir filtros desta aba"
+                                        Click="ClearFilters_Click" />
+                            </StackPanel>
+                        </Grid>
+                        </Border>
+                        <Button Grid.Column="1" Content="Mais ações ▾"
+                                Style="{StaticResource ModernSecondaryButton}"
+                                Height="38" Padding="12,0"
+                                ToolTip="Gerenciar confiança e exportar os dados exibidos"
+                                Click="TabActionsButton_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="ConnectionsActionsMenu">
+                                    <MenuItem Header="Gerenciar conexões confiáveis" Click="OpenAllowManager_Click" />
+                                    <MenuItem Header="Adicionar seleção à lista de confiança" Click="AddToAllowlist_Click" />
+                                    <Separator />
+                                    <MenuItem Header="Exportar conexões exibidas" Click="ExportConnections_Click" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </Grid>
+
+                    <!-- DataGrid Connections -->
+                    <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                        <Grid>
+                            <ProgressBar x:Name="LoadingProgressBar" 
+                                         VerticalAlignment="Top" 
+                                         Height="3" 
+                                         IsIndeterminate="True" 
+                                         Background="{StaticResource BgPrimary}"
+                                         Foreground="{StaticResource AccentColor}"
+                                         BorderThickness="0" 
+                                         Visibility="Collapsed" />
+
+                            <DataGrid x:Name="DataGrid" 
+                                      ItemsSource="{Binding FilteredEntries}" 
+                                      CanUserResizeColumns="True" 
+                                      CanUserReorderColumns="True" 
+                                      CanUserSortColumns="True" 
+                                      SelectionChanged="DataGrid_SelectionChanged" 
+                                      MouseDoubleClick="DataGrid_MouseDoubleClick">
+                                <DataGrid.RowStyle>
+                                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAllowed}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource SuccessSurface}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource SuccessBorder}" />
+                                                <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.RowStyle>
+                                <DataGrid.ContextMenu>
+                                    <ContextMenu Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                        <MenuItem Header="Adicionar à lista de confiança" Click="AddToAllowlist_Click" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" />
+                                        <MenuItem Header="Remover da lista de confiança" Click="RemoveFromAllowlist_Click" Foreground="{StaticResource DangerColor}" />
+                                        <Separator Background="{StaticResource BorderBrush}" />
+                                        <MenuItem Header="Abrir localização do processo" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+                                        <Separator Background="{StaticResource BorderBrush}" />
+                                        <MenuItem Header="Copiar detalhes das conexões selecionadas" Click="CopyDetails_Click" Foreground="{StaticResource TextPrimary}" />
+                                        <MenuItem Header="Copiar endereços remotos" Click="CopyForeignIP_Click" Foreground="{StaticResource TextPrimary}" />
+                                        <MenuItem Header="Copiar endereços locais" Click="CopyLocalIP_Click" Foreground="{StaticResource TextPrimary}" />
+                                        <MenuItem Header="Copiar PIDs" Click="CopyPID_Click" Foreground="{StaticResource TextPrimary}" />
+                                    </ContextMenu>
+                                </DataGrid.ContextMenu>
+                                <DataGrid.Columns>
+                                    <!-- CONFIANÇA -->
+                                    <DataGridTemplateColumn Header="CONFIANÇA"
+                                                            SortMemberPath="IsAllowed"
+                                                            CellTemplate="{StaticResource TrustBadgeTemplate}"
+                                                            Width="125"
+                                                            MinWidth="115" />
+
+                                    <!-- INTEGRIDADE -->
+                                    <DataGridTemplateColumn Header="INTEGRIDADE"
+                                                            SortMemberPath="ThreatLevel"
+                                                            CellTemplate="{StaticResource IntegrityBadgeTemplate}"
+                                                            Width="140"
+                                                            MinWidth="110" />
+
+                                    <!-- PROCESSO -->
+                                    <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="200" MinWidth="160">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <Border Width="24" Height="24" CornerRadius="4" Background="{StaticResource BgTertiary}" Margin="0,0,8,0">
+                                                        <Image Source="{Binding ProcessIcon}" Width="18" Height="18" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                    </Border>
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontSize="12" />
+                                                        <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="{StaticResource TextSecondary}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- PROTOCOLO -->
+                                    <DataGridTemplateColumn Header="PROTOCOLO" SortMemberPath="Protocol" Width="95" MinWidth="85">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding ProtocolBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding Protocol}" FontSize="11" FontWeight="Bold" Foreground="{Binding ProtocolBadgeForeground}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- LOCAL -->
+                                    <DataGridTemplateColumn Header="ENDEREÇO LOCAL" SortMemberPath="LocalAddress" Width="170" MinWidth="140">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding LocalAddress}" 
+                                                           FontFamily="Cascadia Code, Consolas, monospace" 
+                                                           FontSize="11" 
+                                                           Foreground="{StaticResource TextPrimary}"
+                                                           VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- REMOTO -->
+                                    <DataGridTemplateColumn Header="ENDEREÇO REMOTO" SortMemberPath="ForeignAddress" Width="170" MinWidth="140">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding ForeignAddress}" 
+                                                           FontFamily="Cascadia Code, Consolas, monospace" 
+                                                           FontSize="11" 
+                                                           Foreground="{StaticResource TextPrimary}"
+                                                           VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- ESTADO -->
+                                    <DataGridTemplateColumn Header="ESTADO" SortMemberPath="State" Width="110" MinWidth="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding StateBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding State}" FontSize="10" FontWeight="Bold" Foreground="{Binding StateBadgeForeground}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- MÉTRICAS DE USO -->
+                                    <DataGridTemplateColumn Header="CPU (%)" SortMemberPath="CpuPercent" Width="85" MinWidth="75">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding CpuBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding DisplayCpu}" FontSize="11" FontWeight="Bold" Foreground="{Binding CpuBadgeForeground}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="BANDA" SortMemberPath="BandwidthBytesPerSec" Width="95" MinWidth="85">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DisplayBandwidth}"
+                                                           FontFamily="Cascadia Code, Consolas, monospace"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource AccentBorder}"
+                                                           VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
                     </Border>
                 </Grid>
 
-                <!-- Filters Bar -->
-                <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
-                    <Grid>
+                <!-- ========================================== -->
+                <!-- TAB 1: PROCESSOS & CONSUMO (COM MÉTRICAS PRÓPRIAS) -->
+                <!-- ========================================== -->
+                <Grid x:Name="TabContentProcesses" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /> <!-- Contextual Process Metric Cards -->
+                        <RowDefinition Height="Auto" /> <!-- Action & Filters Bar -->
+                        <RowDefinition Height="*" />    <!-- DataGrid -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Contextual Metrics: Processes -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" MinWidth="130" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Search -->
-                        <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
-                            <TextBlock Text="Buscar (Processo, IP, Porta, PID):" FontSize="11" FontWeight="Medium" Foreground="#CBD5E1" Margin="0,0,0,4" />
-                            <TextBox x:Name="SearchTextBox" 
-                                     Style="{StaticResource ModernTextBox}" 
-                                     Height="32" 
-                                     TextChanged="SearchTextBox_TextChanged" />
-                        </StackPanel>
+                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="PROCESSOS ATIVOS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesTotalText" Text="{Binding MetricProcessesTotal}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
 
-                        <!-- Protocol -->
-                        <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,8,0">
-                            <TextBlock Text="Protocolo:" FontSize="11" FontWeight="Medium" Foreground="#CBD5E1" Margin="0,0,0,4" />
-                            <ComboBox x:Name="ProtocolComboBox" 
-                                      Style="{StaticResource ModernComboBox}" 
-                                      SelectedIndex="0"
-                                      Width="85" Height="32" 
-                                      SelectionChanged="FilterComboBox_SelectionChanged">
-                                <ComboBoxItem Content="Todos" IsSelected="True" />
-                                <ComboBoxItem Content="TCP" />
-                                <ComboBoxItem Content="UDP" />
-                            </ComboBox>
-                        </StackPanel>
+                        <Border Grid.Column="1" Background="{StaticResource WarningSurface}" BorderBrush="{StaticResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="CPU &gt; 5%" FontSize="10" FontWeight="Bold" Foreground="{StaticResource WarningColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesHighCpuText" Text="{Binding MetricProcessesHighCpu}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WarningColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
 
-                        <!-- State -->
-                        <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,8,0">
-                            <TextBlock Text="Estado:" FontSize="11" FontWeight="Medium" Foreground="#CBD5E1" Margin="0,0,0,4" />
-                            <ComboBox x:Name="StateComboBox" 
-                                      Style="{StaticResource ModernComboBox}" 
-                                      ItemsSource="{Binding StateOptions}"
-                                      SelectedItem="{Binding SelectedState, Mode=TwoWay}"
-                                      Width="135" Height="32" 
-                                      SelectionChanged="FilterComboBox_SelectionChanged" />
-                        </StackPanel>
+                        <Border Grid.Column="2" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="ALTO TRÁFEGO REDE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesHighNetworkText" Text="{Binding MetricProcessesHighNetwork}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
 
-                        <!-- Trust Filter -->
-                        <StackPanel Grid.Column="3" Orientation="Vertical" Margin="0,0,8,0">
-                            <TextBlock Text="Confiança:" FontSize="11" FontWeight="Medium" Foreground="#CBD5E1" Margin="0,0,0,4" />
-                            <ComboBox x:Name="AllowFilterComboBox" 
-                                      Style="{StaticResource ModernComboBox}" 
-                                      SelectedIndex="0"
-                                      Width="135" Height="32" 
-                                      SelectionChanged="FilterComboBox_SelectionChanged">
-                                <ComboBoxItem Content="Todas" IsSelected="True" />
-                                <ComboBoxItem Content="Apenas Confiáveis" />
-                                <ComboBoxItem Content="Ocultar Confiáveis" />
-                            </ComboBox>
-                        </StackPanel>
+                        <Border Grid.Column="3" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="BANDA COMBINADA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesBandwidthSumText" Text="{Binding MetricProcessesBandwidthSum}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
 
-                        <!-- Live CPU Cutoff Filter -->
-                        <StackPanel Grid.Column="4" Orientation="Vertical" Margin="0,0,8,0">
-                            <TextBlock Text="Corte de CPU:" FontSize="11" FontWeight="Medium" Foreground="#FDE047" Margin="0,0,0,4" />
-                            <ComboBox x:Name="CpuCutoffComboBox" 
-                                      Style="{StaticResource ModernComboBox}" 
-                                      SelectedIndex="0"
-                                      Width="115" Height="32" 
-                                      SelectionChanged="CpuCutoffComboBox_SelectionChanged">
-                                <ComboBoxItem Content="Todos (0%)" IsSelected="True" Tag="0" />
-                                <ComboBoxItem Content="CPU &gt; 1%" Tag="1" />
-                                <ComboBoxItem Content="CPU &gt; 5%" Tag="5" />
-                                <ComboBoxItem Content="CPU &gt; 10%" Tag="10" />
-                                <ComboBoxItem Content="CPU &gt; 25%" Tag="25" />
-                                <ComboBoxItem Content="CPU &gt; 50%" Tag="50" />
-                            </ComboBox>
-                        </StackPanel>
-
-                        <!-- Only Anomalies Checkbox -->
-                        <StackPanel Grid.Column="5" Orientation="Vertical" VerticalAlignment="Center" Margin="0,16,10,0">
-                            <CheckBox x:Name="OnlyAnomaliesCheckBox" 
-                                      Content="Apenas Alertas/Picos" 
-                                      Foreground="#FCA5A5" 
-                                      FontWeight="SemiBold" 
-                                      FontSize="11" 
-                                      Click="OnlyAnomaliesCheckBox_Click" />
-                        </StackPanel>
-
-                        <!-- Action Buttons -->
-                        <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <Button Content="Limpar" 
-                                    Style="{StaticResource ModernSecondaryButton}" 
-                                    Height="32" Margin="0,0,5,0" 
-                                    ToolTip="Redefinir todos os filtros de busca e corte"
-                                    Click="ClearFilters_Click" />
-                            <Button Content="Exportar" 
-                                    Style="{StaticResource ModernSecondaryButton}" 
-                                    Height="32" Margin="0,0,5,0" 
-                                    ToolTip="Exportar conexões em formato JSON, CSV ou TXT"
-                                    Click="ExportConnections_Click" />
-                            <Button Content="Confiáveis" 
-                                    Style="{StaticResource ModernPermissionButton}" 
-                                    Height="32" 
-                                    ToolTip="Gerenciar regras de processos e endereços confiáveis"
-                                    Click="OpenAllowManager_Click" />
-                        </StackPanel>
+                        <Border Grid.Column="4" Background="{StaticResource DangerSurface}" BorderBrush="{StaticResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="DIAGNÓSTICOS / ALERTAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesThreatsText" Text="{Binding MetricProcessesThreats}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
                     </Grid>
-                </Border>
 
-                <!-- DataGrid Connections -->
-                <Border Grid.Row="2" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
-                    <Grid>
-                        <ProgressBar x:Name="LoadingProgressBar" 
-                                     VerticalAlignment="Top"
-                                     Height="3" 
-                                     IsIndeterminate="True" 
-                                     Background="#12151D" 
-                                     Foreground="#3B82F6" 
-                                     BorderThickness="0" 
-                                     Visibility="Collapsed" />
+                    <!-- Action & Filters Bar: Processos (Live sampling, bandwidth cutoffs, open location) -->
+                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="150" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <DataGrid x:Name="DataGrid" 
-                                  ItemsSource="{Binding FilteredEntries}" 
-                                  AutoGenerateColumns="False" 
-                                  CanUserAddRows="False" 
-                                  CanUserDeleteRows="False"
-                                  CanUserResizeColumns="True"
-                                  CanUserReorderColumns="True"
+                            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
+                                <TextBlock Text="Buscar processos por nome, PID ou alerta" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBox x:Name="ProcessSearchTextBox" 
+                                         Style="{StaticResource ModernTextBox}" 
+                                         Height="32" 
+                                         TextChanged="ProcessSearchTextBox_TextChanged" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,8,0">
+                                <TextBlock Text="Corte de CPU" FontSize="11" FontWeight="Medium" Foreground="{StaticResource WarningColor}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="ProcessCpuCutoffComboBox" 
+                                          Style="{StaticResource ModernComboBox}" 
+                                          SelectedIndex="0" 
+                                          Width="110" Height="32" 
+                                          SelectionChanged="ProcessCpuCutoffComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Todos (0%)" IsSelected="True" Tag="0" />
+                                    <ComboBoxItem Content="CPU &gt; 1%" Tag="1" />
+                                    <ComboBoxItem Content="CPU &gt; 5%" Tag="5" />
+                                    <ComboBoxItem Content="CPU &gt; 10%" Tag="10" />
+                                    <ComboBoxItem Content="CPU &gt; 25%" Tag="25" />
+                                    <ComboBoxItem Content="CPU &gt; 50%" Tag="50" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,8,0">
+                                <TextBlock Text="Corte de banda" FontSize="11" FontWeight="Medium" Foreground="{StaticResource AccentBorder}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="ProcessBandwidthCutoffComboBox" 
+                                          Style="{StaticResource ModernComboBox}" 
+                                          SelectedIndex="0" 
+                                          Width="125" Height="32" 
+                                          SelectionChanged="ProcessBandwidthCutoffComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Todas as Taxas" IsSelected="True" Tag="0" />
+                                    <ComboBoxItem Content="&gt; 10 KB/s" Tag="10240" />
+                                    <ComboBoxItem Content="&gt; 100 KB/s" Tag="102400" />
+                                    <ComboBoxItem Content="&gt; 1 MB/s" Tag="1048576" />
+                                    <ComboBoxItem Content="&gt; 10 MB/s" Tag="10485760" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3" Orientation="Vertical" VerticalAlignment="Center" Margin="0,16,8,0">
+                                <CheckBox x:Name="ProcessOnlyAnomaliesCheckBox" 
+                                          Content="Apenas alertas"
+                                          Foreground="{StaticResource DangerColor}"
+                                          FontWeight="SemiBold" 
+                                          FontSize="11" 
+                                          Click="ProcessOnlyAnomaliesCheckBox_Click" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="Limpar" 
+                                        Style="{StaticResource ModernSecondaryButton}" 
+                                        Height="32" Margin="0,0,8,0"
+                                        ToolTip="Redefinir filtros de processos"
+                                        Click="ClearProcessFilters_Click" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- DataGrid Aggregated Processes -->
+                    <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                        <DataGrid x:Name="ProcessesDataGrid" 
+                                  ItemsSource="{Binding FilteredProcesses}" 
+                                  CanUserResizeColumns="True" 
                                   CanUserSortColumns="True"
-                                  IsReadOnly="True" 
-                                  SelectionMode="Extended" 
-                                  SelectionUnit="FullRow"
-                                  AlternationCount="2"
-                                  GridLinesVisibility="Horizontal"
-                                  HorizontalGridLinesBrush="#222836"
-                                  HeadersVisibility="Column"
-                                  Background="#161A24"
-                                  Foreground="#FFFFFF"
-                                  BorderThickness="0"
-                                  SelectionChanged="DataGrid_SelectionChanged"
-                                  MouseDoubleClick="DataGrid_MouseDoubleClick">
+                                  MouseDoubleClick="ProcessesDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
-                                <ContextMenu Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1">
-                                    <MenuItem Header="Marcar Selecionado(s) como Confiável" Click="AddToAllowlist_Click" FontWeight="Bold" Foreground="#34D399" />
-                                    <MenuItem Header="Remover das Conexões Confiáveis" Click="RemoveFromAllowlist_Click" Foreground="#F87171" />
-                                    <Separator Background="#283144" />
-                                    <MenuItem Header="Abrir Local do Arquivo" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="#FFFFFF" />
-                                    <MenuItem Header="Abrir no Monitor de Recursos" Click="OpenResourceMonitor_Click" Foreground="#93C5FD" />
-                                    <Separator Background="#283144" />
-                                    <MenuItem Header="Copiar Detalhes da(s) Linha(s)" Click="CopyDetails_Click" Foreground="#F8FAFC" />
-                                    <MenuItem Header="Copiar Endereço(s) Remoto(s)" Click="CopyForeignIP_Click" Foreground="#F8FAFC" />
-                                    <MenuItem Header="Copiar Endereço(s) Local(is)" Click="CopyLocalIP_Click" Foreground="#F8FAFC" />
-                                    <MenuItem Header="Copiar PID(s)" Click="CopyPID_Click" Foreground="#F8FAFC" />
-                                    <Separator Background="#283144" />
-                                    <MenuItem Header="Exportar Conexões Exibidas..." Click="ExportConnections_Click" Foreground="#60A5FA" FontWeight="SemiBold" />
-                                    <MenuItem Header="Recarregar Todas as Conexões" Click="Reload_Click" Foreground="#F8FAFC" />
+                                <ContextMenu Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                    <MenuItem Header="Abrir localização do processo" Click="ProcessOpenFileLocation_Click" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+                                    <Separator Background="{StaticResource BorderBrush}" />
+                                    <MenuItem Header="Copiar detalhes do processo" Click="CopyProcessDetails_Click" Foreground="{StaticResource TextPrimary}" />
+                                    <MenuItem Header="Copiar PID" Click="CopyProcessPID_Click" Foreground="{StaticResource TextPrimary}" />
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                             <DataGrid.Columns>
+                                <!-- INTEGRIDADE -->
+                                <DataGridTemplateColumn Header="INTEGRIDADE"
+                                                        SortMemberPath="ThreatLevel"
+                                                        CellTemplate="{StaticResource IntegrityBadgeTemplate}"
+                                                        Width="130"
+                                                        MinWidth="105" />
+
                                 <!-- PROCESSO -->
-                                <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="200" MinWidth="160">
+                                <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="*" MinWidth="180">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <Border Width="24" Height="24" CornerRadius="4" Background="#242C3D" Margin="0,0,8,0">
+                                                            <Border Width="24" Height="24" CornerRadius="4" Background="{StaticResource BgTertiary}" Margin="0,0,8,0">
                                                     <Image Source="{Binding ProcessIcon}" Width="18" Height="18" VerticalAlignment="Center" HorizontalAlignment="Center" />
                                                 </Border>
                                                 <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="#FFFFFF" FontSize="12" />
-                                                    <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="#94A3B8" />
+                                                    <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontSize="12" />
+                                                    <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="{StaticResource TextSecondary}" />
                                                 </StackPanel>
                                             </StackPanel>
                                         </DataTemplate>
@@ -741,795 +595,432 @@
                                 </DataGridTemplateColumn>
 
                                 <!-- CPU % -->
-                                <DataGridTemplateColumn Header="CPU (%)" SortMemberPath="CpuPercent" Width="85" MinWidth="75">
+                                <DataGridTemplateColumn Header="CPU (%)" SortMemberPath="CpuPercent" Width="95" MinWidth="80">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border Background="{Binding CpuBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                <TextBlock Text="{Binding DisplayCpu}" FontSize="11" FontWeight="Bold" Foreground="{Binding CpuBadgeForeground}" />
+                                                <TextBlock Text="{Binding FormattedCpu}" FontSize="11" FontWeight="Bold" Foreground="{Binding CpuBadgeForeground}" />
                                             </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <!-- BANDA / TAXA -->
-                                <DataGridTemplateColumn Header="BANDA" SortMemberPath="BandwidthBytesPerSec" Width="95" MinWidth="85">
+                                <!-- LEITURA / DOWNLOAD -->
+                                <DataGridTextColumn Header="DOWNLOAD / LEITURA" Binding="{Binding FormattedReadBandwidth}" Width="150" MinWidth="120" />
+
+                                <!-- ESCRITA / UPLOAD -->
+                                <DataGridTextColumn Header="UPLOAD / ESCRITA" Binding="{Binding FormattedWriteBandwidth}" Width="150" MinWidth="120" />
+
+                                <!-- BANDA TOTAL -->
+                                <DataGridTemplateColumn Header="BANDA TOTAL" SortMemberPath="TotalBytesPerSec" Width="130" MinWidth="110">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayBandwidth}" 
+                                            <TextBlock Text="{Binding FormattedTotalBandwidth}" 
                                                        FontFamily="Cascadia Code, Consolas, monospace" 
-                                                       FontSize="11" 
-                                                       FontWeight="SemiBold" 
-                                                       Foreground="#93C5FD" 
+                                                       FontWeight="Bold" 
+                                                       Foreground="{StaticResource AccentBorder}"
                                                        VerticalAlignment="Center" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <!-- STATUS CONFIANÇA -->
-                                <DataGridTemplateColumn Header="STATUS" SortMemberPath="IsAllowed" Width="105" MinWidth="95">
+                                <!-- CONEXÕES ATIVAS -->
+                                <DataGridTextColumn Header="CONEXÕES" Binding="{Binding ActiveConnectionsCount}" Width="95" MinWidth="80" />
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+
+                <!-- ========================================== -->
+                <!-- TAB 2: TAREFAS AGENDADAS (COM MÉTRICAS PRÓPRIAS) -->
+                <!-- ========================================== -->
+                <Grid x:Name="TabContentTasks" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /> <!-- Contextual Tasks Metric Cards -->
+                        <RowDefinition Height="Auto" /> <!-- Action & Filter Bar -->
+                        <RowDefinition Height="*" />    <!-- DataGrid -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Contextual Metrics: Scheduled Tasks -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="TOTAL TAREFAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksTotalText" Text="{Binding MetricTasksTotal}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1" Background="{StaticResource SuccessSurface}" BorderBrush="{StaticResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="HABILITADAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksEnabledText" Text="{Binding MetricTasksEnabled}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="DESABILITADAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksDisabledText" Text="{Binding MetricTasksDisabled}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="3" Background="{StaticResource WarningSurface}" BorderBrush="{StaticResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="NÃO-MICROSOFT" FontSize="10" FontWeight="Bold" Foreground="{StaticResource WarningColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksNonMicrosoftText" Text="{Binding MetricTasksNonMicrosoft}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WarningColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="4" Background="{StaticResource DangerSurface}" BorderBrush="{StaticResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="SUSPEITAS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksSuspiciousText" Text="{Binding MetricTasksSuspicious}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Action & Filter Bar: Tarefas Agendadas -->
+                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="180" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,10,0">
+                                <TextBlock Text="Buscar tarefas por nome, localização, comando ou autor" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBox x:Name="TaskSearchTextBox" 
+                                         Style="{StaticResource ModernTextBox}" 
+                                         Height="32" 
+                                         TextChanged="TaskSearchTextBox_TextChanged" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,10,0">
+                                <TextBlock Text="Categoria" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="TaskFilterComboBox" 
+                                          Style="{StaticResource ModernComboBox}" 
+                                          SelectedIndex="0" 
+                                          Width="220" Height="32" 
+                                          SelectionChanged="TaskFilterComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Todas as tarefas" IsSelected="True" />
+                                    <ComboBoxItem Content="Apenas suspeitas / não Microsoft" />
+                                    <ComboBoxItem Content="Apenas habilitadas" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="Limpar" 
+                                        Style="{StaticResource ModernSecondaryButton}" 
+                                        Height="32" Margin="0,0,6,0"
+                                        ToolTip="Redefinir busca e filtros de tarefas agendadas"
+                                        Click="ClearTaskFilters_Click" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- DataGrid Scheduled Tasks -->
+                    <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                        <DataGrid x:Name="TasksDataGrid" 
+                                  ItemsSource="{Binding FilteredTasks}" 
+                                  CanUserResizeColumns="True" 
+                                  CanUserSortColumns="True"
+                                  MouseDoubleClick="TasksDataGrid_MouseDoubleClick">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                    <MenuItem Header="Abrir localização da tarefa" Click="TaskOpenFileLocation_Click" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+                                    <Separator Background="{StaticResource BorderBrush}" />
+                                    <MenuItem Header="Copiar detalhes da tarefa" Click="CopyTaskDetails_Click" Foreground="{StaticResource TextPrimary}" />
+                                    <MenuItem Header="Copiar ação ou comando" Click="CopyTaskCommand_Click" Foreground="{StaticResource TextPrimary}" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+                                <!-- INTEGRIDADE -->
+                                <DataGridTemplateColumn Header="INTEGRIDADE"
+                                                        SortMemberPath="ThreatLevel"
+                                                        CellTemplate="{StaticResource IntegrityBadgeTemplate}"
+                                                        Width="120"
+                                                        MinWidth="105" />
+
+                                <!-- NOME DA TAREFA -->
+                                <DataGridTextColumn Header="NOME DA TAREFA" Binding="{Binding TaskName}" FontWeight="Bold" Width="200" MinWidth="150" />
+
+                                <!-- CAMINHO / PASTA -->
+                                <DataGridTextColumn Header="LOCALIZAÇÃO" Binding="{Binding TaskPath}" Width="160" MinWidth="120" />
+
+                                <!-- STATUS -->
+                                <DataGridTextColumn Header="ESTADO" Binding="{Binding State}" Width="95" MinWidth="80" />
+
+                                <!-- COMANDO A EXECUTAR -->
+                                <DataGridTemplateColumn Header="COMANDO / CAMINHO" SortMemberPath="TaskToRun" Width="*" MinWidth="260">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border Background="{Binding AllowBadgeBackground}" 
-                                                    BorderBrush="{Binding AllowBadgeBorder}" 
-                                                    BorderThickness="1" 
-                                                    CornerRadius="4" 
-                                                    Padding="6,2" 
-                                                    HorizontalAlignment="Left"
-                                                    Visibility="{Binding AllowBadgeVisibility}">
-                                                <TextBlock Text="Confiável" FontSize="10" FontWeight="Bold" Foreground="{Binding AllowBadgeForeground}" />
-                                            </Border>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TaskToRun}" 
+                                                           FontFamily="Cascadia Code, Consolas, monospace" 
+                                                           FontSize="11" 
+                                                           Foreground="{StaticResource TextPrimary}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding ThreatReason}" 
+                                                           FontSize="10" 
+                                                           FontWeight="SemiBold" 
+                                                           Foreground="{StaticResource DangerColor}"
+                                                           Visibility="{Binding ThreatReasonVisibility}" />
+                                            </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <!-- ALERTA / AMEAÇA -->
-                                <DataGridTemplateColumn Header="DIAGNÓSTICO / AMEAÇA" SortMemberPath="ThreatLevel" Width="160" MinWidth="130">
+                                <!-- AUTOR -->
+                                <DataGridTextColumn Header="AUTOR" Binding="{Binding Author}" Width="150" MinWidth="100" />
+
+                                <!-- PRÓXIMA EXECUÇÃO -->
+                                <DataGridTextColumn Header="PRÓXIMA EXECUÇÃO" Binding="{Binding NextRunTime}" Width="140" MinWidth="110" />
+
+                                <!-- ÚLTIMA EXECUÇÃO -->
+                                <DataGridTextColumn Header="ÚLTIMA EXECUÇÃO" Binding="{Binding LastRunTime}" Width="140" MinWidth="110" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+
+                <!-- ========================================== -->
+                <!-- TAB 3: ITENS DE INICIALIZAÇÃO (COM MÉTRICAS PRÓPRIAS) -->
+                <!-- ========================================== -->
+                <Grid x:Name="TabContentStartup" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /> <!-- Contextual Startup Metric Cards -->
+                        <RowDefinition Height="Auto" /> <!-- Action & Filter Bar -->
+                        <RowDefinition Height="*" />    <!-- DataGrid -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Contextual Metrics: Startup Items -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="TOTAL INICIALIZAÇÃO" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricStartupTotalText" Text="{Binding MetricStartupTotal}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="REGISTRO (RUN)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricStartupRegistryText" Text="{Binding MetricStartupRegistry}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="PASTA STARTUP" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricStartupFolderText" Text="{Binding MetricStartupFolder}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="3" Background="{StaticResource DangerSurface}" BorderBrush="{StaticResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="SUSPEITOS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricStartupSuspiciousText" Text="{Binding MetricStartupSuspicious}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Action & Filter Bar: Itens de Inicialização -->
+                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="180" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,10,0">
+                                <TextBlock Text="Buscar itens por nome, comando ou localização" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBox x:Name="StartupSearchTextBox" 
+                                         Style="{StaticResource ModernTextBox}" 
+                                         Height="32" 
+                                         TextChanged="StartupSearchTextBox_TextChanged" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,10,0">
+                                <TextBlock Text="Origem" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="StartupFilterComboBox" 
+                                          Style="{StaticResource ModernComboBox}" 
+                                          SelectedIndex="0" 
+                                          Width="180" Height="32" 
+                                          SelectionChanged="StartupFilterComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Todos os itens" IsSelected="True" />
+                                    <ComboBoxItem Content="Apenas suspeitos" />
+                                    <ComboBoxItem Content="Apenas Registro (Run)" />
+                                    <ComboBoxItem Content="Apenas pasta de inicialização" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="Limpar" 
+                                        Style="{StaticResource ModernSecondaryButton}" 
+                                        Height="32" Margin="0,0,6,0"
+                                        ToolTip="Redefinir busca e filtros de inicialização"
+                                        Click="ClearStartupFilters_Click" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- DataGrid Startup Items -->
+                    <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                        <DataGrid x:Name="StartupDataGrid" 
+                                  ItemsSource="{Binding FilteredStartupItems}" 
+                                  CanUserResizeColumns="True" 
+                                  CanUserSortColumns="True"
+                                  MouseDoubleClick="StartupDataGrid_MouseDoubleClick">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                    <MenuItem Header="Abrir localização do item" Click="StartupOpenFileLocation_Click" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+                                    <Separator Background="{StaticResource BorderBrush}" />
+                                    <MenuItem Header="Copiar detalhes do item" Click="CopyStartupDetails_Click" Foreground="{StaticResource TextPrimary}" />
+                                    <MenuItem Header="Copiar comando ou chave" Click="CopyStartupCommand_Click" Foreground="{StaticResource TextPrimary}" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+                                <!-- INTEGRIDADE -->
+                                <DataGridTemplateColumn Header="INTEGRIDADE"
+                                                        SortMemberPath="ThreatLevel"
+                                                        CellTemplate="{StaticResource IntegrityBadgeTemplate}"
+                                                        Width="120"
+                                                        MinWidth="105" />
+
+                                <!-- NOME -->
+                                <DataGridTextColumn Header="NOME DO APLICATIVO" Binding="{Binding Name}" FontWeight="Bold" Width="200" MinWidth="150" />
+
+                                <!-- LOCALIZAÇÃO -->
+                                <DataGridTextColumn Header="LOCALIZAÇÃO" Binding="{Binding Location}" Width="190" MinWidth="140" />
+
+                                <!-- TIPO -->
+                                <DataGridTextColumn Header="TIPO" Binding="{Binding SourceType}" Width="110" MinWidth="90" />
+
+                                <!-- COMANDO / CAMINHO -->
+                                <DataGridTemplateColumn Header="COMANDO / CAMINHO" SortMemberPath="Command" Width="*" MinWidth="260">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border Background="{Binding ThreatBadgeBackground}" 
-                                                    CornerRadius="4" 
-                                                    Padding="6,2" 
-                                                    HorizontalAlignment="Left"
-                                                    ToolTip="{Binding ThreatReason}"
-                                                    Visibility="{Binding ThreatBadgeVisibility}">
-                                                <TextBlock Text="{Binding ThreatBadgeText}" FontSize="10" FontWeight="Bold" Foreground="{Binding ThreatBadgeForeground}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-
-                                <!-- PROTOCOLO -->
-                                <DataGridTemplateColumn Header="PROTOCOLO" SortMemberPath="Protocol" Width="95" MinWidth="85">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Border Background="{Binding ProtocolBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                <TextBlock Text="{Binding Protocol}" FontSize="11" FontWeight="Bold" Foreground="{Binding ProtocolBadgeForeground}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-
-                                <!-- LOCAL -->
-                                <DataGridTemplateColumn Header="ENDEREÇO LOCAL" SortMemberPath="LocalAddress" Width="170" MinWidth="140">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding LocalAddress}" 
-                                                       FontFamily="Cascadia Code, Consolas, monospace" 
-                                                       FontSize="11" 
-                                                       Foreground="#FFFFFF" 
-                                                       VerticalAlignment="Center" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-
-                                <!-- REMOTO -->
-                                <DataGridTemplateColumn Header="ENDEREÇO REMOTO" SortMemberPath="ForeignAddress" Width="170" MinWidth="140">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding ForeignAddress}" 
-                                                       FontFamily="Cascadia Code, Consolas, monospace" 
-                                                       FontSize="11" 
-                                                       Foreground="#FFFFFF" 
-                                                       VerticalAlignment="Center" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-
-                                <!-- ESTADO -->
-                                <DataGridTemplateColumn Header="ESTADO" SortMemberPath="State" Width="110" MinWidth="100">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Border Background="{Binding StateBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                <TextBlock Text="{Binding State}" FontSize="10" FontWeight="Bold" Foreground="{Binding StateBadgeForeground}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-
-                                <!-- AÇÕES -->
-                                <DataGridTemplateColumn Header="AÇÕES" CanUserSort="False" Width="120" MinWidth="100">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <Button Style="{StaticResource RowIconButton}" 
-                                                        Content="Abrir" 
-                                                        ToolTip="Abrir o local do arquivo deste executável no Windows Explorer"
-                                                        Click="RowOpenFileLocation_Click" />
-
-                                                <Button Style="{StaticResource RowIconButton}" 
-                                                        Content="Copiar" 
-                                                        ToolTip="Copiar detalhes completos desta conexão"
-                                                        Click="RowCopyDetails_Click" />
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Command}" 
+                                                           FontFamily="Cascadia Code, Consolas, monospace" 
+                                                           FontSize="11" 
+                                                           Foreground="{StaticResource TextPrimary}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding ThreatReason}" 
+                                                           FontSize="10" 
+                                                           FontWeight="SemiBold" 
+                                                           Foreground="{StaticResource DangerColor}"
+                                                           Visibility="{Binding ThreatReasonVisibility}" />
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
-                    </Grid>
-                </Border>
-            </Grid>
-
-            <!-- ========================================== -->
-            <!-- TAB 1: PROCESSOS & CONSUMO (COM MÉTRICAS PRÓPRIAS) -->
-            <!-- ========================================== -->
-            <Grid x:Name="TabContentProcesses" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" /> <!-- Contextual Process Metric Cards -->
-                    <RowDefinition Height="Auto" /> <!-- Action Bar -->
-                    <RowDefinition Height="*" />    <!-- DataGrid -->
-                </Grid.RowDefinitions>
-
-                <!-- Contextual Metrics: Processes -->
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="PROCESSOS ATIVOS" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricProcessesTotalText" Text="{Binding MetricProcessesTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="1" Background="#332415" BorderBrush="#D97706" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="CPU &gt; 5%" FontSize="10" FontWeight="Bold" Foreground="#FDE047" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricProcessesHighCpuText" Text="{Binding MetricProcessesHighCpu}" FontSize="18" FontWeight="Bold" Foreground="#F59E0B" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2" Background="#142B3B" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="ALTO TRÁFEGO REDE" FontSize="10" FontWeight="Bold" Foreground="#7DD3FC" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricProcessesHighNetworkText" Text="{Binding MetricProcessesHighNetwork}" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="3" Background="#1E1E38" BorderBrush="#6366F1" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="BANDA COMBINADA" FontSize="10" FontWeight="Bold" Foreground="#C7D2FE" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricProcessesBandwidthSumText" Text="{Binding MetricProcessesBandwidthSum}" FontSize="18" FontWeight="Bold" Foreground="#818CF8" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="4" Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="DIAGNÓSTICOS / ALERTAS" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricProcessesThreatsText" Text="{Binding MetricProcessesThreats}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
                     </Border>
                 </Grid>
 
-                <!-- Action Bar -->
-                <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,10">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Monitoramento de Recursos por Processo Ativo" FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
-                            <TextBlock Text="Analise consumo de CPU, transferências em tempo real e identifique comportamentos fora do padrão." FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="📊 Monitor de Recursos" 
-                                    Style="{StaticResource ModernPrimaryButton}" 
-                                    ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)"
-                                    Margin="0,0,6,0" 
-                                    Click="OpenResourceMonitor_Click" />
-
-                            <Button Content="📋 Gerenciador de Tarefas" 
-                                    Style="{StaticResource ModernSecondaryButton}" 
-                                    ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)"
-                                    Click="OpenTaskManager_Click" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- DataGrid Aggregated Processes -->
-                <Border Grid.Row="2" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
-                    <DataGrid x:Name="ProcessesDataGrid" 
-                              ItemsSource="{Binding FilteredProcesses}" 
-                              AutoGenerateColumns="False" 
-                              CanUserAddRows="False" 
-                              CanUserDeleteRows="False"
-                              CanUserResizeColumns="True"
-                              CanUserSortColumns="True"
-                              IsReadOnly="True" 
-                              AlternationCount="2"
-                              GridLinesVisibility="Horizontal"
-                              HorizontalGridLinesBrush="#222836"
-                              HeadersVisibility="Column"
-                              Background="#161A24"
-                              Foreground="#FFFFFF"
-                              BorderThickness="0">
-                        <DataGrid.Columns>
-                            <!-- PROCESSO -->
-                            <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="220" MinWidth="180">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Border Width="24" Height="24" CornerRadius="4" Background="#242C3D" Margin="0,0,8,0">
-                                                <Image Source="{Binding ProcessIcon}" Width="18" Height="18" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                            </Border>
-                                            <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="#FFFFFF" FontSize="12" />
-                                                <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="#94A3B8" />
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <!-- CPU % -->
-                            <DataGridTemplateColumn Header="USO CPU" SortMemberPath="CpuPercent" Width="95" MinWidth="80">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border Background="{Binding CpuBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding FormattedCpu}" FontSize="11" FontWeight="Bold" Foreground="{Binding CpuBadgeForeground}" />
-                                        </Border>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <!-- LEITURA / DOWNLOAD -->
-                            <DataGridTextColumn Header="DOWNLOAD / LEITURA" Binding="{Binding FormattedReadBandwidth}" Width="150" MinWidth="120" />
-
-                            <!-- ESCRITA / UPLOAD -->
-                            <DataGridTextColumn Header="UPLOAD / ESCRITA" Binding="{Binding FormattedWriteBandwidth}" Width="150" MinWidth="120" />
-
-                            <!-- BANDA TOTAL -->
-                            <DataGridTemplateColumn Header="BANDA TOTAL" SortMemberPath="TotalBytesPerSec" Width="130" MinWidth="110">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding FormattedTotalBandwidth}" 
-                                                   FontFamily="Cascadia Code, Consolas, monospace" 
-                                                   FontWeight="Bold" 
-                                                   Foreground="#38BDF8" 
-                                                   VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <!-- CONEXÕES ATIVAS -->
-                            <DataGridTextColumn Header="CONEXÕES" Binding="{Binding ActiveConnectionsCount}" Width="95" MinWidth="80" />
-
-                            <!-- DIAGNÓSTICO / AMEAÇA -->
-                            <DataGridTemplateColumn Header="DIAGNÓSTICO DE SEGURANÇA" SortMemberPath="ThreatLevel" Width="*" MinWidth="220">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Border Background="{Binding ThreatBadgeBackground}" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
-                                                <TextBlock Text="{Binding ThreatBadgeText}" FontSize="10" FontWeight="Bold" Foreground="{Binding ThreatBadgeForeground}" />
-                                            </Border>
-                                            <TextBlock Text="{Binding ThreatReason}" FontSize="11" Foreground="#CBD5E1" VerticalAlignment="Center" Visibility="{Binding ThreatReasonVisibility}" TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Border>
             </Grid>
+        </Border>
 
-            <!-- ========================================== -->
-            <!-- TAB 2: TAREFAS AGENDADAS (COM MÉTRICAS PRÓPRIAS) -->
-            <!-- ========================================== -->
-            <Grid x:Name="TabContentTasks" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" /> <!-- Contextual Tasks Metric Cards -->
-                    <RowDefinition Height="Auto" /> <!-- Action & Filter Bar -->
-                    <RowDefinition Height="*" />    <!-- DataGrid -->
-                </Grid.RowDefinitions>
-
-                <!-- Contextual Metrics: Scheduled Tasks -->
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="TOTAL TAREFAS" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricTasksTotalText" Text="{Binding MetricTasksTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="1" Background="#132F20" BorderBrush="#15803D" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="HABILITADAS" FontSize="10" FontWeight="Bold" Foreground="#86EFAC" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricTasksEnabledText" Text="{Binding MetricTasksEnabled}" FontSize="18" FontWeight="Bold" Foreground="#4ADE80" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2" Background="#1E2330" BorderBrush="#353E54" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="DESABILITADAS" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricTasksDisabledText" Text="{Binding MetricTasksDisabled}" FontSize="18" FontWeight="Bold" Foreground="#CBD5E1" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="3" Background="#332415" BorderBrush="#D97706" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="NÃO-MICROSOFT" FontSize="10" FontWeight="Bold" Foreground="#FDE047" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricTasksNonMicrosoftText" Text="{Binding MetricTasksNonMicrosoft}" FontSize="18" FontWeight="Bold" Foreground="#F59E0B" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="4" Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="SUSPEITAS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricTasksSuspiciousText" Text="{Binding MetricTasksSuspicious}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <!-- Action Bar -->
-                <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,10">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Auditoria do Agendador de Tarefas do Windows:" FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
-                            
-                            <TextBlock Text="Filtro:" FontSize="11" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,6,0" />
-                            <ComboBox x:Name="TaskFilterComboBox" 
-                                      Style="{StaticResource ModernComboBox}" 
-                                      SelectedIndex="0" 
-                                      Width="210" Height="30" 
-                                      SelectionChanged="TaskFilterComboBox_SelectionChanged">
-                                <ComboBoxItem Content="Todas" IsSelected="True" />
-                                <ComboBoxItem Content="Apenas Suspeitas / Não-Microsoft" />
-                                <ComboBoxItem Content="Apenas Habilitadas" />
-                            </ComboBox>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="⏱️ Agendador de Tarefas" 
-                                    Style="{StaticResource ModernPrimaryButton}" 
-                                    ToolTip="Abrir o Agendador de Tarefas oficial do Windows (taskschd.msc)"
-                                    Click="OpenTaskScheduler_Click" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- DataGrid Scheduled Tasks -->
-                <Border Grid.Row="2" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
-                    <DataGrid x:Name="TasksDataGrid" 
-                              ItemsSource="{Binding FilteredTasks}" 
-                              AutoGenerateColumns="False" 
-                              CanUserAddRows="False" 
-                              CanUserDeleteRows="False"
-                              CanUserResizeColumns="True"
-                              CanUserSortColumns="True"
-                              IsReadOnly="True" 
-                              AlternationCount="2"
-                              GridLinesVisibility="Horizontal"
-                              HorizontalGridLinesBrush="#222836"
-                              HeadersVisibility="Column"
-                              Background="#161A24"
-                              Foreground="#FFFFFF"
-                              BorderThickness="0">
-                        <DataGrid.Columns>
-                            <!-- RISCO -->
-                            <DataGridTemplateColumn Header="RISCO" SortMemberPath="ThreatLevel" Width="100" MinWidth="90">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border Background="{Binding ThreatBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding ThreatBadgeText}" FontSize="10" FontWeight="Bold" Foreground="{Binding ThreatBadgeForeground}" />
-                                        </Border>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <!-- NOME DA TAREFA -->
-                            <DataGridTextColumn Header="NOME DA TAREFA" Binding="{Binding TaskName}" FontWeight="Bold" Width="200" MinWidth="150" />
-
-                            <!-- CAMINHO / PASTA -->
-                            <DataGridTextColumn Header="PASTA" Binding="{Binding TaskPath}" Width="160" MinWidth="120" />
-
-                            <!-- STATUS -->
-                            <DataGridTextColumn Header="STATUS" Binding="{Binding State}" Width="95" MinWidth="80" />
-
-                            <!-- COMANDO A EXECUTAR -->
-                            <DataGridTemplateColumn Header="AÇÃO / COMANDO EXECUTADO" SortMemberPath="TaskToRun" Width="*" MinWidth="260">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding TaskToRun}" 
-                                                       FontFamily="Cascadia Code, Consolas, monospace" 
-                                                       FontSize="11" 
-                                                       Foreground="#F8FAFC" 
-                                                       TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding ThreatReason}" 
-                                                       FontSize="10" 
-                                                       FontWeight="SemiBold" 
-                                                       Foreground="#FCA5A5" 
-                                                       Visibility="{Binding ThreatReasonVisibility}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <!-- AUTOR -->
-                            <DataGridTextColumn Header="AUTOR" Binding="{Binding Author}" Width="150" MinWidth="100" />
-
-                            <!-- PRÓXIMA EXECUÇÃO -->
-                            <DataGridTextColumn Header="PRÓXIMA EXECUÇÃO" Binding="{Binding NextRunTime}" Width="140" MinWidth="110" />
-
-                            <!-- ÚLTIMA EXECUÇÃO -->
-                            <DataGridTextColumn Header="ÚLTIMA EXECUÇÃO" Binding="{Binding LastRunTime}" Width="140" MinWidth="110" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Border>
-            </Grid>
-
-            <!-- ========================================== -->
-            <!-- TAB 3: ITENS DE INICIALIZAÇÃO (COM MÉTRICAS PRÓPRIAS) -->
-            <!-- ========================================== -->
-            <Grid x:Name="TabContentStartup" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" /> <!-- Contextual Startup Metric Cards -->
-                    <RowDefinition Height="Auto" /> <!-- Action & Filter Bar -->
-                    <RowDefinition Height="*" />    <!-- DataGrid -->
-                </Grid.RowDefinitions>
-
-                <!-- Contextual Metrics: Startup Items -->
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="TOTAL INICIALIZAÇÃO" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricStartupTotalText" Text="{Binding MetricStartupTotal}" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="1" Background="#1A2740" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="REGISTRO (RUN)" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricStartupRegistryText" Text="{Binding MetricStartupRegistry}" FontSize="18" FontWeight="Bold" Foreground="#60A5FA" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2" Background="#142B3B" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="PASTA STARTUP" FontSize="10" FontWeight="Bold" Foreground="#7DD3FC" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricStartupFolderText" Text="{Binding MetricStartupFolder}" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="3" Background="#3B1818" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="SUSPEITOS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="#FCA5A5" HorizontalAlignment="Center" />
-                            <TextBlock x:Name="MetricStartupSuspiciousText" Text="{Binding MetricStartupSuspicious}" FontSize="18" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <!-- Action Bar -->
-                <Border Grid.Row="1" Background="#1A1F2C" BorderBrush="#283144" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,10">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Itens de Inicialização Automática do Windows:" FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,14,0" />
-                            
-                            <TextBlock Text="Filtro:" FontSize="11" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,6,0" />
-                            <ComboBox x:Name="StartupFilterComboBox" 
-                                      Style="{StaticResource ModernComboBox}" 
-                                      SelectedIndex="0" 
-                                      Width="160" Height="30" 
-                                      SelectionChanged="StartupFilterComboBox_SelectionChanged">
-                                <ComboBoxItem Content="Todos" IsSelected="True" />
-                                <ComboBoxItem Content="Apenas Suspeitos" />
-                                <ComboBoxItem Content="Apenas Registro" />
-                                <ComboBoxItem Content="Apenas Pastas" />
-                            </ComboBox>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="🚀 Configurações de Inicialização" 
-                                    Style="{StaticResource ModernPrimaryButton}" 
-                                    ToolTip="Abrir o painel de aplicativos de inicialização nas Configurações do Windows (ms-settings:startupapps)"
-                                    Margin="0,0,6,0" 
-                                    Click="OpenStartupSettings_Click" />
-
-                            <Button Content="📁 Pasta de Inicialização" 
-                                    Style="{StaticResource ModernSecondaryButton}" 
-                                    ToolTip="Abrir a pasta de inicialização do usuário no Windows Explorer (shell:startup)"
-                                    Margin="0,0,6,0" 
-                                    Click="OpenStartupFolder_Click" />
-
-                            <Button Content="🔑 Editor do Registro" 
-                                    Style="{StaticResource ModernSecondaryButton}" 
-                                    ToolTip="Abrir o Editor do Registro do Windows (regedit.exe)"
-                                    Click="OpenRegistryEditor_Click" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- DataGrid Startup Items -->
-                <Border Grid.Row="2" Background="#161A24" BorderBrush="#252D3D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
-                    <DataGrid x:Name="StartupDataGrid" 
-                              ItemsSource="{Binding FilteredStartupItems}" 
-                              AutoGenerateColumns="False" 
-                              CanUserAddRows="False" 
-                              CanUserDeleteRows="False"
-                              CanUserResizeColumns="True"
-                              CanUserSortColumns="True"
-                              IsReadOnly="True" 
-                              AlternationCount="2"
-                              GridLinesVisibility="Horizontal"
-                              HorizontalGridLinesBrush="#222836"
-                              HeadersVisibility="Column"
-                              Background="#161A24"
-                              Foreground="#FFFFFF"
-                              BorderThickness="0">
-                        <DataGrid.Columns>
-                            <!-- RISCO -->
-                            <DataGridTemplateColumn Header="RISCO" SortMemberPath="ThreatLevel" Width="100" MinWidth="90">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border Background="{Binding ThreatBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding ThreatBadgeText}" FontSize="10" FontWeight="Bold" Foreground="{Binding ThreatBadgeForeground}" />
-                                        </Border>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <!-- NOME -->
-                            <DataGridTextColumn Header="NOME DO APLICATIVO" Binding="{Binding Name}" FontWeight="Bold" Width="200" MinWidth="150" />
-
-                            <!-- LOCALIZAÇÃO -->
-                            <DataGridTextColumn Header="LOCALIZAÇÃO" Binding="{Binding Location}" Width="190" MinWidth="140" />
-
-                            <!-- TIPO -->
-                            <DataGridTextColumn Header="TIPO" Binding="{Binding SourceType}" Width="110" MinWidth="90" />
-
-                            <!-- COMANDO / CAMINHO -->
-                            <DataGridTemplateColumn Header="COMANDO / CAMINHO DO EXECUTÁVEL" SortMemberPath="Command" Width="*" MinWidth="300">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Command}" 
-                                                       FontFamily="Cascadia Code, Consolas, monospace" 
-                                                       FontSize="11" 
-                                                       Foreground="#F8FAFC" 
-                                                       TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding ThreatReason}" 
-                                                       FontSize="10" 
-                                                       FontWeight="SemiBold" 
-                                                       Foreground="#FCA5A5" 
-                                                       Visibility="{Binding ThreatReasonVisibility}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Border>
-            </Grid>
-
-            <!-- ========================================== -->
-            <!-- TAB 4: INSIGHTS & GOVERNANÇA LGPD -->
-            <!-- ========================================== -->
-            <ScrollViewer x:Name="TabContentInsights" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="0,0,0,10">
-                    <!-- Threat Cards Grid -->
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <!-- Card 1: Proxy Pools & Banda -->
-                        <Border Grid.Row="0" Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,8,12">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Text="🌐" FontSize="18" Margin="0,0,8,0" />
-                                    <TextBlock Text="Monetização de Banda &amp; Proxies Residenciais" FontSize="14" FontWeight="Bold" Foreground="#60A5FA" />
-                                </StackPanel>
-                                <TextBlock Text="Instaladores de jogos piratas, cracks e executores frequentemente injetam agentes de compartilhamento de banda (ex: WorldProxyPool, PacketStream, Honeygain). Isso transforma a máquina corporativa em nó de saída de tráfego de terceiros não auditado." 
-                                           FontSize="12" Foreground="#CBD5E1" TextWrapping="Wrap" LineHeight="18" Margin="0,0,0,10" />
-                                <Border Background="#161A24" CornerRadius="6" Padding="10,6">
-                                    <TextBlock Text="Risco Crítico: Roteamento de tráfego desconhecido gerando responsabilidade civil/penal e violação da LGPD e ISO 27001." FontSize="11" FontWeight="SemiBold" Foreground="#F87171" TextWrapping="Wrap" />
-                                </Border>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Card 2: Mineração e CPU Pegging -->
-                        <Border Grid.Row="0" Grid.Column="1" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="16" Margin="8,0,0,12">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Text="⚙️" FontSize="18" Margin="0,0,8,0" />
-                                    <TextBlock Text="Mineração &amp; Cargas Distribuídas (CPU Pegging)" FontSize="14" FontWeight="Bold" Foreground="#FBBF24" />
-                                </StackPanel>
-                                <TextBlock Text="Aparelhos infectados rodam módulos de computação distribuída (como CharityEngine e BOINC) ou mineradores furtivos (xmrig), consumindo ciclos de CPU corporativos para enriquecer agentes externos e degradando o desempenho do sistema." 
-                                           FontSize="12" Foreground="#CBD5E1" TextWrapping="Wrap" LineHeight="18" Margin="0,0,0,10" />
-                                <Border Background="#161A24" CornerRadius="6" Padding="10,6">
-                                    <TextBlock Text="Risco de Ativo: Desgaste prematuro de hardware, alto consumo elétrico e lentidão operacional." FontSize="11" FontWeight="SemiBold" Foreground="#FDE047" TextWrapping="Wrap" />
-                                </Border>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Card 3: Persistência em Tarefas Agendadas -->
-                        <Border Grid.Row="1" Grid.Column="0" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,8,0">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Text="⏱️" FontSize="18" Margin="0,0,8,0" />
-                                    <TextBlock Text="Persistência Oculta em Tarefas Agendadas" FontSize="14" FontWeight="Bold" Foreground="#A78BFA" />
-                                </StackPanel>
-                                <TextBlock Text="Conforme reportado pela Microsoft Threat Intelligence, os instaladores criam tarefas agendadas no Windows para iniciar agentes no boot e manter um monitor em PowerShell oculto executado a cada cinco minutos (-WindowStyle Hidden)." 
-                                           FontSize="12" Foreground="#CBD5E1" TextWrapping="Wrap" LineHeight="18" Margin="0,0,0,10" />
-                                <Border Background="#161A24" CornerRadius="6" Padding="10,6">
-                                    <TextBlock Text="Mitigação: NetStatAnalyzer audita parâmetros de execução, detectando scripts furtivos e chamadas em Temp." FontSize="11" FontWeight="SemiBold" Foreground="#C084FC" TextWrapping="Wrap" />
-                                </Border>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Card 4: Controle de Inicialização & Allowlist -->
-                        <Border Grid.Row="1" Grid.Column="1" Background="#1C212E" BorderBrush="#2D364A" BorderThickness="1" CornerRadius="8" Padding="16" Margin="8,0,0,0">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Text="🛡️" FontSize="18" Margin="0,0,8,0" />
-                                    <TextBlock Text="Controle de Software e Itens de Inicialização" FontSize="14" FontWeight="Bold" Foreground="#34D399" />
-                                </StackPanel>
-                                <TextBlock Text="Utilize a lista de Conexões Confiáveis (Allowlist) do NetStatAnalyzer para isolar softwares corporativos autorizados e identificar imediatamente qualquer processo novo tentando abrir canais de rede ou conexões persistentes." 
-                                           FontSize="12" Foreground="#CBD5E1" TextWrapping="Wrap" LineHeight="18" Margin="0,0,0,10" />
-                                <Border Background="#161A24" CornerRadius="6" Padding="10,6">
-                                    <TextBlock Text="Recomendação: Mantenha apenas softwares homologados iniciando automaticamente." FontSize="11" FontWeight="SemiBold" Foreground="#6EE7B7" TextWrapping="Wrap" />
-                                </Border>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-
-                    <!-- Strategic Action Callout -->
-                    <Border Background="#1B2438" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="18">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Checklist de Resposta para a Governança de TI e Segurança" FontSize="15" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,6" />
-                                <TextBlock Text="1. Audite periodicamente as abas 'Tarefas Agendadas' e 'Itens de Inicialização' em busca de executáveis em AppData ou chamadas ocultas de PowerShell.&#x0a;2. Utilize o 'Corte de CPU' ao vivo para isolar processos com consumo sustentado acima de 10% ou 25%.&#x0a;3. Use as Ferramentas Oficiais do Windows integradas (Resmon, TaskSchd, ms-settings) para desativar serviços e itens ilegítimos." 
-                                           FontSize="12" Foreground="#CBD5E1" LineHeight="20" TextWrapping="Wrap" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <Button Content="Executar Varredura Geral" 
-                                        Style="{StaticResource ModernPrimaryButton}" 
-                                        Padding="16,10" 
-                                        Click="Reload_Click" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-            </ScrollViewer>
-        </Grid>
-
-        <!-- ROW 3: SCOPED BOTTOM STATUS & CONTEXTUAL ACTIONS BAR -->
+        <!-- ROW 3: SCOPED BOTTOM STATUS BAR -->
         <Grid Grid.Row="3" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Contextual Status Text -->
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="StatusTextBlock" Text="Pronto" FontSize="12" Foreground="#CBD5E1" />
-                <TextBlock Text=" • " FontSize="12" Foreground="#4B556E" Margin="6,0" />
-                <TextBlock x:Name="ConnectionCountText" Text="{Binding CurrentTabSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#FFFFFF" />
-                <TextBlock x:Name="SelectedSeparator" Text=" • " FontSize="12" Foreground="#4B556E" Margin="6,0" Visibility="Collapsed" />
-                <TextBlock x:Name="SelectedProcessText" Text="" FontSize="12" FontWeight="Bold" Foreground="#60A5FA" Visibility="Collapsed" />
+            <!-- Data controls stay in one place and lead the current table. -->
+            <Border Grid.Column="0" Background="{StaticResource SurfaceRaised}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="7" Padding="3" Margin="0,0,12,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="CurrentTabReloadButton"
+                            Content="{Binding CurrentTabRefreshText}"
+                            Style="{StaticResource ModernPrimaryButton}"
+                            Height="32"
+                            ToolTip="{Binding CurrentTabRefreshToolTip}"
+                            Click="Reload_Click" />
+                    <ToggleButton x:Name="ContinuousReadingToggleBtn"
+                                  Content="Leitura contínua (2 s)"
+                                  Style="{StaticResource ModernToggleButtonStyle}"
+                                  Height="32" Margin="4,0,0,0"
+                                  ToolTip="Atualizar automaticamente a tabela atual a cada 2 segundos. Disponível para conexões e processos."
+                                  Click="ContinuousReadingToggleBtn_Click" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Grid x:Name="StatusSpinner"
+                      Width="14" Height="14" Margin="0,0,8,0"
+                      Visibility="Collapsed"
+                      VerticalAlignment="Center"
+                      RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <RotateTransform x:Name="SpinnerRotateTransform" Angle="0" />
+                    </Grid.RenderTransform>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <Trigger Property="Visibility" Value="Visible">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard x:Name="SpinAnimation">
+                                            <Storyboard RepeatBehavior="Forever">
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                                 From="0" To="360" Duration="0:0:1" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <StopStoryboard BeginStoryboardName="SpinAnimation" />
+                                    </Trigger.ExitActions>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Ellipse Width="14" Height="14" Stroke="{StaticResource BorderBrush}" StrokeThickness="2" />
+                    <Path Data="M 7,0 A 7,7 0 0 1 14,7"
+                          Stroke="{StaticResource SuccessColor}"
+                          StrokeThickness="2"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round" />
+                </Grid>
+                <TextBlock x:Name="StatusTextBlock" Text="{Binding StatusMessage}"
+                       FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" ToolTip="{Binding StatusMessage}" />
             </StackPanel>
 
-            <!-- Scoped Contextual Action Buttons -->
-            <Grid Grid.Column="1">
-                <!-- Action for Tab 0: Network Connections -->
-                <StackPanel x:Name="ConnectionsActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Visible">
-                    <Button Content="Marcar como Confiável" 
-                            Style="{StaticResource ModernPermissionButton}" 
-                            Height="30" 
-                            ToolTip="Adicionar o(s) processo(s) selecionado(s) à lista de conexões confiáveis"
-                            Click="AddToAllowlist_Click" />
-                </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="12,0,10,0">
+                <TextBlock Text="{Binding CurrentTabLastUpdatedText}" FontSize="10" Foreground="{StaticResource TextSecondary}"
+                           TextTrimming="CharacterEllipsis" />
+                <TextBlock x:Name="ConnectionCountText" Text="{Binding CurrentTabSummary}" FontSize="10"
+                           FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
 
-                <!-- Action for Tab 1: Processes -->
-                <StackPanel x:Name="ProcessesActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
-                    <Button Content="📊 Monitor de Recursos" 
-                            Style="{StaticResource ModernSecondaryButton}" 
-                            Height="30" Margin="0,0,6,0" 
-                            ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)"
-                            Click="OpenResourceMonitor_Click" />
-                    <Button Content="📋 Gerenciador de Tarefas" 
-                            Style="{StaticResource ModernSecondaryButton}" 
-                            Height="30" 
-                            ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)"
-                            Click="OpenTaskManager_Click" />
-                </StackPanel>
-
-                <!-- Action for Tab 2: Scheduled Tasks -->
-                <StackPanel x:Name="TasksActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
-                    <Button Content="⏱️ Agendador de Tarefas" 
-                            Style="{StaticResource ModernPrimaryButton}" 
-                            Height="30" 
-                            ToolTip="Abrir o Agendador de Tarefas do Windows (taskschd.msc)"
-                            Click="OpenTaskScheduler_Click" />
-                </StackPanel>
-
-                <!-- Action for Tab 3: Startup Items -->
-                <StackPanel x:Name="StartupActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
-                    <Button Content="🚀 Configurações de Inicialização" 
-                            Style="{StaticResource ModernPrimaryButton}" 
-                            Height="30" Margin="0,0,6,0" 
-                            ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)"
-                            Click="OpenStartupSettings_Click" />
-                    <Button Content="📁 Pasta de Inicialização" 
-                            Style="{StaticResource ModernSecondaryButton}" 
-                            Height="30" 
-                            ToolTip="Abrir pasta shell:startup no Windows Explorer"
-                            Click="OpenStartupFolder_Click" />
-                </StackPanel>
-
-                <!-- Action for Tab 4: Insights -->
-                <StackPanel x:Name="InsightsActionPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
-                    <Button Content="🔄 Recarregar Diagnósticos" 
-                            Style="{StaticResource ModernPrimaryButton}" 
-                            Height="30" 
-                            ToolTip="Recarregar todos os dados e atualizar diagnósticos"
-                            Click="Reload_Click" />
-                </StackPanel>
-            </Grid>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" MaxWidth="290">
+                <TextBlock x:Name="SelectedSeparator" Text=" • " FontSize="11" Foreground="{StaticResource TextMuted}" Margin="4,0" Visibility="Collapsed" />
+                <TextBlock x:Name="SelectedProcessText" Text="" FontSize="10" FontWeight="SemiBold"
+                           Foreground="{StaticResource AccentBorder}" Visibility="Collapsed" TextTrimming="CharacterEllipsis"
+                           MaxWidth="280" ToolTip="Detalhes da seleção atual" />
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

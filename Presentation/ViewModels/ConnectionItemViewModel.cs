@@ -35,9 +35,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 {
                     Model.IsTrusted = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(AllowBadgeBackground));
-                    OnPropertyChanged(nameof(AllowBadgeForeground));
-                    OnPropertyChanged(nameof(AllowBadgeBorder));
+                    OnPropertyChanged(nameof(AllowBadgeText));
+                    OnPropertyChanged(nameof(AllowBadgeToolTip));
                     OnPropertyChanged(nameof(AllowBadgeVisibility));
                 }
             }
@@ -45,10 +44,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public BitmapImage? ProcessIcon => ProcessIconCache.Instance.GetIcon(Model.ProcessPath);
 
-        public string AllowBadgeBackground => IsAllowed ? "#064E3B" : "Transparent";
-        public string AllowBadgeForeground => IsAllowed ? "#34D399" : "Transparent";
-        public string AllowBadgeBorder => IsAllowed ? "#059669" : "Transparent";
-        public Visibility AllowBadgeVisibility => IsAllowed ? Visibility.Visible : Visibility.Collapsed;
+        public string AllowBadgeText => IsAllowed ? "Confiável" : "Não verificada";
+        public string AllowBadgeToolTip => IsAllowed
+            ? "Esta conexão corresponde a uma regra adicionada à lista de confiança."
+            : "Sem regra de confiança cadastrada. A conexão continua sendo monitorada; isso, por si só, não significa que seja maliciosa.";
+        public Visibility AllowBadgeVisibility => Visibility.Visible;
 
         public string CpuBadgeBackground => CpuPercent switch
         {
@@ -92,6 +92,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _ => "Transparent"
         };
 
+        public string ThreatBadgeToolTip => ThreatReason;
         public Visibility ThreatBadgeVisibility => ThreatLevel != ThreatLevel.Normal ? Visibility.Visible : Visibility.Collapsed;
 
         public string StateBadgeBackground => Model.State switch
@@ -141,6 +142,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             OnPropertyChanged(nameof(ThreatBadgeText));
             OnPropertyChanged(nameof(ThreatBadgeBackground));
             OnPropertyChanged(nameof(ThreatBadgeForeground));
+            OnPropertyChanged(nameof(ThreatBadgeToolTip));
             OnPropertyChanged(nameof(ThreatBadgeVisibility));
         }
     }

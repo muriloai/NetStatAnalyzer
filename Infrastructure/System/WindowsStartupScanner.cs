@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using NetStatAnalyzer.Application.Contracts;
 using NetStatAnalyzer.Domain.Entities;
+using NetStatAnalyzer.Domain.Enums;
 using NetStatAnalyzer.Domain.Policies;
 
 namespace NetStatAnalyzer.Infrastructure.System
@@ -34,7 +35,7 @@ namespace NetStatAnalyzer.Infrastructure.System
                 ScanStartupFolder(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Pasta Inicializar (Usuário)", items);
 
                 // 7. Common Startup Folder
-                ScanStartupFolder(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), "Pasta Inicializar (Todos Usuários)", items);
+                ScanStartupFolder(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), "Pasta Inicializar (Todos)", items);
 
                 return (IReadOnlyList<StartupItem>)items;
             });
@@ -51,6 +52,25 @@ namespace NetStatAnalyzer.Infrastructure.System
                 {
                     string command = key.GetValue(valName)?.ToString() ?? string.Empty;
                     var (level, reason) = ThreatDetectionPolicy.EvaluateStartupItem(valName, command, locationName);
+                    var sec = FileSecurityInspector.Inspect(command);
+
+                    if (level == ThreatLevel.Normal && !string.IsNullOrWhiteSpace(sec.ResolvedPath))
+                    {
+                        if (!sec.Exists)
+                        {
+                            level = ThreatLevel.Medium;
+                            reason = "Arquivo executável referenciado não existe no disco (Registro Órfão)";
+                        }
+                        else if (!sec.IsSigned)
+                        {
+                            level = ThreatLevel.Low;
+                            reason = "Executável sem assinatura digital válida (Não Homologado)";
+                        }
+                        else
+                        {
+                            reason = $"Assinado: {sec.SignerName ?? sec.CompanyName ?? "Fabricante Verificado"}";
+                        }
+                    }
 
                     items.Add(new StartupItem
                     {
@@ -60,7 +80,13 @@ namespace NetStatAnalyzer.Infrastructure.System
                         SourceType = "Registro",
                         IsEnabled = true,
                         ThreatLevel = level,
-                        ThreatReason = reason
+                        ThreatReason = reason,
+                        ResolvedPath = sec.ResolvedPath,
+                        FileExists = sec.Exists,
+                        IsSigned = sec.IsSigned,
+                        SignerName = sec.SignerName,
+                        IsMicrosoft = sec.IsMicrosoft,
+                        CompanyName = sec.CompanyName
                     });
                 }
             }
@@ -82,6 +108,25 @@ namespace NetStatAnalyzer.Infrastructure.System
                     if (fileName.Equals("desktop.ini", StringComparison.OrdinalIgnoreCase)) continue;
 
                     var (level, reason) = ThreatDetectionPolicy.EvaluateStartupItem(fileName, filePath, locationName);
+                    var sec = FileSecurityInspector.Inspect(filePath);
+
+                    if (level == ThreatLevel.Normal && !string.IsNullOrWhiteSpace(sec.ResolvedPath))
+                    {
+                        if (!sec.Exists)
+                        {
+                            level = ThreatLevel.Medium;
+                            reason = "Arquivo de atalho ou executável inexistente";
+                        }
+                        else if (!sec.IsSigned)
+                        {
+                            level = ThreatLevel.Low;
+                            reason = "Arquivo sem assinatura digital válida";
+                        }
+                        else
+                        {
+                            reason = $"Assinado: {sec.SignerName ?? sec.CompanyName ?? "Fabricante Verificado"}";
+                        }
+                    }
 
                     items.Add(new StartupItem
                     {
@@ -91,7 +136,13 @@ namespace NetStatAnalyzer.Infrastructure.System
                         SourceType = "Pasta Inicializar",
                         IsEnabled = true,
                         ThreatLevel = level,
-                        ThreatReason = reason
+                        ThreatReason = reason,
+                        ResolvedPath = sec.ResolvedPath,
+                        FileExists = sec.Exists,
+                        IsSigned = sec.IsSigned,
+                        SignerName = sec.SignerName,
+                        IsMicrosoft = sec.IsMicrosoft,
+                        CompanyName = sec.CompanyName
                     });
                 }
             }

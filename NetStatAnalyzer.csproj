@@ -25,12 +25,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Application\**\*.cs" />
+    <Compile Remove="Domain\**\*.cs" />
+    <Compile Remove="Infrastructure\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="assets\icon.ico" />
     <None Remove="assets\icon.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Application\NetStatAnalyzer.Application.csproj" />
+    <ProjectReference Include="Domain\NetStatAnalyzer.Domain.csproj" />
+    <ProjectReference Include="Infrastructure\NetStatAnalyzer.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

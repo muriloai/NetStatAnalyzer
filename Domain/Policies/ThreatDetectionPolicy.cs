@@ -111,8 +111,8 @@ namespace NetStatAnalyzer.Domain.Policies
                 return (ThreatLevel.High, "Tarefa vinculada a utilitário suspeito/indesejado", false);
             }
 
-            // 2. Hidden PowerShell script execution (as seen in threat intelligence report: 5-minute hidden monitor)
-            if (lowerCmd.Contains("powershell") && (lowerCmd.Contains("-w hidden") || lowerCmd.Contains("-windowstyle hidden") || lowerCmd.Contains("-enc")))
+            // 2. Hidden PowerShell script execution (only flag if non-Microsoft)
+            if (!isMicrosoft && lowerCmd.Contains("powershell") && (lowerCmd.Contains("-w hidden") || lowerCmd.Contains("-windowstyle hidden") || lowerCmd.Contains("-enc")))
             {
                 return (ThreatLevel.Critical, "Monitor PowerShell oculto em execução furtiva", false);
             }
