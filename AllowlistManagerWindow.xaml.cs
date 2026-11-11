@@ -3,10 +3,8 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
-using NetStatAnalyzer.Application.UseCases;
 using NetStatAnalyzer.Domain.Entities;
 using NetStatAnalyzer.Domain.Policies;
-using NetStatAnalyzer.Infrastructure.Persistence;
 using NetStatAnalyzer.Presentation.Extensions;
 using NetStatAnalyzer.Presentation.ViewModels;
 
@@ -16,12 +14,10 @@ namespace NetStatAnalyzer
     {
         public AllowlistManagerViewModel ViewModel { get; }
 
-        public AllowlistManagerWindow(ManageAllowlistUseCase? useCase = null)
+        public AllowlistManagerWindow(AllowlistManagerViewModel viewModel)
         {
             InitializeComponent();
-
-            var allowlistUseCase = useCase ?? new ManageAllowlistUseCase(new JsonFileAllowlistRepository());
-            ViewModel = new AllowlistManagerViewModel(allowlistUseCase);
+            ViewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             DataContext = ViewModel;
 
             ViewModel.PropertyChanged += (s, e) =>
