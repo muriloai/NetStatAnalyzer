@@ -2,7 +2,7 @@
 
 Este diretório armazena as capturas de tela e recursos visuais utilizados no `README.md` e na documentação do projeto.
 
-### Imagens da versão 1.3.0:
+### Capturas de referência da interface:
 
 1. **`preview-main.png`**:
    - Tela principal exibindo a aba **Conexões de Rede**, com o container visual delimitador, cards de métricas de rede, colunas de CPU %, Banda, Alertas de Ameaça, Protocolo, IP Local/Remoto e o filtro ao vivo de corte de CPU.

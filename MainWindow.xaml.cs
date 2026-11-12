@@ -572,6 +572,46 @@ namespace NetStatAnalyzer
             }
         }
 
+        private void ExportCurrentTabJson_Click(object sender, RoutedEventArgs e)
+        {
+            var (label, filePrefix, count) = ViewModel.SelectedTabIndex switch
+            {
+                1 => ("processos", "processos", ViewModel.FilteredProcesses.Count),
+                2 => ("tarefas agendadas", "tarefas_agendadas", ViewModel.FilteredTasks.Count),
+                3 => ("itens de inicialização", "itens_inicializacao", ViewModel.FilteredStartupItems.Count),
+                _ => ("conexões", "conexoes", ViewModel.FilteredEntries.Count)
+            };
+
+            if (count == 0)
+            {
+                MessageBox.Show($"Não há {label} visíveis para exportar com os filtros atuais.",
+                    "Sem dados para exportar", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dialog = new SaveFileDialog
+            {
+                Title = $"Exportar {label} em JSON",
+                Filter = "Arquivo JSON (*.json)|*.json",
+                FileName = $"{filePrefix}_netstat_{DateTime.Now:yyyyMMdd_HHmmss}.json",
+                DefaultExt = ".json"
+            };
+
+            if (dialog.ShowDialog(this) != true) return;
+
+            try
+            {
+                int exportedCount = ViewModel.ExportCurrentTabJson(dialog.FileName);
+                MessageBox.Show($"{exportedCount} {label} exportados para:\n{dialog.FileName}",
+                    "Exportação concluída", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao exportar {label}: {ex.Message}",
+                    "Erro de exportação", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // Windows Tools Launchers
         private void OpenResourceMonitor_Click(object sender, RoutedEventArgs e) => ViewModel.OpenResourceMonitorCommand.Execute(null);
         private void OpenTaskScheduler_Click(object sender, RoutedEventArgs e) => ViewModel.OpenTaskSchedulerCommand.Execute(null);

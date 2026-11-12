@@ -173,7 +173,7 @@ namespace NetStatAnalyzer.Application.UseCases
             RulesChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public string ExportToJson(string version = "1.3.0")
+        public string ExportToJson(string version = "1.3.1")
         {
             lock (_syncLock)
             {

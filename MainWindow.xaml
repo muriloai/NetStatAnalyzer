@@ -34,7 +34,7 @@
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="NetStatAnalyzer" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" />
-                    <TextBlock x:Name="VersionTextBlock" Text="v1.3.0" FontSize="11" FontWeight="Normal" Foreground="{StaticResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="VersionTextBlock" Text="v1.3.1" FontSize="11" FontWeight="Normal" Foreground="{StaticResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
                 </StackPanel>
                 <TextBlock Text="Auditoria de conexões de rede, processos ativos, consumo de banda e CPU, tarefas agendadas e inicialização" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,3,0,0" />
             </StackPanel>
@@ -486,7 +486,9 @@
                     </Grid>
 
                     <!-- Action & Filters Bar: Processos (Live sampling, bandwidth cutoffs, open location) -->
-                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="150" />
@@ -553,6 +555,17 @@
                             </StackPanel>
                         </Grid>
                     </Border>
+
+                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
+                            ToolTip="Exportar os processos exibidos" Click="TabActionsButton_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Exportar processos exibidos em JSON" Click="ExportCurrentTabJson_Click" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    </Grid>
 
                     <!-- DataGrid Aggregated Processes -->
                     <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
@@ -689,7 +702,9 @@
                     </Grid>
 
                     <!-- Action & Filter Bar: Tarefas Agendadas -->
-                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="180" />
@@ -727,6 +742,17 @@
                             </StackPanel>
                         </Grid>
                     </Border>
+
+                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
+                            ToolTip="Exportar as tarefas exibidas" Click="TabActionsButton_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Exportar tarefas exibidas em JSON" Click="ExportCurrentTabJson_Click" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    </Grid>
 
                     <!-- DataGrid Scheduled Tasks -->
                     <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
@@ -842,7 +868,9 @@
                     </Grid>
 
                     <!-- Action & Filter Bar: Itens de Inicialização -->
-                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="180" />
@@ -881,6 +909,17 @@
                             </StackPanel>
                         </Grid>
                     </Border>
+
+                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
+                            ToolTip="Exportar os itens de inicialização exibidos" Click="TabActionsButton_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Exportar itens exibidos em JSON" Click="ExportCurrentTabJson_Click" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    </Grid>
 
                     <!-- DataGrid Startup Items -->
                     <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">

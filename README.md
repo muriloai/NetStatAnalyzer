@@ -5,8 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET Version](https://img.shields.io/badge/.NET-8.0%20Windows-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![Platform](<https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D6?logo=windows&logoColor=white>)](https://microsoft.com/windows)
-[![Tests](https://img.shields.io/badge/Tests-52%20passed-success.svg)](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)
-[![Release](https://img.shields.io/badge/Release-v1.3.0-blue.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
+[![CI](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml/badge.svg)](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)
+[![Release](https://img.shields.io/badge/Release-v1.3.1-blue.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
 
 </div>
 
@@ -19,7 +19,7 @@ O <strong>NetStatAnalyzer</strong> é uma solução avançada de <strong>seguran
 
 <div align="center">
 
-<img src="docs/images/preview-main.png" alt="NetStatAnalyzer Preview v1.3.0" width="950" />
+<img src="docs/images/preview-main.png" alt="NetStatAnalyzer: aba de conexões" width="950" />
 
 </div>
 
@@ -229,6 +229,38 @@ flowchart TD
 
 ---
 
+## Tecnologias e componentes
+
+| Área                    | Tecnologia presente no projeto                                        | Uso no código                                                                              |
+| ----------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Plataforma              | .NET 8, C# e Windows 10/11 x64                                        | Aplicação desktop e bibliotecas separadas por camada.                                      |
+| Interface               | WPF, XAML, data binding e MVVM                                        | Quatro tabelas, filtros, comandos, indicadores e janelas de gestão.                        |
+| Arquitetura             | Clean Architecture e injeção manual de dependências                   | Projetos Domain, Application e Infrastructure; composição em `ApplicationCompositionRoot`. |
+| Coleta de rede          | `netstat.exe` e `System.Diagnostics.Process`                          | Leitura de conexões TCP/UDP e associação por PID.                                          |
+| Métricas                | Win32 `GetProcessIoCounters` por P/Invoke e `TotalProcessorTime`      | Amostras de leitura, escrita e CPU por processo.                                           |
+| Persistência do Windows | `schtasks.exe`, Registro via `Microsoft.Win32` e pastas Startup       | Auditoria de tarefas agendadas e itens de inicialização.                                   |
+| Análise de arquivos     | Assinatura Authenticode, informações de versão e caminhos executáveis | Evidências de integridade e identificação de arquivos ausentes.                            |
+| Dados locais            | `System.Text.Json`, CSV, TXT e UTF-8                                  | Lista de confiança e relatórios exportados.                                                |
+| Qualidade e entrega     | xUnit, coverlet, GitHub Actions e `dotnet publish`                    | Testes automatizados no repositório e distribuição autocontida.                            |
+
+### Exportação para análise
+
+O menu **Mais ações** de cada aba exporta em JSON os itens **exibidos pelos filtros atuais**. O documento registra a versão, o tipo de dado, a hora da exportação, a hora da última coleta válida e a quantidade de itens.
+
+As abas exportam os seguintes dados por JSON:
+
+- Conexões incluem endereços, PID, confiança, tráfego, CPU e diagnóstico;
+- Processos incluem caminho, CPU, leitura, escrita, conexões e diagnóstico;
+- Tarefas incluem horários, comando, autor, assinatura e arquivo associado;
+- Inicialização inclui origem, comando, estado, assinatura e arquivo associado.
+
+A ausência de uma assinatura ou de uma regra de confiança é uma evidência para investigar, não uma confirmação de ameaça.
+
+> [!WARNING]
+> A exportação do JSON inclui caminhos locais, dados de processos, entre outras informações, portanto cuidado ao compartilhá-lo.
+
+---
+
 ## Instalação e Execução
 
 ### Requisitos de Sistema
@@ -247,13 +279,13 @@ dotnet run
 
 ### Release
 
-O comando a seguir gera um executável único e autocontido com o runtime embutido (**não exige instalação prévia do .NET na estação de destino**):
+O comando a seguir gera um executável único e autocontido com o runtime embutido que **não exige instalação prévia do .NET na estação de destino**:
 
 ```powershell
 dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish
 ```
 
-O binário será gerado em: `./publish/NetStatAnalyzer.exe`.
+O binário será gerado em `./publish`.
 
 ---
 

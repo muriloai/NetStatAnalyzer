@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Windows.Input;
 using NetStatAnalyzer.Application.Contracts;
+using NetStatAnalyzer.Application.DTOs;
 using NetStatAnalyzer.Application.UseCases;
 using NetStatAnalyzer.Domain.Entities;
 using NetStatAnalyzer.Domain.Enums;
@@ -21,6 +22,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         private readonly ScanConnectionsUseCase _scanUseCase;
         private readonly ManageAllowlistUseCase _allowlistUseCase;
         private readonly ExportConnectionsUseCase _exportUseCase;
+        private readonly IAnalysisJsonExporter _analysisJsonExporter;
         private readonly ScanProcessMetricsUseCase _metricsUseCase;
         private readonly ScanScheduledTasksUseCase _tasksUseCase;
         private readonly ScanStartupItemsUseCase _startupUseCase;
@@ -559,6 +561,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ScanConnectionsUseCase scanUseCase,
             ManageAllowlistUseCase allowlistUseCase,
             ExportConnectionsUseCase exportUseCase,
+            IAnalysisJsonExporter analysisJsonExporter,
             ScanProcessMetricsUseCase metricsUseCase,
             ScanScheduledTasksUseCase tasksUseCase,
             ScanStartupItemsUseCase startupUseCase,
@@ -567,13 +570,14 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _scanUseCase = scanUseCase ?? throw new ArgumentNullException(nameof(scanUseCase));
             _allowlistUseCase = allowlistUseCase ?? throw new ArgumentNullException(nameof(allowlistUseCase));
             _exportUseCase = exportUseCase ?? throw new ArgumentNullException(nameof(exportUseCase));
+            _analysisJsonExporter = analysisJsonExporter ?? throw new ArgumentNullException(nameof(analysisJsonExporter));
             _metricsUseCase = metricsUseCase ?? throw new ArgumentNullException(nameof(metricsUseCase));
             _tasksUseCase = tasksUseCase ?? throw new ArgumentNullException(nameof(tasksUseCase));
             _startupUseCase = startupUseCase ?? throw new ArgumentNullException(nameof(startupUseCase));
             _windowsToolsLauncher = windowsToolsLauncher ?? throw new ArgumentNullException(nameof(windowsToolsLauncher));
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.3.0";
+            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.3.1";
 
             ReloadCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
             RefreshCurrentTabCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
@@ -1350,10 +1354,41 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
             else
             {
-                _exportUseCase.ExportToJson(filePath, connections, AppVersion);
+                _analysisJsonExporter.ExportConnections(filePath, connections, AppVersion, _connectionsLastUpdatedAt);
             }
 
             StatusMessage = $"{FilteredEntries.Count} conexões exportadas para '{Path.GetFileName(filePath)}'!";
+        }
+
+        public int ExportCurrentTabJson(string filePath)
+        {
+            int count;
+            switch (SelectedTabIndex)
+            {
+                case 1:
+                    var processes = FilteredProcesses.Select(item => new ProcessAnalysisItem(
+                        item.PID, item.ProcessName, item.ProcessPath, item.CpuPercent,
+                        item.ReadBytesPerSec, item.WriteBytesPerSec, item.ActiveConnectionsCount,
+                        item.ThreatLevel, item.ThreatReason)).ToArray();
+                    _analysisJsonExporter.ExportProcesses(filePath, processes, AppVersion, _processesLastUpdatedAt);
+                    count = processes.Length;
+                    break;
+                case 2:
+                    _analysisJsonExporter.ExportTasks(filePath, FilteredTasks.Select(item => item.Model), AppVersion, _tasksLastUpdatedAt);
+                    count = FilteredTasks.Count;
+                    break;
+                case 3:
+                    _analysisJsonExporter.ExportStartupItems(filePath, FilteredStartupItems.Select(item => item.Model), AppVersion, _startupLastUpdatedAt);
+                    count = FilteredStartupItems.Count;
+                    break;
+                default:
+                    _analysisJsonExporter.ExportConnections(filePath, FilteredEntries.Select(item => item.Model), AppVersion, _connectionsLastUpdatedAt);
+                    count = FilteredEntries.Count;
+                    break;
+            }
+
+            StatusMessage = $"{count} itens exportados para '{Path.GetFileName(filePath)}'.";
+            return count;
         }
     }
 }

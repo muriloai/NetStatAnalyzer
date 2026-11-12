@@ -28,6 +28,7 @@ namespace NetStatAnalyzer
                 new ScanConnectionsUseCase(networkScanner, processResolver),
                 allowlistUseCase,
                 new ExportConnectionsUseCase(connectionExporter),
+                new FileAnalysisJsonExporter(),
                 new ScanProcessMetricsUseCase(metricsProvider),
                 new ScanScheduledTasksUseCase(taskScanner),
                 new ScanStartupItemsUseCase(startupScanner),

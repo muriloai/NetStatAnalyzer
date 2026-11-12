@@ -6,6 +6,7 @@ using NetStatAnalyzer.Application.UseCases;
 using NetStatAnalyzer.Domain.Entities;
 using NetStatAnalyzer.Domain.Enums;
 using NetStatAnalyzer.Domain.Policies;
+using NetStatAnalyzer.Infrastructure.Exporting;
 using NetStatAnalyzer.Presentation.ViewModels;
 using Xunit;
 
@@ -155,7 +156,7 @@ namespace NetStatAnalyzer.Tests
             var tasksUseCase = new ScanScheduledTasksUseCase(new MockScheduledTaskScanner());
             var startupUseCase = new ScanStartupItemsUseCase(new MockStartupItemScanner());
 
-            var vm = new MainViewModel(scanUseCase, allowlistUseCase, exportUseCase, metricsUseCase, tasksUseCase, startupUseCase, new MockWindowsToolsLauncher());
+            var vm = new MainViewModel(scanUseCase, allowlistUseCase, exportUseCase, new FileAnalysisJsonExporter(), metricsUseCase, tasksUseCase, startupUseCase, new MockWindowsToolsLauncher());
 
             // Initial load
             await vm.LoadAllDataAsync();
