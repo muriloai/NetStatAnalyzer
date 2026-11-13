@@ -14,6 +14,7 @@ namespace NetStatAnalyzer.Domain.Entities
         public string ProcessName { get; set; } = "Desconhecido";
         public string? ProcessPath { get; set; }
         public bool IsTrusted { get; set; }
+        public string Tag { get; set; } = string.Empty;
 
         public double CpuPercent { get; set; }
         public double BandwidthBytesPerSec { get; set; }

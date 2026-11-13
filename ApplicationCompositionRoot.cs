@@ -27,7 +27,9 @@ namespace NetStatAnalyzer
             var viewModel = new MainViewModel(
                 new ScanConnectionsUseCase(networkScanner, processResolver),
                 allowlistUseCase,
+                new ManageItemAnnotationsUseCase(allowlistRepository),
                 new ExportConnectionsUseCase(connectionExporter),
+                new FileAnalysisJsonExporter(),
                 new ScanProcessMetricsUseCase(metricsProvider),
                 new ScanScheduledTasksUseCase(taskScanner),
                 new ScanStartupItemsUseCase(startupScanner),

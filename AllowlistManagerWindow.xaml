@@ -10,8 +10,8 @@
         Height="540" Width="850"
         MinHeight="450" MinWidth="680"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BgPrimary}"
-        Foreground="{StaticResource TextPrimary}"
+        Background="{DynamicResource BgPrimary}"
+        Foreground="{DynamicResource TextPrimary}"
         FontFamily="Segoe UI, Arial, sans-serif">
 
     <Grid Margin="18">
@@ -30,16 +30,16 @@
 
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Conexões Confiáveis" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-                    <Border Background="{StaticResource SuccessSurface}" BorderBrush="{StaticResource SuccessBorder}" BorderThickness="1" CornerRadius="4" Margin="10,0,0,0" Padding="8,2" VerticalAlignment="Center">
-                        <TextBlock x:Name="RuleCountTextBlock" Text="0 Conexões Confiáveis" FontSize="11" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" />
+                    <TextBlock Text="Conexões Confiáveis" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                    <Border Background="{DynamicResource SuccessSurface}" BorderBrush="{DynamicResource SuccessBorder}" BorderThickness="1" CornerRadius="4" Margin="10,0,0,0" Padding="8,2" VerticalAlignment="Center">
+                        <TextBlock x:Name="RuleCountTextBlock" Text="0 Conexões Confiáveis" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" />
                     </Border>
                 </StackPanel>
-                <TextBlock Text="Conexões que correspondem à combinação de Processo + IP são reconhecidas e marcadas como confiáveis." FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0" />
+                <TextBlock Text="Conexões que correspondem à combinação de Processo + IP são reconhecidas e marcadas como confiáveis." FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0" />
             </StackPanel>
         </Grid>
 
-        <Border Grid.Row="1" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+        <Border Grid.Row="1" Background="{DynamicResource BgTertiary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -53,7 +53,7 @@
                          VerticalAlignment="Center" />
                 <TextBlock Text="Filtrar conexões por processo ou IP..." 
                            IsHitTestVisible="False" 
-                           Foreground="{StaticResource TextMuted}"
+                           Foreground="{DynamicResource TextMuted}"
                            FontSize="12" 
                            VerticalAlignment="Center" 
                            Margin="12,0,0,0"
@@ -65,7 +65,7 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="2" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+        <Border Grid.Row="2" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
             <DataGrid x:Name="RulesDataGrid" 
                       CanUserResizeColumns="True" 
                       CanUserReorderColumns="True" 
@@ -74,7 +74,7 @@
                     <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="160" MinWidth="130">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="6,0" />
+                                <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="6,0" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -82,8 +82,8 @@
                     <DataGridTemplateColumn Header="PROTOCOLO" SortMemberPath="Protocol" Width="95" MinWidth="80">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border Background="{StaticResource BgSecondary}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="4,0">
-                                    <TextBlock Text="{Binding Protocol}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" />
+                                <Border Background="{DynamicResource BgSecondary}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="4,0">
+                                    <TextBlock Text="{Binding Protocol}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" />
                                 </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -92,7 +92,7 @@
                     <DataGridTemplateColumn Header="ENDEREÇO LOCAL" SortMemberPath="LocalAddress" Width="180" MinWidth="140">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding LocalAddress}" FontFamily="Cascadia Code, Consolas, monospace" FontWeight="SemiBold" Foreground="{StaticResource SuccessColor}" VerticalAlignment="Center" Margin="6,0" />
+                                <TextBlock Text="{Binding LocalAddress}" FontFamily="Cascadia Code, Consolas, monospace" FontWeight="SemiBold" Foreground="{DynamicResource SuccessColor}" VerticalAlignment="Center" Margin="6,0" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -100,7 +100,7 @@
                     <DataGridTemplateColumn Header="ENDEREÇO REMOTO" SortMemberPath="ForeignAddress" Width="180" MinWidth="140">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding ForeignAddress}" FontFamily="Cascadia Code, Consolas, monospace" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="6,0" />
+                                <TextBlock Text="{Binding ForeignAddress}" FontFamily="Cascadia Code, Consolas, monospace" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="6,0" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -108,7 +108,7 @@
                     <DataGridTemplateColumn Header="ADICIONADO EM" SortMemberPath="AddedAt" Width="135" MinWidth="115">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding AddedAt, StringFormat='dd/MM/yyyy HH:mm'}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="6,0" />
+                                <TextBlock Text="{Binding AddedAt, StringFormat='dd/MM/yyyy HH:mm'}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="6,0" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

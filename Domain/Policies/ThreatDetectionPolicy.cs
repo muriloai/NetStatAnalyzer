@@ -98,12 +98,12 @@ namespace NetStatAnalyzer.Domain.Policies
             // 1. Check Proxy / Miner / PUP keywords
             if (ProxyMonetizationKeywords.Any(k => lowerName.Contains(k) || lowerCmd.Contains(k)))
             {
-                return (ThreatLevel.Critical, "Tarefa de persistência para compartilhamento de banda (Proxy)", false);
+                return (ThreatLevel.Critical, "Tarefa agendada associada a compartilhamento de banda (proxy)", false);
             }
 
             if (DistributedComputingKeywords.Any(k => lowerName.Contains(k) || lowerCmd.Contains(k)))
             {
-                return (ThreatLevel.Critical, "Tarefa de persistência para computação distribuída/minerador", false);
+                return (ThreatLevel.Critical, "Tarefa agendada associada a computação distribuída/mineração", false);
             }
 
             if (PupKeywords.Any(k => lowerName.Contains(k) || lowerCmd.Contains(k)))

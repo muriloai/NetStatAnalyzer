@@ -7,7 +7,7 @@ namespace NetStatAnalyzer.Application.Contracts
     {
         IReadOnlyList<AllowlistRule> LoadAll();
         void SaveAll(IEnumerable<AllowlistRule> rules);
-        string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.3.0");
+        string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.4.1");
         (bool Success, IReadOnlyList<AllowlistRule> Rules, string Version, string Message) ImportFromJson(string jsonContent);
     }
 }

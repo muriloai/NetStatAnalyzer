@@ -5,21 +5,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET Version](https://img.shields.io/badge/.NET-8.0%20Windows-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![Platform](<https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D6?logo=windows&logoColor=white>)](https://microsoft.com/windows)
-[![Tests](https://img.shields.io/badge/Tests-52%20passed-success.svg)](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)
-[![Release](https://img.shields.io/badge/Release-v1.3.0-blue.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
+[![CI](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml/badge.svg)](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)
+[![Release](https://img.shields.io/badge/Release-v1.4.1-blue.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
 
 </div>
 
 <p align="justify">
 O <strong>NetStatAnalyzer</strong> é uma solução avançada de <strong>segurança e monitoramento</strong> para <strong>Windows</strong>, projetada para mapear, em tempo real, todas as conexões e portas ativas do seu sistema.
 
-É uma solução totalmente voltada para efetuar análises de segurança da informação, inclusive para <strong>ambientes corporativos</strong>, que combina inspeção aprofundada de sockets de rede (TCP/UDP), medição de tráfego de banda (I/O de leitura e escrita), CPU por processo em tempo real os quais usam tráfego de rede, auditoria de persistência sobre tarefas agendadas e itens de inicialização, e detecção proativa de atividades suspeitas como proxies residenciais, mineração não autorizada e scripts em modo oculto.
+É uma solução voltada à análise de segurança da informação, inclusive em <strong>ambientes corporativos</strong>. Combina inspeção de sockets de rede (TCP/UDP), medição de tráfego e CPU por processo, auditoria da <strong>execução automática no Windows</strong> por tarefas agendadas e itens de inicialização, e detecção de atividades suspeitas como proxies residenciais, mineração não autorizada e scripts em modo oculto.
 
 </p>
 
 <div align="center">
 
-<img src="docs/images/preview-main.png" alt="NetStatAnalyzer Preview v1.3.0" width="950" />
+<img src="docs/images/preview-main.png" alt="NetStatAnalyzer: aba de conexões" width="950" />
 
 </div>
 
@@ -58,8 +58,8 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 2. **Mineração e processamento distribuído**<br>
    Utilitários de computação distribuída podem degradar o desempenho do hardware e ampliar o consumo de recursos.
 
-3. **Persistência oculta**<br>
-   Scripts executados em segundo plano via PowerShell (`-WindowStyle Hidden`) podem estar associados a tarefas agendadas ou chaves de registro sem visibilidade direta para o usuário.
+3. **Execução automática oculta**<br>
+   Programas e scripts podem ser configurados para executar sem ação manual por tarefas agendadas ou itens de inicialização. Em segurança, manter essa execução é chamado de persistência.
 
 > [!IMPORTANT]
 > Sob diretrizes de governança, **LGPD** e controles **ISO 27001**, qualquer estação que opere como roteador de tráfego de terceiros configura violação crítica de rastreabilidade, confidencialidade e controle de ativos. O NetStatAnalyzer centraliza a visibilidade operacional para permitir identificação e resposta imediatas.
@@ -67,6 +67,21 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 ---
 
 ## Módulos e Recursos
+
+### Controles comuns às quatro abas
+
+- **Atualização de dados:** o botão atualiza as quatro abas. Atualização manual e leitura contínua não rodam ao mesmo tempo; durante a leitura contínua, o indicador verde mostra a atividade e o botão permite pausá-la.
+- **Filtros globais:** tag, confiança e alertas atuam em todas as tabelas. A busca e os filtros abaixo das abas afetam somente a tabela ativa.
+- **Tags e confiança:** selecione registros em qualquer aba e use o botão direito ou **Mais ações**. Tags são compartilhadas entre as abas e podem ser filtradas globalmente; a confiança também pode ser atribuída a processos, tarefas e itens de inicialização.
+  - Escolha uma tag salva ou digite uma nova.
+  - Deixe o campo vazio para remover a tag dos itens selecionados.
+- **Tema:** o ícone no canto superior direito alterna entre claro e escuro. O tema escuro usa superfícies grafite e realces neutros, preservando cores semânticas para alertas. O claro usa cinzas com botões de alto contraste. A preferência é lembrada em `allowlist.json`.
+- **Barra de status:** mantém áreas fixas para estado da leitura, data e quantidade de dados da aba, e resumo dos registros selecionados.
+- **Exportação:** cada aba exporta os registros exibidos em JSON, com data da coleta, tag, confiança e os detalhes técnicos disponíveis.
+
+As tags e a confiança dos registros são armazenadas localmente em `allowlist.json`, junto das regras de conexões confiáveis. Registros sem classificação aparecem como **Não verificado**, o que não implica uma ameaça.
+
+---
 
 ### Monitoramento de Conexões de Rede
 
@@ -76,8 +91,8 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 - **Consumo de CPU**<br>
   Exibe indicadores percentuais individuais atualizados em tempo real.
 
-- **Filtro dinâmico de utilização de CPU**<br>
-  Permite visualizar processos acima de faixas predeterminadas (`> 1%`, `> 5%`, `> 10%`, `> 25%`, `> 50%`).
+- **CPU (%)**<br>
+  O filtro usa o nome da coluna **CPU (%)** e oferece níveis mínimos de `1%`, `5%`, `10%`, `25%` e `50%`. A opção inicial **Todos** não restringe a lista.
 
 - **Filtro de anomalias**<br>
   Isola conexões que apresentem picos ou comportamentos atípicos.
@@ -99,6 +114,9 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 - **Volumes de tráfego**<br>
   Separa **Download / Leitura** de **Upload / Escrita**.
 
+- **CPU (%) e BANDA TOTAL**<br>
+  Os filtros usam os nomes das colunas **CPU (%)** e **BANDA TOTAL**. Eles oferecem níveis mínimos de CPU (`1%`, `5%`, `10%`, `25%`, `50%`) e de banda (`10 KB/s`, `100 KB/s`, `1 MB/s`, `10 MB/s`). A opção inicial **Todos** não restringe a lista.
+
 - **Conexões ativas**<br>
   Exibe a contagem total por processo.
 
@@ -111,12 +129,16 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 
 ---
 
-### Auditoria de Tarefas Agendadas
+### Execução Automática no Windows
+
+A área cobre duas formas de execução automática: tarefas que rodam por horário ou evento e itens que iniciam com o Windows ou com a sessão do usuário.
+
+#### Tarefas Agendadas
 
 - **Varredura de tarefas**<br>
   Lista e classifica tarefas agendadas locais.
 
-- **Detecção de persistência**<br>
+- **Sinais de execução automática suspeita**<br>
   Identifica scripts PowerShell em modo oculto, intervalos de execução inferiores a 15 minutos, binários em diretórios temporários (`%AppData%`, `%Temp%`) e executáveis sem assinatura digital válida.
 
 - **Acesso ao console de gestão**<br>
@@ -126,9 +148,7 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 <img src="docs/images/preview-scheduled-tasks.png" alt="Aba de Tarefas Agendadas" width="900" />
 </div>
 
----
-
-### Auditoria de Inicialização do Sistema
+#### Itens de Inicialização do Sistema
 
 - **Inspeção do Registro**<br>
   Verifica as chaves `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, `HKLM`, `RunOnce` e os ramos `WOW6432Node`.
@@ -229,6 +249,38 @@ flowchart TD
 
 ---
 
+## Tecnologias e componentes
+
+| Área                    | Tecnologia presente no projeto                                        | Uso no código                                                                              |
+| ----------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Plataforma              | .NET 8, C# e Windows 10/11 x64                                        | Aplicação desktop e bibliotecas separadas por camada.                                      |
+| Interface               | WPF, XAML, data binding e MVVM                                        | Quatro tabelas, filtros, comandos, indicadores e janelas de gestão.                        |
+| Arquitetura             | Clean Architecture e injeção manual de dependências                   | Projetos Domain, Application e Infrastructure; composição em `ApplicationCompositionRoot`. |
+| Coleta de rede          | `netstat.exe` e `System.Diagnostics.Process`                          | Leitura de conexões TCP/UDP e associação por PID.                                          |
+| Métricas                | Win32 `GetProcessIoCounters` por P/Invoke e `TotalProcessorTime`      | Amostras de leitura, escrita e CPU por processo.                                           |
+| Execução automática do Windows | `schtasks.exe`, Registro via `Microsoft.Win32` e pastas Startup       | Auditoria de tarefas agendadas e itens de inicialização.                                   |
+| Análise de arquivos     | Assinatura Authenticode, informações de versão e caminhos executáveis | Evidências de integridade e identificação de arquivos ausentes.                            |
+| Dados locais            | `System.Text.Json`, CSV, TXT e UTF-8                                  | Regras de confiança, tags, tema e relatórios exportados.                                   |
+| Qualidade e entrega     | xUnit, coverlet, GitHub Actions e `dotnet publish`                    | Testes automatizados no repositório e distribuição autocontida.                            |
+
+### Exportação para análise
+
+O menu **Mais ações** de cada aba exporta em JSON os itens **exibidos após os filtros globais e locais**. O documento registra a versão, o tipo de dado, a hora da exportação, a hora da última coleta válida e a quantidade de itens.
+
+As abas exportam os seguintes dados por JSON:
+
+- Conexões incluem endereços, PID, tag, confiança, tráfego, CPU e diagnóstico;
+- Processos incluem caminho, tag, confiança, CPU, leitura, escrita, conexões e diagnóstico;
+- Tarefas incluem horários, comando, autor, tag, confiança, assinatura e arquivo associado;
+- Inicialização inclui origem, comando, estado, tag, confiança, assinatura e arquivo associado.
+
+A ausência de uma assinatura ou de uma regra de confiança é uma evidência para investigar, não uma confirmação de ameaça.
+
+> [!WARNING]
+> A exportação do JSON inclui caminhos locais, dados de processos, entre outras informações, portanto cuidado ao compartilhá-lo.
+
+---
+
 ## Instalação e Execução
 
 ### Requisitos de Sistema
@@ -247,13 +299,13 @@ dotnet run
 
 ### Release
 
-O comando a seguir gera um executável único e autocontido com o runtime embutido (**não exige instalação prévia do .NET na estação de destino**):
+O comando a seguir gera um executável único e autocontido com o runtime embutido que **não exige instalação prévia do .NET na estação de destino**:
 
 ```powershell
 dotnet publish NetStatAnalyzer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish
 ```
 
-O binário será gerado em: `./publish/NetStatAnalyzer.exe`.
+O binário será gerado em `./publish`.
 
 ---
 
@@ -268,7 +320,7 @@ A base de código conta com **52 testes automatizados** usando xUnit, cobrindo r
   Valida taxas de transferência e formatação proporcional de unidades.
 
 - **Filtros de utilização de CPU**<br>
-  Verificam os cortes dinâmicos no `MainViewModel`.
+  Verificam os filtros dinâmicos por CPU no `MainViewModel`.
 
 - **Integridade da Allowlist (`TrustEvaluationPolicy` e `ManageAllowlistUseCase`)**<br>
   Valida a sanitização de endereços IPv4/IPv6, portas e máscaras curinga.
@@ -309,7 +361,8 @@ NetStatAnalyzer/
 ├── Presentation/
 │   ├── Styles/DesignSystem.xaml           # Sistema de design, paleta e temas
 │   ├── Common/                            # Utilitários MVVM
-│   └── ViewModels/                        # ViewModels e bindings
+│   ├── ViewModels/                        # ViewModels e bindings
+│   └── Windows/                           # Janelas auxiliares, como o editor de tags
 ├── NetStatAnalyzer.Tests/                 # Suíte de testes unitários (xUnit)
 ├── ApplicationCompositionRoot.cs          # Ponto de composição de dependências
 ├── MainWindow.xaml                        # Janela principal da aplicação

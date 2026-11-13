@@ -6,6 +6,7 @@ using NetStatAnalyzer.Application.UseCases;
 using NetStatAnalyzer.Domain.Entities;
 using NetStatAnalyzer.Domain.Enums;
 using NetStatAnalyzer.Domain.Policies;
+using NetStatAnalyzer.Infrastructure.Exporting;
 using NetStatAnalyzer.Presentation.ViewModels;
 using Xunit;
 
@@ -155,7 +156,7 @@ namespace NetStatAnalyzer.Tests
             var tasksUseCase = new ScanScheduledTasksUseCase(new MockScheduledTaskScanner());
             var startupUseCase = new ScanStartupItemsUseCase(new MockStartupItemScanner());
 
-            var vm = new MainViewModel(scanUseCase, allowlistUseCase, exportUseCase, metricsUseCase, tasksUseCase, startupUseCase, new MockWindowsToolsLauncher());
+            var vm = new MainViewModel(scanUseCase, allowlistUseCase, new ManageItemAnnotationsUseCase(new MockItemAnnotationRepository()), exportUseCase, new FileAnalysisJsonExporter(), metricsUseCase, tasksUseCase, startupUseCase, new MockWindowsToolsLauncher());
 
             // Initial load
             await vm.LoadAllDataAsync();
@@ -218,6 +219,14 @@ namespace NetStatAnalyzer.Tests
         public void ExportToJson(string path, IEnumerable<NetworkConnection> connections, string version) { }
         public void ExportToCsv(string path, IEnumerable<NetworkConnection> connections) { }
         public void ExportToTxt(string path, IEnumerable<NetworkConnection> connections) { }
+    }
+
+    public class MockItemAnnotationRepository : IItemAnnotationRepository
+    {
+        public IReadOnlyList<ItemAnnotation> LoadAnnotations() => Array.Empty<ItemAnnotation>();
+        public string LoadTheme() => "Dark";
+        public void SaveAnnotations(IEnumerable<ItemAnnotation> annotations) { }
+        public void SaveTheme(string theme) { }
     }
 
     public class MockWindowsToolsLauncher : IWindowsToolsLauncher

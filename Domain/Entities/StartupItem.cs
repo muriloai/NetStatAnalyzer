@@ -5,6 +5,8 @@ namespace NetStatAnalyzer.Domain.Entities
     public class StartupItem
     {
         public string Name { get; set; } = string.Empty;
+        public string Tag { get; set; } = string.Empty;
+        public bool IsTrusted { get; set; }
         public string Command { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string SourceType { get; set; } = "Registro";

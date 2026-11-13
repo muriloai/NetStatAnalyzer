@@ -5,6 +5,8 @@ namespace NetStatAnalyzer.Domain.Entities
     public class ScheduledTaskItem
     {
         public string TaskName { get; set; } = string.Empty;
+        public string Tag { get; set; } = string.Empty;
+        public bool IsTrusted { get; set; }
         public string TaskPath { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
         public string NextRunTime { get; set; } = string.Empty;

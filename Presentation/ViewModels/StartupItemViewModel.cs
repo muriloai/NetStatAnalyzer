@@ -42,25 +42,25 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         {
             ThreatLevel.Critical => "#7F1D1D",
             ThreatLevel.High => "#991B1B",
-            ThreatLevel.Medium when !FileExists => "#7C2D12",
-            ThreatLevel.Medium => "#713F12",
-            ThreatLevel.Low when !IsSigned => "#451A03",
+            ThreatLevel.Medium when !FileExists => "#9A3412",
+            ThreatLevel.Medium => "#C2410C",
+            ThreatLevel.Low when !IsSigned => "#B45309",
             ThreatLevel.Low => "#1E3A8A",
             _ when IsMicrosoft => "#064E3B", // Emerald green for OS component
             _ when IsSigned => "#0C3B5E",   // Distinct Tech Blue for signed third-party
-            _ => "#451A03"
+            _ => "#B45309"
         };
 
         public string ThreatBadgeForeground => ThreatLevel switch
         {
             ThreatLevel.Critical or ThreatLevel.High => "#FCA5A5",
-            ThreatLevel.Medium when !FileExists => "#FDBA74",
-            ThreatLevel.Medium => "#FDE047",
-            ThreatLevel.Low when !IsSigned => "#FCD34D",
+            ThreatLevel.Medium when !FileExists => "#FED7AA",
+            ThreatLevel.Medium => "#FED7AA",
+            ThreatLevel.Low when !IsSigned => "#FDE68A",
             ThreatLevel.Low => "#93C5FD",
             _ when IsMicrosoft => "#6EE7B7",
             _ when IsSigned => "#7DD3FC",
-            _ => "#FCD34D"
+            _ => "#FDE68A"
         };
 
         public string ThreatBadgeToolTip => ThreatLevel switch

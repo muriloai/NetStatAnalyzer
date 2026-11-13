@@ -6,21 +6,22 @@
         xmlns:local="clr-namespace:NetStatAnalyzer"
         mc:Ignorable="d"
         Icon="pack://application:,,,/NetStatAnalyzer;component/assets/icon.ico"
-        Title="NetStatAnalyzer - Monitor de Rede, Processos, Recursos e Persistência" 
+        Title="NetStatAnalyzer - Monitor de Rede, Processos, Recursos e Execução Automática"
         Height="800" Width="1260"
         MinHeight="600" MinWidth="1080"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BgPrimary}"
-        Foreground="{StaticResource TextPrimary}"
+        Background="{DynamicResource BgPrimary}"
+        Foreground="{DynamicResource TextPrimary}"
         FontFamily="Segoe UI, Arial, sans-serif"
         Loaded="Window_Loaded">
 
     <Grid Margin="18">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- Row 0: Header & Windows Tools -->
-            <RowDefinition Height="Auto" /> <!-- Row 1: Connected Tab Bar (Header Strip) -->
-            <RowDefinition Height="*" />    <!-- Row 2: Active Tab Embracing Card Container -->
-            <RowDefinition Height="Auto" /> <!-- Row 3: Scoped Bottom Status Bar -->
+            <RowDefinition Height="Auto" /> <!-- Row 1: Capture and global filters -->
+            <RowDefinition Height="Auto" /> <!-- Row 2: Connected Tab Bar -->
+            <RowDefinition Height="*" />    <!-- Row 3: Active Tab Container -->
+            <RowDefinition Height="Auto" /> <!-- Row 4: Status Bar -->
         </Grid.RowDefinitions>
 
         <!-- ROW 0: CLEAN HEADER (Discreet version & Tools Dropdown) -->
@@ -33,10 +34,10 @@
             <!-- Title & Discreet Version (Foto 3) -->
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="NetStatAnalyzer" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" />
-                    <TextBlock x:Name="VersionTextBlock" Text="v1.3.0" FontSize="11" FontWeight="Normal" Foreground="{StaticResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
+                    <TextBlock Text="NetStatAnalyzer" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                    <TextBlock x:Name="VersionTextBlock" Text="v1.4.1" FontSize="11" FontWeight="Normal" Foreground="{DynamicResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="Auditoria de conexões de rede, processos ativos, consumo de banda e CPU, tarefas agendadas e inicialização" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,3,0,0" />
+                <TextBlock Text="Auditoria de conexões de rede, processos ativos, consumo de banda e CPU e execução automática no Windows" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,3,0,0" />
             </StackPanel>
 
             <!-- Top Right Actions: Dropdown Tools & Single Global Refresh (No button repetition) -->
@@ -48,34 +49,97 @@
                         ToolTip="Menu rápido para abrir utilitários oficiais do sistema operacional Windows"
                         Click="WindowsToolsBtn_Click">
                     <Button.ContextMenu>
-                        <ContextMenu x:Name="WindowsToolsMenu" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <ContextMenu x:Name="WindowsToolsMenu" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                             <MenuItem Header="Monitor de Recursos"
                                       ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)" 
-                                      Foreground="{StaticResource TextPrimary}" Click="OpenResourceMonitor_Click" />
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenResourceMonitor_Click" />
                             <MenuItem Header="Agendador de Tarefas"
                                       ToolTip="Abrir o Agendador de Tarefas oficial do Windows (taskschd.msc)" 
-                                      Foreground="{StaticResource TextPrimary}" Click="OpenTaskScheduler_Click" />
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenTaskScheduler_Click" />
                             <MenuItem Header="Aplicativos de Inicialização"
                                       ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)" 
-                                      Foreground="{StaticResource TextPrimary}" Click="OpenStartupSettings_Click" />
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenStartupSettings_Click" />
                             <MenuItem Header="Gerenciador de Tarefas"
                                       ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)" 
-                                      Foreground="{StaticResource TextPrimary}" Click="OpenTaskManager_Click" />
-                            <Separator Background="{StaticResource BorderBrush}" />
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenTaskManager_Click" />
+                            <Separator Background="{DynamicResource BorderBrush}" />
                             <MenuItem Header="Pasta de Inicialização"
                                       ToolTip="Abrir a pasta de inicialização do usuário (shell:startup)" 
-                                      Foreground="{StaticResource TextPrimary}" Click="OpenStartupFolder_Click" />
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenStartupFolder_Click" />
                             <MenuItem Header="Editor do Registro"
                                       ToolTip="Abrir o Editor do Registro do Windows (regedit.exe)" 
-                                      Foreground="{StaticResource TextPrimary}" Click="OpenRegistryEditor_Click" />
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenRegistryEditor_Click" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+                <Button Content="◐" Style="{StaticResource ModernSecondaryButton}"
+                        ToolTip="Tema da interface" Width="36" Margin="8,0,0,0"
+                        Click="TabActionsButton_Click">
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Tema claro" Click="LightTheme_Click" />
+                            <MenuItem Header="Tema escuro" Click="DarkTheme_Click" />
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
             </StackPanel>
         </Grid>
 
+        <Grid Grid.Row="1" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="{DynamicResource SurfaceRaised}" BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,0,8,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Grid Width="132" Height="32">
+                        <Button x:Name="RefreshDataButton" Content="Atualizar dados"
+                                Style="{StaticResource ModernPrimaryButton}" Width="132" Height="32"
+                                ToolTip="Atualizar os dados das quatro abas" Click="RefreshAllData_Click" />
+                        <ProgressBar x:Name="RefreshLoadingProgressBar" Height="2" Margin="12,0,12,3"
+                                     VerticalAlignment="Bottom" IsIndeterminate="True"
+                                     Background="{DynamicResource SurfaceInset}"
+                                     Foreground="{DynamicResource SuccessColor}" BorderThickness="0"
+                                     Visibility="Collapsed" IsHitTestVisible="False" Panel.ZIndex="1" />
+                    </Grid>
+                    <Grid Width="170" Height="32" Margin="6,0,0,0">
+                        <ToggleButton x:Name="ContinuousReadingToggleBtn" Content="Leitura contínua"
+                                      Style="{StaticResource ModernToggleButtonStyle}" Height="32" Width="170"
+                                      ToolTip="Ativar a leitura contínua nas abas Conexões e Processos"
+                                      Click="ContinuousReadingToggleBtn_Click" />
+                        <ProgressBar x:Name="ContinuousLoadingProgressBar" Height="2" Margin="12,0,12,3"
+                                     VerticalAlignment="Bottom" IsIndeterminate="True"
+                                     Background="{DynamicResource SurfaceInset}"
+                                     Foreground="{DynamicResource SuccessColor}" BorderThickness="0"
+                                     Visibility="Collapsed" IsHitTestVisible="False" Panel.ZIndex="1" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Background="{DynamicResource SurfaceRaised}" BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="8">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ComboBox x:Name="GlobalTagComboBox" Width="145" Height="32" Margin="0,0,6,0"
+                              Style="{StaticResource ModernComboBox}" ItemsSource="{Binding GlobalTagOptions}"
+                              SelectedItem="{Binding GlobalTagFilter, Mode=TwoWay}" ToolTip="Filtrar todas as abas por tag" />
+                    <ComboBox Width="155" Height="32" Margin="0,0,8,0" Style="{StaticResource ModernComboBox}"
+                              SelectedValuePath="Content" SelectedValue="{Binding GlobalTrustFilter, Mode=TwoWay}"
+                              ToolTip="Filtrar confiança em todas as abas">
+                        <ComboBoxItem Content="Todas" />
+                        <ComboBoxItem Content="Apenas confiáveis" />
+                        <ComboBoxItem Content="Não verificados" />
+                    </ComboBox>
+                    <CheckBox Content="Só alertas" IsChecked="{Binding GlobalOnlyAlerts, Mode=TwoWay}"
+                              Foreground="{DynamicResource DangerColor}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <Button Content="Limpar" Style="{StaticResource ModernSecondaryButton}"
+                            Height="32" ToolTip="Limpar as tags, confiança e alertas selecionados"
+                            Click="ClearGlobalFilters_Click" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
         <!-- ROW 1: TAB NAVIGATION STRIP (Directly attached to the container below) -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,-1" Panel.ZIndex="10">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,-1" Panel.ZIndex="10">
             <Button x:Name="TabConnectionsBtn" Content="🌐 Conexões de Rede" 
                     Style="{StaticResource ModernActiveTabButton}" 
                     Click="TabButton_Click" Tag="0" />
@@ -94,7 +158,7 @@
         </StackPanel>
 
         <!-- ROW 2: ACTIVE TAB EMBRACING CARD CONTAINER (Foto 2: Delimiting frame that visually unites the active tab) -->
-        <Border Grid.Row="2" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="0,8,8,8" Padding="14">
+        <Border Grid.Row="3" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="0,8,8,8" Padding="14">
             <Grid>
 
                 <!-- ========================================== -->
@@ -117,43 +181,43 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                        <Border Grid.Column="0" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
                                 Cursor="Hand" ToolTip="Total de conexões TCP e portas UDP monitoradas. Clique para redefinir filtros." MouseDown="MetricCardTotal_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="TOTAL CONEXÕES" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricTotalText" Text="{Binding MetricTotal}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="TOTAL CONEXÕES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTotalText" Text="{Binding MetricTotal}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="1" Background="{StaticResource SuccessSurface}" BorderBrush="{StaticResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                        <Border Grid.Column="1" Background="{DynamicResource SuccessSurface}" BorderBrush="{DynamicResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
                                 Cursor="Hand" ToolTip="Conexões ativas no estado ESTABLISHED. Clique para filtrar por este estado." MouseDown="MetricCardEstablished_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="ESTABLISHED" FontSize="10" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricEstablishedText" Text="{Binding MetricEstablished}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="ESTABLISHED" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricEstablishedText" Text="{Binding MetricEstablished}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="2" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                        <Border Grid.Column="2" Background="{DynamicResource AccentSurface}" BorderBrush="{DynamicResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
                                 Cursor="Hand" ToolTip="Portas locais abertas em escuta (LISTENING). Clique para filtrar por este estado." MouseDown="MetricCardListening_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="LISTENING (EM ESCUTA)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricListeningText" Text="{Binding MetricListening}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="LISTENING (EM ESCUTA)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricListeningText" Text="{Binding MetricListening}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="3" Background="{StaticResource SuccessSurface}" BorderBrush="{StaticResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                        <Border Grid.Column="3" Background="{DynamicResource SuccessSurface}" BorderBrush="{DynamicResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
                                 Cursor="Hand" ToolTip="Conexões autorizadas cadastradas na Lista de Confiáveis. Clique para filtrar." MouseDown="MetricCardAllowed_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="CONEXÕES CONFIÁVEIS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricAllowedText" Text="{Binding MetricAllowed}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="CONEXÕES CONFIÁVEIS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricAllowedText" Text="{Binding MetricAllowed}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="4" Background="{StaticResource DangerSurface}" BorderBrush="{StaticResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8"
+                        <Border Grid.Column="4" Background="{DynamicResource DangerSurface}" BorderBrush="{DynamicResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8"
                                 Cursor="Hand" ToolTip="Conexões com consumo elevado de recursos ou alertas heurísticos. Clique para filtrar." MouseDown="MetricCardThreat_MouseDown">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="ALERTAS / ANOMALIAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricThreatText" Text="{Binding MetricThreatConnections}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="ALERTAS / ANOMALIAS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource DangerColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricThreatText" Text="{Binding MetricThreatConnections}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -164,12 +228,10 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,8,0">
+                        <Border Grid.Column="0" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,8,0">
                           <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" MinWidth="130" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="260" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
@@ -178,20 +240,20 @@
 
                             <!-- Search -->
                             <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
-                                <TextBlock Text="Buscar conexões por processo, IP, porta ou PID" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBlock Text="Buscar conexões por processo, IP, porta ou PID" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <TextBox x:Name="SearchTextBox" 
                                          Style="{StaticResource ModernTextBox}" 
-                                         Height="32" 
+                                         Height="32" HorizontalAlignment="Stretch"
                                          TextChanged="SearchTextBox_TextChanged" />
                             </StackPanel>
 
                             <!-- Protocol -->
                             <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,6,0">
-                                <TextBlock Text="Protocolo" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBlock Text="Protocolo" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <ComboBox x:Name="ProtocolComboBox" 
                                           Style="{StaticResource ModernComboBox}" 
                                           SelectedIndex="0" 
-                                          Width="80" Height="32" 
+                                          Width="105" Height="32"
                                           SelectionChanged="FilterComboBox_SelectionChanged">
                                     <ComboBoxItem Content="Todos" IsSelected="True" />
                                     <ComboBoxItem Content="TCP" />
@@ -201,58 +263,34 @@
 
                             <!-- State -->
                             <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,6,0">
-                                <TextBlock Text="Estado" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBlock Text="Estado" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <ComboBox x:Name="StateComboBox" 
                                           Style="{StaticResource ModernComboBox}" 
                                           ItemsSource="{Binding StateOptions}" 
                                           SelectedItem="{Binding SelectedState, Mode=TwoWay}" 
-                                          Width="120" Height="32" 
+                                          Width="165" Height="32"
                                           SelectionChanged="FilterComboBox_SelectionChanged" />
                             </StackPanel>
 
-                            <!-- Trust Filter -->
+                            <!-- O filtro usa o mesmo nome da coluna da tabela. -->
                             <StackPanel Grid.Column="3" Orientation="Vertical" Margin="0,0,6,0">
-                                <TextBlock Text="Confiança" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
-                                <ComboBox x:Name="AllowFilterComboBox" 
-                                          Style="{StaticResource ModernComboBox}" 
-                                          SelectedIndex="0" 
-                                          Width="135" Height="32" 
-                                          SelectionChanged="FilterComboBox_SelectionChanged">
-                                    <ComboBoxItem Content="Todas" IsSelected="True" />
-                                    <ComboBoxItem Content="Apenas confiáveis" />
-                                    <ComboBoxItem Content="Não verificadas" />
-                                </ComboBox>
-                            </StackPanel>
-
-                            <!-- Live CPU Cutoff Filter -->
-                            <StackPanel Grid.Column="4" Orientation="Vertical" Margin="0,0,6,0">
-                                <TextBlock Text="Corte de CPU" FontSize="11" FontWeight="Medium" Foreground="{StaticResource WarningColor}" Margin="0,0,0,4" />
-                                <ComboBox x:Name="CpuCutoffComboBox" 
-                                          Style="{StaticResource ModernComboBox}" 
-                                          SelectedIndex="0" 
-                                          Width="105" Height="32" 
+                                <TextBlock Text="CPU (%)" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="CpuCutoffComboBox"
+                                          Style="{StaticResource ModernComboBox}"
+                                          SelectedIndex="0" Width="142" Height="32"
+                                          ToolTip="Exibir conexões com CPU a partir do valor escolhido"
                                           SelectionChanged="CpuCutoffComboBox_SelectionChanged">
-                                    <ComboBoxItem Content="Todos (0%)" IsSelected="True" Tag="0" />
-                                    <ComboBoxItem Content="CPU &gt; 1%" Tag="1" />
-                                    <ComboBoxItem Content="CPU &gt; 5%" Tag="5" />
-                                    <ComboBoxItem Content="CPU &gt; 10%" Tag="10" />
-                                    <ComboBoxItem Content="CPU &gt; 25%" Tag="25" />
-                                    <ComboBoxItem Content="CPU &gt; 50%" Tag="50" />
+                                    <ComboBoxItem Content="Todos" Tag="0" IsSelected="True" />
+                                    <ComboBoxItem Content="1% ou mais" Tag="1" />
+                                    <ComboBoxItem Content="5% ou mais" Tag="5" />
+                                    <ComboBoxItem Content="10% ou mais" Tag="10" />
+                                    <ComboBoxItem Content="25% ou mais" Tag="25" />
+                                    <ComboBoxItem Content="50% ou mais" Tag="50" />
                                 </ComboBox>
-                            </StackPanel>
-
-                            <!-- Only Anomalies Checkbox -->
-                            <StackPanel Grid.Column="5" Orientation="Vertical" VerticalAlignment="Center" Margin="0,16,6,0">
-                                <CheckBox x:Name="OnlyAnomaliesCheckBox" 
-                                          Content="Apenas alertas"
-                                          Foreground="{StaticResource DangerColor}"
-                                          FontWeight="SemiBold" 
-                                          FontSize="11" 
-                                          Click="OnlyAnomaliesCheckBox_Click" />
                             </StackPanel>
 
                             <!-- Redefinição dos filtros -->
-                            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
                                 <Button Content="Limpar" 
                                         Style="{StaticResource ModernSecondaryButton}" 
                                         Height="32" Margin="0,0,4,0" 
@@ -264,12 +302,14 @@
                         <Button Grid.Column="1" Content="Mais ações ▾"
                                 Style="{StaticResource ModernSecondaryButton}"
                                 Height="38" Padding="12,0"
-                                ToolTip="Gerenciar confiança e exportar os dados exibidos"
+                                ToolTip="Tags, confiança e exportação das conexões exibidas"
                                 Click="TabActionsButton_Click">
                             <Button.ContextMenu>
-                                <ContextMenu x:Name="ConnectionsActionsMenu">
+                                <ContextMenu x:Name="ConnectionsActionsMenu" Opened="TrustActionMenu_Opened">
+                                    <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                    <Separator />
                                     <MenuItem Header="Gerenciar conexões confiáveis" Click="OpenAllowManager_Click" />
-                                    <MenuItem Header="Adicionar seleção à lista de confiança" Click="AddToAllowlist_Click" />
+                                    <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
                                     <Separator />
                                     <MenuItem Header="Exportar conexões exibidas" Click="ExportConnections_Click" />
                                 </ContextMenu>
@@ -278,46 +318,39 @@
                     </Grid>
 
                     <!-- DataGrid Connections -->
-                    <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                    <Border Grid.Row="2" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                         <Grid>
-                            <ProgressBar x:Name="LoadingProgressBar" 
-                                         VerticalAlignment="Top" 
-                                         Height="3" 
-                                         IsIndeterminate="True" 
-                                         Background="{StaticResource BgPrimary}"
-                                         Foreground="{StaticResource AccentColor}"
-                                         BorderThickness="0" 
-                                         Visibility="Collapsed" />
-
                             <DataGrid x:Name="DataGrid" 
                                       ItemsSource="{Binding FilteredEntries}" 
                                       CanUserResizeColumns="True" 
                                       CanUserReorderColumns="True" 
                                       CanUserSortColumns="True" 
+                                      PreviewMouseRightButtonDown="DataGrid_PreviewMouseRightButtonDown"
                                       SelectionChanged="DataGrid_SelectionChanged" 
                                       MouseDoubleClick="DataGrid_MouseDoubleClick">
                                 <DataGrid.RowStyle>
                                     <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsAllowed}" Value="True">
-                                                <Setter Property="Background" Value="{StaticResource SuccessSurface}" />
-                                                <Setter Property="BorderBrush" Value="{StaticResource SuccessBorder}" />
+                                                <Setter Property="Background" Value="{DynamicResource SuccessSurface}" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
                                                 <Setter Property="BorderThickness" Value="3,1,0,1" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </DataGrid.RowStyle>
                                 <DataGrid.ContextMenu>
-                                    <ContextMenu Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                                        <MenuItem Header="Adicionar à lista de confiança" Click="AddToAllowlist_Click" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" />
-                                        <MenuItem Header="Remover da lista de confiança" Click="RemoveFromAllowlist_Click" Foreground="{StaticResource DangerColor}" />
-                                        <Separator Background="{StaticResource BorderBrush}" />
-                                        <MenuItem Header="Abrir localização do processo" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-                                        <Separator Background="{StaticResource BorderBrush}" />
-                                        <MenuItem Header="Copiar detalhes das conexões selecionadas" Click="CopyDetails_Click" Foreground="{StaticResource TextPrimary}" />
-                                        <MenuItem Header="Copiar endereços remotos" Click="CopyForeignIP_Click" Foreground="{StaticResource TextPrimary}" />
-                                        <MenuItem Header="Copiar endereços locais" Click="CopyLocalIP_Click" Foreground="{StaticResource TextPrimary}" />
-                                        <MenuItem Header="Copiar PIDs" Click="CopyPID_Click" Foreground="{StaticResource TextPrimary}" />
+                                    <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
+                                        <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                        <Separator Background="{DynamicResource BorderBrush}" />
+                                        <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" />
+                                        <Separator Background="{DynamicResource BorderBrush}" />
+                                        <MenuItem Header="Abrir localização do processo" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                        <Separator Background="{DynamicResource BorderBrush}" />
+                                        <MenuItem Header="Copiar detalhes das conexões selecionadas" Click="CopyDetails_Click" Foreground="{DynamicResource TextPrimary}" />
+                                        <MenuItem Header="Copiar endereços remotos" Click="CopyForeignIP_Click" Foreground="{DynamicResource TextPrimary}" />
+                                        <MenuItem Header="Copiar endereços locais" Click="CopyLocalIP_Click" Foreground="{DynamicResource TextPrimary}" />
+                                        <MenuItem Header="Copiar PIDs" Click="CopyPID_Click" Foreground="{DynamicResource TextPrimary}" />
                                     </ContextMenu>
                                 </DataGrid.ContextMenu>
                                 <DataGrid.Columns>
@@ -335,17 +368,19 @@
                                                             Width="140"
                                                             MinWidth="110" />
 
+                                    <DataGridTextColumn Header="TAG" Binding="{Binding TagText}" SortMemberPath="TagText" Width="110" MinWidth="85" />
+
                                     <!-- PROCESSO -->
                                     <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="200" MinWidth="160">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                            <Border Width="24" Height="24" CornerRadius="4" Background="{StaticResource BgTertiary}" Margin="0,0,8,0">
+                                                            <Border Width="24" Height="24" CornerRadius="4" Background="{DynamicResource BgTertiary}" Margin="0,0,8,0">
                                                         <Image Source="{Binding ProcessIcon}" Width="18" Height="18" VerticalAlignment="Center" HorizontalAlignment="Center" />
                                                     </Border>
                                                     <StackPanel VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontSize="12" />
-                                                        <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="{StaticResource TextSecondary}" />
+                                                        <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="12" />
+                                                        <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="{DynamicResource TextSecondary}" />
                                                     </StackPanel>
                                                 </StackPanel>
                                             </DataTemplate>
@@ -370,7 +405,7 @@
                                                 <TextBlock Text="{Binding LocalAddress}" 
                                                            FontFamily="Cascadia Code, Consolas, monospace" 
                                                            FontSize="11" 
-                                                           Foreground="{StaticResource TextPrimary}"
+                                                           Foreground="{DynamicResource TextPrimary}"
                                                            VerticalAlignment="Center" />
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
@@ -383,7 +418,7 @@
                                                 <TextBlock Text="{Binding ForeignAddress}" 
                                                            FontFamily="Cascadia Code, Consolas, monospace" 
                                                            FontSize="11" 
-                                                           Foreground="{StaticResource TextPrimary}"
+                                                           Foreground="{DynamicResource TextPrimary}"
                                                            VerticalAlignment="Center" />
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
@@ -418,7 +453,7 @@
                                                            FontFamily="Cascadia Code, Consolas, monospace"
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
-                                                           Foreground="{StaticResource AccentBorder}"
+                                                           Foreground="{DynamicResource AccentBorder}"
                                                            VerticalAlignment="Center" />
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
@@ -449,102 +484,95 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="0" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="PROCESSOS ATIVOS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricProcessesTotalText" Text="{Binding MetricProcessesTotal}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="PROCESSOS ATIVOS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesTotalText" Text="{Binding MetricProcessesTotal}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="1" Background="{StaticResource WarningSurface}" BorderBrush="{StaticResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="1" Background="{DynamicResource WarningSurface}" BorderBrush="{DynamicResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="CPU &gt; 5%" FontSize="10" FontWeight="Bold" Foreground="{StaticResource WarningColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricProcessesHighCpuText" Text="{Binding MetricProcessesHighCpu}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WarningColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="CPU &gt; 5%" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesHighCpuText" Text="{Binding MetricProcessesHighCpu}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WarningColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="2" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="2" Background="{DynamicResource AccentSurface}" BorderBrush="{DynamicResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="ALTO TRÁFEGO REDE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricProcessesHighNetworkText" Text="{Binding MetricProcessesHighNetwork}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="ALTO TRÁFEGO REDE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesHighNetworkText" Text="{Binding MetricProcessesHighNetwork}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="3" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="3" Background="{DynamicResource AccentSurface}" BorderBrush="{DynamicResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="BANDA COMBINADA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricProcessesBandwidthSumText" Text="{Binding MetricProcessesBandwidthSum}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="BANDA COMBINADA" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesBandwidthSumText" Text="{Binding MetricProcessesBandwidthSum}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="4" Background="{StaticResource DangerSurface}" BorderBrush="{StaticResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <Border Grid.Column="4" Background="{DynamicResource DangerSurface}" BorderBrush="{DynamicResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="DIAGNÓSTICOS / ALERTAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricProcessesThreatsText" Text="{Binding MetricProcessesThreats}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="DIAGNÓSTICOS / ALERTAS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource DangerColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricProcessesThreatsText" Text="{Binding MetricProcessesThreats}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
                     <!-- Action & Filters Bar: Processos (Live sampling, bandwidth cutoffs, open location) -->
-                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="150" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
-                                <TextBlock Text="Buscar processos por nome, PID ou alerta" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBlock Text="Buscar processos por nome, PID ou alerta" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <TextBox x:Name="ProcessSearchTextBox" 
                                          Style="{StaticResource ModernTextBox}" 
-                                         Height="32" 
+                                         Height="32" HorizontalAlignment="Stretch"
                                          TextChanged="ProcessSearchTextBox_TextChanged" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,8,0">
-                                <TextBlock Text="Corte de CPU" FontSize="11" FontWeight="Medium" Foreground="{StaticResource WarningColor}" Margin="0,0,0,4" />
-                                <ComboBox x:Name="ProcessCpuCutoffComboBox" 
-                                          Style="{StaticResource ModernComboBox}" 
-                                          SelectedIndex="0" 
-                                          Width="110" Height="32" 
+                                <TextBlock Text="CPU (%)" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="ProcessCpuCutoffComboBox"
+                                          Style="{StaticResource ModernComboBox}"
+                                          SelectedIndex="0" Width="142" Height="32"
+                                          ToolTip="Exibir processos com CPU a partir do valor escolhido"
                                           SelectionChanged="ProcessCpuCutoffComboBox_SelectionChanged">
-                                    <ComboBoxItem Content="Todos (0%)" IsSelected="True" Tag="0" />
-                                    <ComboBoxItem Content="CPU &gt; 1%" Tag="1" />
-                                    <ComboBoxItem Content="CPU &gt; 5%" Tag="5" />
-                                    <ComboBoxItem Content="CPU &gt; 10%" Tag="10" />
-                                    <ComboBoxItem Content="CPU &gt; 25%" Tag="25" />
-                                    <ComboBoxItem Content="CPU &gt; 50%" Tag="50" />
+                                    <ComboBoxItem Content="Todos" Tag="0" IsSelected="True" />
+                                    <ComboBoxItem Content="1% ou mais" Tag="1" />
+                                    <ComboBoxItem Content="5% ou mais" Tag="5" />
+                                    <ComboBoxItem Content="10% ou mais" Tag="10" />
+                                    <ComboBoxItem Content="25% ou mais" Tag="25" />
+                                    <ComboBoxItem Content="50% ou mais" Tag="50" />
                                 </ComboBox>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,8,0">
-                                <TextBlock Text="Corte de banda" FontSize="11" FontWeight="Medium" Foreground="{StaticResource AccentBorder}" Margin="0,0,0,4" />
+                                <TextBlock Text="BANDA TOTAL" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <ComboBox x:Name="ProcessBandwidthCutoffComboBox" 
                                           Style="{StaticResource ModernComboBox}" 
                                           SelectedIndex="0" 
-                                          Width="125" Height="32" 
+                                          Width="158" Height="32"
+                                          ToolTip="Exibir processos com banda total a partir do valor escolhido"
                                           SelectionChanged="ProcessBandwidthCutoffComboBox_SelectionChanged">
-                                    <ComboBoxItem Content="Todas as Taxas" IsSelected="True" Tag="0" />
-                                    <ComboBoxItem Content="&gt; 10 KB/s" Tag="10240" />
-                                    <ComboBoxItem Content="&gt; 100 KB/s" Tag="102400" />
-                                    <ComboBoxItem Content="&gt; 1 MB/s" Tag="1048576" />
-                                    <ComboBoxItem Content="&gt; 10 MB/s" Tag="10485760" />
+                                    <ComboBoxItem Content="Todos" IsSelected="True" Tag="0" />
+                                    <ComboBoxItem Content="10 KB/s ou mais" Tag="10240" />
+                                    <ComboBoxItem Content="100 KB/s ou mais" Tag="102400" />
+                                    <ComboBoxItem Content="1 MB/s ou mais" Tag="1048576" />
+                                    <ComboBoxItem Content="10 MB/s ou mais" Tag="10485760" />
                                 </ComboBox>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="3" Orientation="Vertical" VerticalAlignment="Center" Margin="0,16,8,0">
-                                <CheckBox x:Name="ProcessOnlyAnomaliesCheckBox" 
-                                          Content="Apenas alertas"
-                                          Foreground="{StaticResource DangerColor}"
-                                          FontWeight="SemiBold" 
-                                          FontSize="11" 
-                                          Click="ProcessOnlyAnomaliesCheckBox_Click" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Bottom">
                                 <Button Content="Limpar" 
                                         Style="{StaticResource ModernSecondaryButton}" 
                                         Height="32" Margin="0,0,8,0"
@@ -554,22 +582,57 @@
                         </Grid>
                     </Border>
 
+                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
+                            ToolTip="Tags, confiança e exportação dos processos exibidos" Click="TabActionsButton_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu Opened="TrustActionMenu_Opened">
+                                <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                <Separator />
+                                <MenuItem Header="Exportar processos exibidos em JSON" Click="ExportCurrentTabJson_Click" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    </Grid>
+
                     <!-- DataGrid Aggregated Processes -->
-                    <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                    <Border Grid.Row="2" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                         <DataGrid x:Name="ProcessesDataGrid" 
                                   ItemsSource="{Binding FilteredProcesses}" 
                                   CanUserResizeColumns="True" 
                                   CanUserSortColumns="True"
+                                  PreviewMouseRightButtonDown="DataGrid_PreviewMouseRightButtonDown"
+                                  SelectionChanged="DataGrid_SelectionChanged"
                                   MouseDoubleClick="ProcessesDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
-                                <ContextMenu Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                                    <MenuItem Header="Abrir localização do processo" Click="ProcessOpenFileLocation_Click" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-                                    <Separator Background="{StaticResource BorderBrush}" />
-                                    <MenuItem Header="Copiar detalhes do processo" Click="CopyProcessDetails_Click" Foreground="{StaticResource TextPrimary}" />
-                                    <MenuItem Header="Copiar PID" Click="CopyProcessPID_Click" Foreground="{StaticResource TextPrimary}" />
+                                <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
+                                    <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
+                                    <MenuItem Header="Abrir localização do processo" Click="ProcessOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
+                                    <MenuItem Header="Copiar detalhes do processo" Click="CopyProcessDetails_Click" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="Copiar PID" Click="CopyProcessPID_Click" Foreground="{DynamicResource TextPrimary}" />
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding AnnotationTrusted}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource SuccessSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
+                                            <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="CONFIANÇA"
+                                                        SortMemberPath="AnnotationTrusted"
+                                                        CellTemplate="{StaticResource AnnotationTrustBadgeTemplate}"
+                                                        Width="125"
+                                                        MinWidth="110" />
                                 <!-- INTEGRIDADE -->
                                 <DataGridTemplateColumn Header="INTEGRIDADE"
                                                         SortMemberPath="ThreatLevel"
@@ -577,17 +640,19 @@
                                                         Width="130"
                                                         MinWidth="105" />
 
+                                <DataGridTextColumn Header="TAG" Binding="{Binding TagText}" SortMemberPath="TagText" Width="110" MinWidth="85" />
+
                                 <!-- PROCESSO -->
                                 <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="*" MinWidth="180">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                            <Border Width="24" Height="24" CornerRadius="4" Background="{StaticResource BgTertiary}" Margin="0,0,8,0">
+                                                            <Border Width="24" Height="24" CornerRadius="4" Background="{DynamicResource BgTertiary}" Margin="0,0,8,0">
                                                     <Image Source="{Binding ProcessIcon}" Width="18" Height="18" VerticalAlignment="Center" HorizontalAlignment="Center" />
                                                 </Border>
                                                 <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontSize="12" />
-                                                    <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="{StaticResource TextSecondary}" />
+                                                    <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="12" />
+                                                    <TextBlock Text="{Binding PID, StringFormat='PID: {0}'}" FontSize="10" Foreground="{DynamicResource TextSecondary}" />
                                                 </StackPanel>
                                             </StackPanel>
                                         </DataTemplate>
@@ -618,7 +683,7 @@
                                             <TextBlock Text="{Binding FormattedTotalBandwidth}" 
                                                        FontFamily="Cascadia Code, Consolas, monospace" 
                                                        FontWeight="Bold" 
-                                                       Foreground="{StaticResource AccentBorder}"
+                                                       Foreground="{DynamicResource AccentBorder}"
                                                        VerticalAlignment="Center" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -652,44 +717,46 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="0" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="TOTAL TAREFAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricTasksTotalText" Text="{Binding MetricTasksTotal}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="TOTAL TAREFAS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksTotalText" Text="{Binding MetricTasksTotal}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="1" Background="{StaticResource SuccessSurface}" BorderBrush="{StaticResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="1" Background="{DynamicResource SuccessSurface}" BorderBrush="{DynamicResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="HABILITADAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricTasksEnabledText" Text="{Binding MetricTasksEnabled}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="HABILITADAS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksEnabledText" Text="{Binding MetricTasksEnabled}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="2" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="2" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="DESABILITADAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricTasksDisabledText" Text="{Binding MetricTasksDisabled}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="DESABILITADAS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksDisabledText" Text="{Binding MetricTasksDisabled}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="3" Background="{StaticResource WarningSurface}" BorderBrush="{StaticResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="3" Background="{DynamicResource WarningSurface}" BorderBrush="{DynamicResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="NÃO-MICROSOFT" FontSize="10" FontWeight="Bold" Foreground="{StaticResource WarningColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricTasksNonMicrosoftText" Text="{Binding MetricTasksNonMicrosoft}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WarningColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="NÃO-MICROSOFT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksNonMicrosoftText" Text="{Binding MetricTasksNonMicrosoft}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WarningColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="4" Background="{StaticResource DangerSurface}" BorderBrush="{StaticResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <Border Grid.Column="4" Background="{DynamicResource DangerSurface}" BorderBrush="{DynamicResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="SUSPEITAS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricTasksSuspiciousText" Text="{Binding MetricTasksSuspicious}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="SUSPEITAS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource DangerColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricTasksSuspiciousText" Text="{Binding MetricTasksSuspicious}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
                     <!-- Action & Filter Bar: Tarefas Agendadas -->
-                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="180" />
@@ -698,15 +765,15 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,10,0">
-                                <TextBlock Text="Buscar tarefas por nome, localização, comando ou autor" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBlock Text="Buscar tarefas por nome, localização, comando ou autor" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <TextBox x:Name="TaskSearchTextBox" 
                                          Style="{StaticResource ModernTextBox}" 
-                                         Height="32" 
+                                         Height="32" HorizontalAlignment="Stretch"
                                          TextChanged="TaskSearchTextBox_TextChanged" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,10,0">
-                                <TextBlock Text="Categoria" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBlock Text="Categoria" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <ComboBox x:Name="TaskFilterComboBox" 
                                           Style="{StaticResource ModernComboBox}" 
                                           SelectedIndex="0" 
@@ -728,28 +795,65 @@
                         </Grid>
                     </Border>
 
+                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
+                            ToolTip="Tags, confiança e exportação das tarefas exibidas" Click="TabActionsButton_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu Opened="TrustActionMenu_Opened">
+                                <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                <Separator />
+                                <MenuItem Header="Exportar tarefas exibidas em JSON" Click="ExportCurrentTabJson_Click" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    </Grid>
+
                     <!-- DataGrid Scheduled Tasks -->
-                    <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                    <Border Grid.Row="2" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                         <DataGrid x:Name="TasksDataGrid" 
                                   ItemsSource="{Binding FilteredTasks}" 
                                   CanUserResizeColumns="True" 
                                   CanUserSortColumns="True"
+                                  PreviewMouseRightButtonDown="DataGrid_PreviewMouseRightButtonDown"
+                                  SelectionChanged="DataGrid_SelectionChanged"
                                   MouseDoubleClick="TasksDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
-                                <ContextMenu Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                                    <MenuItem Header="Abrir localização da tarefa" Click="TaskOpenFileLocation_Click" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-                                    <Separator Background="{StaticResource BorderBrush}" />
-                                    <MenuItem Header="Copiar detalhes da tarefa" Click="CopyTaskDetails_Click" Foreground="{StaticResource TextPrimary}" />
-                                    <MenuItem Header="Copiar ação ou comando" Click="CopyTaskCommand_Click" Foreground="{StaticResource TextPrimary}" />
+                                <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
+                                    <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
+                                    <MenuItem Header="Abrir localização da tarefa" Click="TaskOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
+                                    <MenuItem Header="Copiar detalhes da tarefa" Click="CopyTaskDetails_Click" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="Copiar ação ou comando" Click="CopyTaskCommand_Click" Foreground="{DynamicResource TextPrimary}" />
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding AnnotationTrusted}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource SuccessSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
+                                            <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="CONFIANÇA"
+                                                        SortMemberPath="AnnotationTrusted"
+                                                        CellTemplate="{StaticResource AnnotationTrustBadgeTemplate}"
+                                                        Width="125"
+                                                        MinWidth="110" />
                                 <!-- INTEGRIDADE -->
                                 <DataGridTemplateColumn Header="INTEGRIDADE"
                                                         SortMemberPath="ThreatLevel"
                                                         CellTemplate="{StaticResource IntegrityBadgeTemplate}"
-                                                        Width="120"
-                                                        MinWidth="105" />
+                                                        Width="140"
+                                                        MinWidth="120" />
+
+                                <DataGridTextColumn Header="TAG" Binding="{Binding TagText}" SortMemberPath="TagText" Width="110" MinWidth="85" />
 
                                 <!-- NOME DA TAREFA -->
                                 <DataGridTextColumn Header="NOME DA TAREFA" Binding="{Binding TaskName}" FontWeight="Bold" Width="200" MinWidth="150" />
@@ -758,7 +862,7 @@
                                 <DataGridTextColumn Header="LOCALIZAÇÃO" Binding="{Binding TaskPath}" Width="160" MinWidth="120" />
 
                                 <!-- STATUS -->
-                                <DataGridTextColumn Header="ESTADO" Binding="{Binding State}" Width="95" MinWidth="80" />
+                                <DataGridTextColumn Header="ESTADO" Binding="{Binding State}" Width="120" MinWidth="100" />
 
                                 <!-- COMANDO A EXECUTAR -->
                                 <DataGridTemplateColumn Header="COMANDO / CAMINHO" SortMemberPath="TaskToRun" Width="*" MinWidth="260">
@@ -768,12 +872,12 @@
                                                 <TextBlock Text="{Binding TaskToRun}" 
                                                            FontFamily="Cascadia Code, Consolas, monospace" 
                                                            FontSize="11" 
-                                                           Foreground="{StaticResource TextPrimary}"
+                                                           Foreground="{DynamicResource TextPrimary}"
                                                            TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Text="{Binding ThreatReason}" 
                                                            FontSize="10" 
                                                            FontWeight="SemiBold" 
-                                                           Foreground="{StaticResource DangerColor}"
+                                                           Foreground="{DynamicResource DangerColor}"
                                                            Visibility="{Binding ThreatReasonVisibility}" />
                                             </StackPanel>
                                         </DataTemplate>
@@ -812,37 +916,39 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="0" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="TOTAL INICIALIZAÇÃO" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricStartupTotalText" Text="{Binding MetricStartupTotal}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="TOTAL INICIALIZAÇÃO" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricStartupTotalText" Text="{Binding MetricStartupTotal}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="1" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="1" Background="{DynamicResource AccentSurface}" BorderBrush="{DynamicResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="REGISTRO (RUN)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricStartupRegistryText" Text="{Binding MetricStartupRegistry}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="REGISTRO (RUN)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricStartupRegistryText" Text="{Binding MetricStartupRegistry}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="2" Background="{StaticResource AccentSurface}" BorderBrush="{StaticResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                        <Border Grid.Column="2" Background="{DynamicResource AccentSurface}" BorderBrush="{DynamicResource AccentColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="PASTA STARTUP" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricStartupFolderText" Text="{Binding MetricStartupFolder}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="PASTA STARTUP" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricStartupFolderText" Text="{Binding MetricStartupFolder}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentBorder}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="3" Background="{StaticResource DangerSurface}" BorderBrush="{StaticResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <Border Grid.Column="3" Background="{DynamicResource DangerSurface}" BorderBrush="{DynamicResource DangerBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="SUSPEITOS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="MetricStartupSuspiciousText" Text="{Binding MetricStartupSuspicious}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="SUSPEITOS / ALERTA" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource DangerColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricStartupSuspiciousText" Text="{Binding MetricStartupSuspicious}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource DangerColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
                     <!-- Action & Filter Bar: Itens de Inicialização -->
-                    <Border Grid.Row="1" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="180" />
@@ -851,15 +957,15 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,10,0">
-                                <TextBlock Text="Buscar itens por nome, comando ou localização" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBlock Text="Buscar itens por nome, comando ou localização" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <TextBox x:Name="StartupSearchTextBox" 
                                          Style="{StaticResource ModernTextBox}" 
-                                         Height="32" 
+                                         Height="32" HorizontalAlignment="Stretch"
                                          TextChanged="StartupSearchTextBox_TextChanged" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,10,0">
-                                <TextBlock Text="Origem" FontSize="11" FontWeight="Medium" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                                <TextBlock Text="Origem" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4" />
                                 <ComboBox x:Name="StartupFilterComboBox" 
                                           Style="{StaticResource ModernComboBox}" 
                                           SelectedIndex="0" 
@@ -882,28 +988,65 @@
                         </Grid>
                     </Border>
 
+                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
+                            ToolTip="Tags, confiança e exportação dos itens de inicialização exibidos" Click="TabActionsButton_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu Opened="TrustActionMenu_Opened">
+                                <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                <Separator />
+                                <MenuItem Header="Exportar itens exibidos em JSON" Click="ExportCurrentTabJson_Click" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    </Grid>
+
                     <!-- DataGrid Startup Items -->
-                    <Border Grid.Row="2" Background="{StaticResource DataGridSurface}" BorderBrush="{StaticResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                    <Border Grid.Row="2" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                         <DataGrid x:Name="StartupDataGrid" 
                                   ItemsSource="{Binding FilteredStartupItems}" 
                                   CanUserResizeColumns="True" 
                                   CanUserSortColumns="True"
+                                  PreviewMouseRightButtonDown="DataGrid_PreviewMouseRightButtonDown"
+                                  SelectionChanged="DataGrid_SelectionChanged"
                                   MouseDoubleClick="StartupDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
-                                <ContextMenu Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                                    <MenuItem Header="Abrir localização do item" Click="StartupOpenFileLocation_Click" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-                                    <Separator Background="{StaticResource BorderBrush}" />
-                                    <MenuItem Header="Copiar detalhes do item" Click="CopyStartupDetails_Click" Foreground="{StaticResource TextPrimary}" />
-                                    <MenuItem Header="Copiar comando ou chave" Click="CopyStartupCommand_Click" Foreground="{StaticResource TextPrimary}" />
+                                <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
+                                    <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
+                                    <MenuItem Header="Abrir localização do item" Click="StartupOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
+                                    <MenuItem Header="Copiar detalhes do item" Click="CopyStartupDetails_Click" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="Copiar comando ou chave" Click="CopyStartupCommand_Click" Foreground="{DynamicResource TextPrimary}" />
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding AnnotationTrusted}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource SuccessSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
+                                            <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="CONFIANÇA"
+                                                        SortMemberPath="AnnotationTrusted"
+                                                        CellTemplate="{StaticResource AnnotationTrustBadgeTemplate}"
+                                                        Width="125"
+                                                        MinWidth="110" />
                                 <!-- INTEGRIDADE -->
                                 <DataGridTemplateColumn Header="INTEGRIDADE"
                                                         SortMemberPath="ThreatLevel"
                                                         CellTemplate="{StaticResource IntegrityBadgeTemplate}"
-                                                        Width="120"
-                                                        MinWidth="105" />
+                                                        Width="140"
+                                                        MinWidth="120" />
+
+                                <DataGridTextColumn Header="TAG" Binding="{Binding TagText}" SortMemberPath="TagText" Width="110" MinWidth="85" />
 
                                 <!-- NOME -->
                                 <DataGridTextColumn Header="NOME DO APLICATIVO" Binding="{Binding Name}" FontWeight="Bold" Width="200" MinWidth="150" />
@@ -922,12 +1065,12 @@
                                                 <TextBlock Text="{Binding Command}" 
                                                            FontFamily="Cascadia Code, Consolas, monospace" 
                                                            FontSize="11" 
-                                                           Foreground="{StaticResource TextPrimary}"
+                                                           Foreground="{DynamicResource TextPrimary}"
                                                            TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Text="{Binding ThreatReason}" 
                                                            FontSize="10" 
                                                            FontWeight="SemiBold" 
-                                                           Foreground="{StaticResource DangerColor}"
+                                                           Foreground="{DynamicResource DangerColor}"
                                                            Visibility="{Binding ThreatReasonVisibility}" />
                                             </StackPanel>
                                         </DataTemplate>
@@ -941,86 +1084,64 @@
             </Grid>
         </Border>
 
-        <!-- ROW 3: SCOPED BOTTOM STATUS BAR -->
-        <Grid Grid.Row="3" Margin="0,10,0,0">
+        <!-- Fixed status bar: current scan, refresh state and selected records -->
+        <Border Grid.Row="4" Background="{DynamicResource SurfaceRaised}" BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,10,0,0">
+          <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="220" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1.5*" MinWidth="245" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="2*" MinWidth="280" />
             </Grid.ColumnDefinitions>
 
-            <!-- Data controls stay in one place and lead the current table. -->
-            <Border Grid.Column="0" Background="{StaticResource SurfaceRaised}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="7" Padding="3" Margin="0,0,12,0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="CurrentTabReloadButton"
-                            Content="{Binding CurrentTabRefreshText}"
-                            Style="{StaticResource ModernPrimaryButton}"
-                            Height="32"
-                            ToolTip="{Binding CurrentTabRefreshToolTip}"
-                            Click="Reload_Click" />
-                    <ToggleButton x:Name="ContinuousReadingToggleBtn"
-                                  Content="Leitura contínua (2 s)"
-                                  Style="{StaticResource ModernToggleButtonStyle}"
-                                  Height="32" Margin="4,0,0,0"
-                                  ToolTip="Atualizar automaticamente a tabela atual a cada 2 segundos. Disponível para conexões e processos."
-                                  Click="ContinuousReadingToggleBtn_Click" />
-                </StackPanel>
-            </Border>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Grid x:Name="StatusSpinner"
-                      Width="14" Height="14" Margin="0,0,8,0"
-                      Visibility="Collapsed"
-                      VerticalAlignment="Center"
-                      RenderTransformOrigin="0.5,0.5">
-                    <Grid.RenderTransform>
-                        <RotateTransform x:Name="SpinnerRotateTransform" Angle="0" />
-                    </Grid.RenderTransform>
-                    <Grid.Style>
-                        <Style TargetType="Grid">
-                            <Style.Triggers>
-                                <Trigger Property="Visibility" Value="Visible">
-                                    <Trigger.EnterActions>
-                                        <BeginStoryboard x:Name="SpinAnimation">
-                                            <Storyboard RepeatBehavior="Forever">
-                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                                 From="0" To="360" Duration="0:0:1" />
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </Trigger.EnterActions>
-                                    <Trigger.ExitActions>
-                                        <StopStoryboard BeginStoryboardName="SpinAnimation" />
-                                    </Trigger.ExitActions>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Grid.Style>
-                    <Ellipse Width="14" Height="14" Stroke="{StaticResource BorderBrush}" StrokeThickness="2" />
-                    <Path Data="M 7,0 A 7,7 0 0 1 14,7"
-                          Stroke="{StaticResource SuccessColor}"
-                          StrokeThickness="2"
-                          StrokeStartLineCap="Round"
-                          StrokeEndLineCap="Round" />
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" MinWidth="0">
+                <Grid Width="20" Height="18" Margin="0,0,8,0" VerticalAlignment="Center">
+                    <Ellipse x:Name="StatusIdleDot" Width="8" Height="8" Fill="{DynamicResource BorderLightBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Grid x:Name="StatusSpinner" Width="14" Height="14" Visibility="Collapsed" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform><RotateTransform Angle="0" /></Grid.RenderTransform>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <Trigger Property="Visibility" Value="Visible">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard x:Name="SpinAnimation">
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:1" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions><StopStoryboard BeginStoryboardName="SpinAnimation" /></Trigger.ExitActions>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Ellipse Width="14" Height="14" Stroke="{DynamicResource BorderBrush}" StrokeThickness="2" />
+                        <Path Data="M 7,0 A 7,7 0 0 1 14,7" Stroke="{DynamicResource SuccessColor}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                    </Grid>
                 </Grid>
-                <TextBlock x:Name="StatusTextBlock" Text="{Binding StatusMessage}"
-                       FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"
-                       TextTrimming="CharacterEllipsis" ToolTip="{Binding StatusMessage}" />
+                <TextBlock x:Name="StatusTextBlock" Text="{Binding StatusMessage}" FontSize="11"
+                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding StatusMessage}" />
             </StackPanel>
 
-            <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="12,0,10,0">
-                <TextBlock Text="{Binding CurrentTabLastUpdatedText}" FontSize="10" Foreground="{StaticResource TextSecondary}"
-                           TextTrimming="CharacterEllipsis" />
-                <TextBlock x:Name="ConnectionCountText" Text="{Binding CurrentTabSummary}" FontSize="10"
-                           FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextTrimming="CharacterEllipsis" />
+            <Border Grid.Column="1" Width="1" Height="28" Background="{DynamicResource BorderBrush}" Margin="12,0" />
+
+            <StackPanel Grid.Column="2" VerticalAlignment="Center" MinWidth="0">
+                <TextBlock Text="{Binding CurrentTabLastUpdatedText}" FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding CurrentTabLastUpdatedText}" />
+                <TextBlock x:Name="ConnectionCountText" Text="{Binding CurrentTabSummary}" FontSize="11"
+                           FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding CurrentTabSummary}" />
             </StackPanel>
 
-            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" MaxWidth="290">
-                <TextBlock x:Name="SelectedSeparator" Text=" • " FontSize="11" Foreground="{StaticResource TextMuted}" Margin="4,0" Visibility="Collapsed" />
-                <TextBlock x:Name="SelectedProcessText" Text="" FontSize="10" FontWeight="SemiBold"
-                           Foreground="{StaticResource AccentBorder}" Visibility="Collapsed" TextTrimming="CharacterEllipsis"
-                           MaxWidth="280" ToolTip="Detalhes da seleção atual" />
-            </StackPanel>
-        </Grid>
+            <Border Grid.Column="3" Width="1" Height="28" Background="{DynamicResource BorderBrush}" Margin="12,0" />
+
+            <TextBlock x:Name="SelectedSummaryText" Grid.Column="4" Text="Nenhum registro selecionado" FontSize="11"
+                       FontWeight="Medium" Foreground="{DynamicResource AccentBorder}" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" ToolTip="Nenhum registro selecionado" />
+          </Grid>
+        </Border>
     </Grid>
 </Window>
