@@ -5,7 +5,7 @@ Este diretório armazena as capturas de tela e recursos visuais utilizados no `R
 ### Capturas de referência da interface:
 
 1. **`preview-main.png`**:
-   - Versão 1.4.1 na aba **Conexões de Rede**, com os controles comuns, métricas, filtros locais, colunas de confiança, integridade, tag e dados da conexão, além da barra de status compartilhada.
+   - Versão 1.4.2 na aba **Conexões de Rede**, com os controles comuns, métricas, filtros locais, colunas de confiança, integridade, tag e dados da conexão, além da barra de status compartilhada.
 
 2. **`preview-processes.png`**:
    - Aba **Processos & Consumo**, com filtros locais por CPU e banda, confiança e tag por registro, diagnóstico de integridade, tráfego agregado e barra de status.

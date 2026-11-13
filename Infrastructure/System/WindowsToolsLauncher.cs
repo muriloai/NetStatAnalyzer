@@ -37,8 +37,21 @@ namespace NetStatAnalyzer.Infrastructure.System
             return LaunchTool("explorer.exe", "shell:startup");
         }
 
-        public bool OpenRegistryEditor()
+        public bool OpenRegistryEditor(string? keyPath = null)
         {
+            if (!string.IsNullOrWhiteSpace(keyPath))
+            {
+                try
+                {
+                    using var regKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit");
+                    regKey?.SetValue("LastKey", keyPath);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Erro ao configurar LastKey para o regedit: {ex.Message}");
+                }
+            }
+
             return LaunchTool("regedit.exe");
         }
 

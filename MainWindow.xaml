@@ -306,10 +306,12 @@
                                 Click="TabActionsButton_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="ConnectionsActionsMenu" Opened="TrustActionMenu_Opened">
-                                    <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
                                     <Separator />
                                     <MenuItem Header="Gerenciar conexões confiáveis" Click="OpenAllowManager_Click" />
                                     <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                    <Separator />
+                                    <MenuItem Header="⚙️ Abrir no Monitor de Recursos (resmon)" Click="OpenResourceMonitor_Click" />
                                     <Separator />
                                     <MenuItem Header="Exportar conexões exibidas" Click="ExportConnections_Click" />
                                 </ContextMenu>
@@ -341,11 +343,12 @@
                                 </DataGrid.RowStyle>
                                 <DataGrid.ContextMenu>
                                     <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
-                                        <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                        <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
                                         <Separator Background="{DynamicResource BorderBrush}" />
                                         <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" />
                                         <Separator Background="{DynamicResource BorderBrush}" />
-                                        <MenuItem Header="Abrir localização do processo" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                        <MenuItem Header="📁 Abrir localização do processo" Tag="OpenLocationAction" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                        <MenuItem Header="⚙️ Abrir no Monitor de Recursos (resmon)" Click="OpenResourceMonitor_Click" Foreground="{DynamicResource TextPrimary}" />
                                         <Separator Background="{DynamicResource BorderBrush}" />
                                         <MenuItem Header="Copiar detalhes das conexões selecionadas" Click="CopyDetails_Click" Foreground="{DynamicResource TextPrimary}" />
                                         <MenuItem Header="Copiar endereços remotos" Click="CopyForeignIP_Click" Foreground="{DynamicResource TextPrimary}" />
@@ -587,8 +590,10 @@
                             ToolTip="Tags, confiança e exportação dos processos exibidos" Click="TabActionsButton_Click">
                         <Button.ContextMenu>
                             <ContextMenu Opened="TrustActionMenu_Opened">
-                                <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
                                 <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                <Separator />
+                                <MenuItem Header="⚙️ Abrir no Gerenciador de Tarefas (taskmgr)" Click="OpenTaskManager_Click" />
                                 <Separator />
                                 <MenuItem Header="Exportar processos exibidos em JSON" Click="ExportCurrentTabJson_Click" />
                             </ContextMenu>
@@ -607,10 +612,11 @@
                                   MouseDoubleClick="ProcessesDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
-                                    <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
                                     <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
-                                    <MenuItem Header="Abrir localização do processo" Click="ProcessOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="📁 Abrir localização do processo" Tag="OpenLocationAction" Click="ProcessOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="⚙️ Abrir no Gerenciador de Tarefas (taskmgr)" Click="OpenTaskManager_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Copiar detalhes do processo" Click="CopyProcessDetails_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <MenuItem Header="Copiar PID" Click="CopyProcessPID_Click" Foreground="{DynamicResource TextPrimary}" />
@@ -800,8 +806,10 @@
                             ToolTip="Tags, confiança e exportação das tarefas exibidas" Click="TabActionsButton_Click">
                         <Button.ContextMenu>
                             <ContextMenu Opened="TrustActionMenu_Opened">
-                                <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
                                 <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                <Separator />
+                                <MenuItem Header="⚙️ Abrir no Agendador de Tarefas (taskschd.msc)" Click="OpenTaskScheduler_Click" />
                                 <Separator />
                                 <MenuItem Header="Exportar tarefas exibidas em JSON" Click="ExportCurrentTabJson_Click" />
                             </ContextMenu>
@@ -820,10 +828,11 @@
                                   MouseDoubleClick="TasksDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
-                                    <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
                                     <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
-                                    <MenuItem Header="Abrir localização da tarefa" Click="TaskOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="📁 Abrir localização da tarefa" Tag="OpenLocationAction" Click="TaskOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="⚙️ Abrir no Agendador de Tarefas (taskschd.msc)" Click="OpenTaskScheduler_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Copiar detalhes da tarefa" Click="CopyTaskDetails_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <MenuItem Header="Copiar ação ou comando" Click="CopyTaskCommand_Click" Foreground="{DynamicResource TextPrimary}" />
@@ -993,8 +1002,10 @@
                             ToolTip="Tags, confiança e exportação dos itens de inicialização exibidos" Click="TabActionsButton_Click">
                         <Button.ContextMenu>
                             <ContextMenu Opened="TrustActionMenu_Opened">
-                                <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
                                 <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                <Separator />
+                                <MenuItem Header="⚙️ Abrir no utilitário do Windows" Tag="UtilityAction" Click="StartupOpenWindowsUtility_Click" />
                                 <Separator />
                                 <MenuItem Header="Exportar itens exibidos em JSON" Click="ExportCurrentTabJson_Click" />
                             </ContextMenu>
@@ -1013,10 +1024,11 @@
                                   MouseDoubleClick="StartupDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
-                                    <MenuItem Header="Editar tag da seleção…" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
                                     <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
-                                    <MenuItem Header="Abrir localização do item" Click="StartupOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="📁 Abrir localização do item" Tag="OpenLocationAction" Click="StartupOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="⚙️ Abrir no utilitário do Windows" Tag="UtilityAction" Click="StartupOpenWindowsUtility_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Copiar detalhes do item" Click="CopyStartupDetails_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <MenuItem Header="Copiar comando ou chave" Click="CopyStartupCommand_Click" Foreground="{DynamicResource TextPrimary}" />
