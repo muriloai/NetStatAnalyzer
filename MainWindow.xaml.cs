@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -13,6 +14,8 @@ using NetStatAnalyzer.Application.Contracts;
 using NetStatAnalyzer.Domain.Policies;
 using NetStatAnalyzer.Presentation.Extensions;
 using NetStatAnalyzer.Presentation.ViewModels;
+using NetStatAnalyzer.Presentation.Windows;
+using NetStatAnalyzer.Presentation.Common;
 
 namespace NetStatAnalyzer
 {
@@ -20,6 +23,7 @@ namespace NetStatAnalyzer
     {
         public MainViewModel ViewModel { get; }
         private readonly DispatcherTimer _liveReadingTimer;
+        private bool _isContinuousSampleRunning;
         private readonly IExecutablePathResolver _executablePathResolver;
         private readonly Func<AllowlistManagerViewModel> _allowlistManagerViewModelFactory;
 
@@ -34,6 +38,7 @@ namespace NetStatAnalyzer
             _allowlistManagerViewModelFactory = allowlistManagerViewModelFactory ?? throw new ArgumentNullException(nameof(allowlistManagerViewModelFactory));
 
             DataContext = ViewModel;
+            ApplyTheme(ViewModel.Theme);
 
             _liveReadingTimer = new DispatcherTimer
             {
@@ -41,16 +46,33 @@ namespace NetStatAnalyzer
             };
             _liveReadingTimer.Tick += async (s, e) =>
             {
-                if (ViewModel.IsLoading || ContinuousReadingToggleBtn.IsChecked != true) return;
-                if (ViewModel.SelectedTabIndex == 0)
+                if (ViewModel.IsLoading || !ViewModel.IsLiveReading || _isContinuousSampleRunning ||
+                    ContinuousReadingToggleBtn.IsChecked != true || ViewModel.SelectedTabIndex is not (0 or 1))
+                    return;
+
+                _isContinuousSampleRunning = true;
+                UpdateLoadingVisualState();
+                try
                 {
-                    await ViewModel.RefreshConnectionsAsync(isSilent: true);
-                    DataGrid.AutoFitColumns();
+                    if (ViewModel.SelectedTabIndex == 0)
+                    {
+                        await ViewModel.RefreshConnectionsAsync(isSilent: true);
+                        DataGrid.AutoFitColumns();
+                    }
+                    else
+                    {
+                        await ViewModel.RefreshProcessesAsync(isSilent: true);
+                        ProcessesDataGrid.AutoFitColumns();
+                    }
                 }
-                else if (ViewModel.SelectedTabIndex == 1)
+                catch (Exception ex)
                 {
-                    await ViewModel.RefreshProcessesAsync(isSilent: true);
-                    ProcessesDataGrid.AutoFitColumns();
+                    ViewModel.StatusMessage = $"Falha na leitura contínua: {ex.Message}";
+                }
+                finally
+                {
+                    _isContinuousSampleRunning = false;
+                    UpdateLoadingVisualState();
                 }
             };
 
@@ -114,16 +136,11 @@ namespace NetStatAnalyzer
                 ContinuousReadingToggleBtn.IsChecked = false;
                 _liveReadingTimer.Stop();
                 ViewModel.IsLiveReading = false;
-                CurrentTabReloadButton.IsEnabled = !ViewModel.IsLoading;
                 ViewModel.StatusMessage = "Leitura contínua pausada; disponível nas abas Conexões e Processos.";
             }
 
             ConnectionCountText.Text = ViewModel.CurrentTabSummary;
-
-            // Clear row selection details on tab switch
-            SelectedSeparator.Visibility = Visibility.Collapsed;
-            SelectedProcessText.Visibility = Visibility.Collapsed;
-            SelectedProcessText.Text = string.Empty;
+            UpdateSelectionSummary();
 
             AutoFitActiveTabGrid();
         }
@@ -204,20 +221,29 @@ namespace NetStatAnalyzer
         {
             bool isProcessing = ViewModel.IsLoading;
             bool isLive = ViewModel.IsLiveReading;
-            bool showSpinner = isProcessing || isLive;
+            bool isSampleRunning = _isContinuousSampleRunning;
+            bool showSpinner = isProcessing || isLive || isSampleRunning;
 
             StatusSpinner.Visibility = showSpinner ? Visibility.Visible : Visibility.Collapsed;
-            LoadingProgressBar.Visibility = isProcessing ? Visibility.Visible : Visibility.Collapsed;
+            StatusIdleDot.Visibility = showSpinner ? Visibility.Collapsed : Visibility.Visible;
+            RefreshLoadingProgressBar.Visibility = isProcessing ? Visibility.Visible : Visibility.Collapsed;
+            ContinuousLoadingProgressBar.Visibility = isLive || isSampleRunning
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            RefreshDataButton.IsEnabled = !isProcessing && !isLive && !isSampleRunning;
+            ContinuousReadingToggleBtn.IsEnabled = !isProcessing;
+            ContinuousReadingToggleBtn.Content = isLive ? "Pausar leitura" : "Leitura contínua";
+            ContinuousReadingToggleBtn.ToolTip = isLive
+                ? "Leitura contínua ativa. Clique para pausar."
+                : "Ativar a leitura contínua nas abas Conexões e Processos";
 
             if (isProcessing)
             {
-                CurrentTabReloadButton.Style = (Style)FindResource("ModernReloadProcessingButton");
-                CurrentTabReloadButton.IsEnabled = false;
+                RefreshDataButton.Style = (Style)FindResource("ModernReloadProcessingButton");
             }
             else
             {
-                CurrentTabReloadButton.Style = (Style)FindResource("ModernPrimaryButton");
-                CurrentTabReloadButton.IsEnabled = !isLive;
+                RefreshDataButton.Style = (Style)FindResource("ModernPrimaryButton");
             }
         }
 
@@ -258,11 +284,109 @@ namespace NetStatAnalyzer
             }
         }
 
+        private void DataGrid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not DataGrid grid || e.OriginalSource is not DependencyObject source) return;
+            if (ItemsControl.ContainerFromElement(grid, source) is not DataGridRow row) return;
+
+            if (!row.IsSelected)
+            {
+                grid.SelectedItems.Clear();
+                row.IsSelected = true;
+            }
+            row.Focus();
+        }
+
+        private static readonly IReadOnlyDictionary<string, string> LightPalette = new Dictionary<string, string>
+        {
+            ["BgPrimary"] = "#D8E0E8", ["BgSecondary"] = "#E1E8EE", ["BgTertiary"] = "#C9D4DE",
+            ["BgCard"] = "#E7EDF2", ["SurfaceInset"] = "#D2DCE4", ["SurfaceRaised"] = "#E2E9EF",
+            ["BorderBrush"] = "#91A1AF", ["BorderLightBrush"] = "#718392",
+            ["TextPrimary"] = "#162633", ["TextSecondary"] = "#2E4556", ["TextMuted"] = "#455D6E",
+            ["AccentColor"] = "#145C83", ["AccentHover"] = "#104B6A", ["AccentHoverText"] = "#FFFFFF", ["AccentPressed"] = "#0C3D57",
+            ["PrimaryButtonColor"] = "#145C83", ["PrimaryButtonHover"] = "#104B6A",
+            ["PrimaryButtonPressed"] = "#0C3D57", ["PrimaryButtonTextColor"] = "#FFFFFF",
+            ["AccentBorder"] = "#145C83", ["AccentSurface"] = "#C7DCE8",
+            ["SuccessColor"] = "#155B40", ["SuccessSurface"] = "#CBE3D7", ["SuccessBorder"] = "#32805E",
+            ["SuccessHoverBackground"] = "#155B40", ["SuccessHoverText"] = "#FFFFFF",
+            ["WarningColor"] = "#C2410C", ["WarningSurface"] = "#FFEDD5", ["WarningBorder"] = "#F97316",
+            ["DangerColor"] = "#8E202C", ["DangerSurface"] = "#EED2D5", ["DangerBorder"] = "#A83D47",
+            ["DangerHoverBackground"] = "#8E202C", ["DangerHoverText"] = "#FFFFFF",
+            ["DataGridSurface"] = "#F0F3F6", ["DataGridAlternateSurface"] = "#E2E9EE",
+            ["DataGridHeaderSurface"] = "#C9D5DE", ["DataGridHoverSurface"] = "#D5E0E7",
+            ["DataGridSelectionSurface"] = "#A9CDDF", ["DataGridSelectionText"] = "#162633",
+            ["DataGridSelectionBorder"] = "#286580", ["DataGridGridline"] = "#B4C2CC"
+        };
+
+        private static readonly IReadOnlyDictionary<string, string> DarkPalette = new Dictionary<string, string>
+        {
+            ["BgPrimary"] = "#1B1B1B", ["BgSecondary"] = "#242424", ["BgTertiary"] = "#323232",
+            ["BgCard"] = "#292929", ["SurfaceInset"] = "#1E1E1E", ["SurfaceRaised"] = "#282828",
+            ["BorderBrush"] = "#464646", ["BorderLightBrush"] = "#5A5A5A",
+            ["TextPrimary"] = "#F1F1F1", ["TextSecondary"] = "#C5C5C5", ["TextMuted"] = "#999999",
+            ["AccentColor"] = "#9A9A9A", ["AccentHover"] = "#B2B2B2", ["AccentHoverText"] = "#1B1B1B", ["AccentPressed"] = "#787878",
+            ["PrimaryButtonColor"] = "#565656", ["PrimaryButtonHover"] = "#6B6B6B",
+            ["PrimaryButtonPressed"] = "#414141", ["PrimaryButtonTextColor"] = "#FFFFFF",
+            ["AccentBorder"] = "#D0D0D0", ["AccentSurface"] = "#333333",
+            ["SuccessColor"] = "#83C9A6", ["SuccessSurface"] = "#1F4036", ["SuccessBorder"] = "#4C9E78",
+            ["SuccessHoverBackground"] = "#25523F", ["SuccessHoverText"] = "#F1F1F1",
+            ["WarningColor"] = "#FB923C", ["WarningSurface"] = "#2A180E", ["WarningBorder"] = "#EA580C",
+            ["DangerColor"] = "#D98A8A", ["DangerSurface"] = "#432727", ["DangerBorder"] = "#AB6262",
+            ["DangerHoverBackground"] = "#5A2E2E", ["DangerHoverText"] = "#F1F1F1",
+            ["DataGridSurface"] = "#202020", ["DataGridAlternateSurface"] = "#292929",
+            ["DataGridHeaderSurface"] = "#303030", ["DataGridHoverSurface"] = "#363636",
+            ["DataGridSelectionSurface"] = "#484848", ["DataGridSelectionText"] = "#F1F1F1",
+            ["DataGridSelectionBorder"] = "#BEBEBE", ["DataGridGridline"] = "#3A3A3A"
+        };
+
+        private void ApplyTheme(string theme)
+        {
+            var palette = theme == "Light" ? LightPalette : DarkPalette;
+            foreach (var (key, hex) in palette)
+            {
+                System.Windows.Application.Current.Resources[key] =
+                    new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            }
+            System.Windows.Application.Current.Resources[SystemColors.HighlightBrushKey] =
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString(palette["DataGridSelectionSurface"]));
+            System.Windows.Application.Current.Resources[SystemColors.HighlightTextBrushKey] =
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString(palette["DataGridSelectionText"]));
+            System.Windows.Application.Current.Resources[SystemColors.InactiveSelectionHighlightBrushKey] =
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString(palette["DataGridAlternateSurface"]));
+            System.Windows.Application.Current.Resources[SystemColors.InactiveSelectionHighlightTextBrushKey] =
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString(palette["DataGridSelectionText"]));
+        }
+
+        private void LightTheme_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyTheme("Light");
+            ViewModel.SaveTheme("Light");
+        }
+
+        private void DarkTheme_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyTheme("Dark");
+            ViewModel.SaveTheme("Dark");
+        }
+
+        private async void RefreshAllData_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.IsLoading || ViewModel.IsLiveReading || _isContinuousSampleRunning) return;
+            await ViewModel.LoadAllDataAsync();
+            AutoFitActiveTabGrid();
+        }
+
+        private void ClearGlobalFilters_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ClearGlobalFilters();
+            AutoFitActiveTabGrid();
+        }
+
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm)
             {
-                vm.SearchQuery = SearchTextBox.Text;
+                vm.ConnectionSearchQuery = SearchTextBox.Text;
                 DataGrid.AutoFitColumns();
             }
         }
@@ -271,7 +395,7 @@ namespace NetStatAnalyzer
         {
             if (DataContext is MainViewModel vm)
             {
-                vm.SearchQuery = ProcessSearchTextBox.Text;
+                vm.ProcessSearchQuery = ProcessSearchTextBox.Text;
                 ProcessesDataGrid.AutoFitColumns();
             }
         }
@@ -280,7 +404,7 @@ namespace NetStatAnalyzer
         {
             if (DataContext is MainViewModel vm)
             {
-                vm.SearchQuery = TaskSearchTextBox.Text;
+                vm.TaskSearchQuery = TaskSearchTextBox.Text;
                 TasksDataGrid.AutoFitColumns();
             }
         }
@@ -289,7 +413,7 @@ namespace NetStatAnalyzer
         {
             if (DataContext is MainViewModel vm)
             {
-                vm.SearchQuery = StartupSearchTextBox.Text;
+                vm.StartupSearchQuery = StartupSearchTextBox.Text;
                 StartupDataGrid.AutoFitColumns();
             }
         }
@@ -303,9 +427,6 @@ namespace NetStatAnalyzer
 
                 if (StateComboBox?.SelectedItem is string stateStr)
                     vm.SelectedState = stateStr;
-
-                if (AllowFilterComboBox?.SelectedItem is ComboBoxItem allowItem)
-                    vm.SelectedTrustFilter = allowItem.Content?.ToString() ?? "Todas";
 
                 vm.ApplyFilters();
                 DataGrid.AutoFitColumns();
@@ -325,7 +446,7 @@ namespace NetStatAnalyzer
         {
             if (DataContext is MainViewModel vm && ProcessCpuCutoffComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string tagStr && double.TryParse(tagStr, out double threshold))
             {
-                vm.CpuCutoffThreshold = threshold;
+                vm.ProcessCpuCutoffThreshold = threshold;
                 ProcessesDataGrid.AutoFitColumns();
             }
         }
@@ -357,33 +478,13 @@ namespace NetStatAnalyzer
             }
         }
 
-        private void OnlyAnomaliesCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is MainViewModel vm)
-            {
-                vm.OnlyAnomalies = OnlyAnomaliesCheckBox.IsChecked ?? false;
-                DataGrid.AutoFitColumns();
-            }
-        }
-
-        private void ProcessOnlyAnomaliesCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is MainViewModel vm)
-            {
-                vm.OnlyAnomalies = ProcessOnlyAnomaliesCheckBox.IsChecked ?? false;
-                ProcessesDataGrid.AutoFitColumns();
-            }
-        }
-
         // Tab 0 Clear
         private void ClearFilters_Click(object sender, RoutedEventArgs e)
         {
             SearchTextBox.Text = string.Empty;
             if (ProtocolComboBox != null) ProtocolComboBox.SelectedIndex = 0;
             if (StateComboBox != null) StateComboBox.SelectedIndex = 0;
-            if (AllowFilterComboBox != null) AllowFilterComboBox.SelectedIndex = 0;
             if (CpuCutoffComboBox != null) CpuCutoffComboBox.SelectedIndex = 0;
-            if (OnlyAnomaliesCheckBox != null) OnlyAnomaliesCheckBox.IsChecked = false;
 
             ViewModel.ClearConnectionFilters();
             DataGrid.AutoFitColumns();
@@ -395,7 +496,6 @@ namespace NetStatAnalyzer
             ProcessSearchTextBox.Text = string.Empty;
             if (ProcessCpuCutoffComboBox != null) ProcessCpuCutoffComboBox.SelectedIndex = 0;
             if (ProcessBandwidthCutoffComboBox != null) ProcessBandwidthCutoffComboBox.SelectedIndex = 0;
-            if (ProcessOnlyAnomaliesCheckBox != null) ProcessOnlyAnomaliesCheckBox.IsChecked = false;
 
             ViewModel.ClearProcessFilters();
             ProcessesDataGrid.AutoFitColumns();
@@ -459,73 +559,103 @@ namespace NetStatAnalyzer
 
         private void MetricCardAllowed_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (AllowFilterComboBox != null)
-            {
-                AllowFilterComboBox.SelectedIndex = 1;
-            }
+            ViewModel.GlobalTrustFilter = "Apenas confiáveis";
         }
 
         private void MetricCardThreat_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (OnlyAnomaliesCheckBox != null)
-            {
-                OnlyAnomaliesCheckBox.IsChecked = !(OnlyAnomaliesCheckBox.IsChecked ?? false);
-                OnlyAnomaliesCheckBox_Click(sender, e);
-            }
+            ViewModel.GlobalOnlyAlerts = !ViewModel.GlobalOnlyAlerts;
         }
 
         // Continuous reading follows the selected table on the two supported tabs.
         private void ContinuousReadingToggleBtn_Click(object sender, RoutedEventArgs e)
         {
+            if (ViewModel.IsLoading)
+            {
+                ContinuousReadingToggleBtn.IsChecked = ViewModel.IsLiveReading;
+                return;
+            }
+
             if (ContinuousReadingToggleBtn.IsChecked == true)
             {
                 _liveReadingTimer.Start();
                 ViewModel.IsLiveReading = true;
-                CurrentTabReloadButton.IsEnabled = false;
-                ContinuousReadingToggleBtn.Content = "Pausar leitura";
-                ViewModel.StatusMessage = "Leitura contínua da tabela atual ativada, com amostras a cada 2 segundos.";
+                ViewModel.StatusMessage = "Leitura contínua ativa. Nova amostra a cada 2 segundos.";
             }
             else
             {
                 _liveReadingTimer.Stop();
                 ViewModel.IsLiveReading = false;
-                CurrentTabReloadButton.IsEnabled = !ViewModel.IsLoading;
-                ContinuousReadingToggleBtn.Content = "Leitura contínua (2 s)";
                 ViewModel.StatusMessage = "Leitura contínua pausada.";
             }
         }
 
         // Dynamic Refresh Handlers
-        private async void Reload_Click(object sender, RoutedEventArgs e)
+        private ViewModelBase[] GetActiveSelection() => (ViewModel.SelectedTabIndex switch
         {
-            await ViewModel.RefreshCurrentTabAsync();
-            AutoFitActiveTabGrid();
-        }
+            0 => DataGrid.SelectedItems.Cast<object>(),
+            1 => ProcessesDataGrid.SelectedItems.Cast<object>(),
+            2 => TasksDataGrid.SelectedItems.Cast<object>(),
+            _ => StartupDataGrid.SelectedItems.Cast<object>()
+        }).OfType<ViewModelBase>().ToArray();
 
-        private void AddToAllowlist_Click(object sender, RoutedEventArgs e)
+        private void EditTagSelection_Click(object sender, RoutedEventArgs e)
         {
-            var selected = DataGrid.SelectedItems.OfType<ConnectionItemViewModel>().ToList();
-            if (selected.Count == 0)
+            var selected = GetActiveSelection();
+            if (selected.Length == 0)
             {
-                MessageBox.Show("Selecione uma ou mais conexões na lista para marcar como confiável.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(this, "Selecione um ou mais registros na tabela.", "Editar tag",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            ViewModel.AddSelectedToAllowlist(selected);
-            DataGrid.AutoFitColumns();
+            var dialog = new EditTagWindow(ViewModel.SavedTags,
+                selected.Length == 1 ? selected[0].TagText : string.Empty) { Owner = this };
+            if (dialog.ShowDialog() != true) return;
+            try
+            {
+                ViewModel.SetItemTags(selected, dialog.SelectedTag);
+                AutoFitActiveTabGrid();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Não foi possível salvar", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void RemoveFromAllowlist_Click(object sender, RoutedEventArgs e)
+        private void TrustActionMenu_Opened(object sender, RoutedEventArgs e)
         {
-            var selected = DataGrid.SelectedItems.OfType<ConnectionItemViewModel>().ToList();
-            if (selected.Count == 0)
-            {
-                MessageBox.Show("Selecione uma ou mais conexões para remover da lista de confiáveis.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
+            if (sender is not ContextMenu menu) return;
+            var trustAction = menu.Items.OfType<MenuItem>()
+                .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "TrustToggle", StringComparison.Ordinal));
+            if (trustAction is null) return;
 
-            ViewModel.RemoveSelectedFromAllowlist(selected);
-            DataGrid.AutoFitColumns();
+            var selected = GetActiveSelection();
+            bool willTrust = selected.Length == 0 || selected.All(item => !item.AnnotationTrusted);
+            trustAction.Header = willTrust ? "Marcar como confiável" : "Remover confiança";
+            trustAction.IsEnabled = selected.Length > 0;
+            trustAction.Foreground = selected.Length == 0
+                ? (Brush)FindResource("TextMuted")
+                : (Brush)FindResource(willTrust ? "SuccessColor" : "DangerColor");
+            trustAction.FontWeight = FontWeights.SemiBold;
+        }
+
+        private void ToggleSelectedTrust_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = GetActiveSelection();
+            if (selected.Length == 0) return;
+
+            bool trusted = selected.All(item => !item.AnnotationTrusted);
+            try
+            {
+                ViewModel.SetItemsTrust(selected, trusted);
+                AutoFitActiveTabGrid();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Não foi possível atualizar a confiança",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void OpenAllowManager_Click(object sender, RoutedEventArgs e)
@@ -946,28 +1076,59 @@ namespace NetStatAnalyzer
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            int selectedCount = DataGrid.SelectedItems.Count;
+            UpdateSelectionSummary();
+        }
 
-            if (selectedCount == 1 && DataGrid.SelectedItem is ConnectionItemViewModel entry)
+        private void UpdateSelectionSummary()
+        {
+            IEnumerable<object> selection = ViewModel.SelectedTabIndex switch
             {
-                SelectedSeparator.Visibility = Visibility.Visible;
-                SelectedProcessText.Visibility = Visibility.Visible;
-                string allowStatus = entry.IsAllowed ? " [Confiável]" : " [Não verificada]";
-                SelectedProcessText.Text = $"Selecionado: {entry.ProcessName} (PID: {entry.PID}){allowStatus} • CPU: {entry.DisplayCpu} • Banda: {entry.DisplayBandwidth}";
-            }
-            else if (selectedCount > 1)
+                0 => DataGrid.SelectedItems.Cast<object>(),
+                1 => ProcessesDataGrid.SelectedItems.Cast<object>(),
+                2 => TasksDataGrid.SelectedItems.Cast<object>(),
+                _ => StartupDataGrid.SelectedItems.Cast<object>()
+            };
+            var selected = selection.OfType<ViewModelBase>().ToArray();
+            if (selected.Length == 0)
             {
-                SelectedSeparator.Visibility = Visibility.Visible;
-                SelectedProcessText.Visibility = Visibility.Visible;
-                int allowCount = DataGrid.SelectedItems.OfType<ConnectionItemViewModel>().Count(i => i.IsAllowed);
-                SelectedProcessText.Text = $"Selecionados: {selectedCount} itens ({allowCount} confiáveis)";
+                SelectedSummaryText.Text = "Nenhum registro selecionado";
+                SelectedSummaryText.ToolTip = SelectedSummaryText.Text;
+                return;
             }
-            else
+
+            if (selected.Length == 1)
             {
-                SelectedSeparator.Visibility = Visibility.Collapsed;
-                SelectedProcessText.Visibility = Visibility.Collapsed;
-                SelectedProcessText.Text = string.Empty;
+                SelectedSummaryText.Text = selected[0] switch
+                {
+                    ConnectionItemViewModel connection =>
+                        $"{connection.ProcessName} · PID {connection.PID} · {connection.State} · CPU {connection.DisplayCpu} · Banda {connection.DisplayBandwidth}",
+                    ProcessAggregateItemViewModel process =>
+                        $"{process.ProcessName} · PID {process.PID} · CPU {process.FormattedCpu} · Banda {process.FormattedTotalBandwidth} · {process.ActiveConnectionsCount} conexões",
+                    ScheduledTaskItemViewModel task =>
+                        $"{task.TaskName} · {task.State} · {(task.IsSuspicious ? "Alerta" : "Sem alerta")}",
+                    StartupItemViewModel startup =>
+                        $"{startup.Name} · {startup.SourceType} · {(startup.IsEnabled ? "Ativo" : "Desativado")}",
+                    _ => "1 registro selecionado"
+                };
+                if (!string.IsNullOrWhiteSpace(selected[0].TagText))
+                    SelectedSummaryText.Text += $" · Tag: {selected[0].TagText}";
+                SelectedSummaryText.Text += selected[0].AnnotationTrusted ? " · Confiável" : " · Não verificado";
+                SelectedSummaryText.ToolTip = SelectedSummaryText.Text;
+                return;
             }
+
+            string itemType = selected[0] switch
+            {
+                ConnectionItemViewModel => "conexões",
+                ProcessAggregateItemViewModel => "processos",
+                ScheduledTaskItemViewModel => "tarefas",
+                StartupItemViewModel => "itens de inicialização",
+                _ => "registros"
+            };
+            int trustedCount = selected.Count(item => item.AnnotationTrusted);
+            int taggedCount = selected.Count(item => !string.IsNullOrWhiteSpace(item.TagText));
+            SelectedSummaryText.Text = $"{selected.Length} {itemType} selecionados · {trustedCount} confiáveis · {taggedCount} com tag";
+            SelectedSummaryText.ToolTip = SelectedSummaryText.Text;
         }
     }
 }

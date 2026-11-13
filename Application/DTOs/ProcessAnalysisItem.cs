@@ -11,4 +11,6 @@ public sealed record ProcessAnalysisItem(
     double WriteBytesPerSec,
     int ActiveConnectionsCount,
     ThreatLevel ThreatLevel,
-    string ThreatReason);
+    string ThreatReason,
+    string Tag = "",
+    bool IsTrusted = false);

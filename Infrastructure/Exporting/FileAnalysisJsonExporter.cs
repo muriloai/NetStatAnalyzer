@@ -17,7 +17,7 @@ public sealed class FileAnalysisJsonExporter : IAnalysisJsonExporter
             protocol = item.DisplayProtocol, protocolRaw = item.ProtocolRaw,
             localAddress = item.LocalAddress, foreignAddress = item.ForeignAddress,
             state = item.DisplayState, stateRaw = item.StateRaw,
-            isTrusted = item.IsTrusted, trustStatus = item.IsTrusted ? "Confiável" : "Não verificada",
+            tag = item.Tag, isTrusted = item.IsTrusted, trustStatus = item.IsTrusted ? "Confiável" : "Não verificada",
             cpuPercent = item.CpuPercent, bandwidthBytesPerSec = item.BandwidthBytesPerSec,
             threatLevel = item.ThreatLevel.ToString(), threatReason = item.ThreatReason
         }));
@@ -26,6 +26,7 @@ public sealed class FileAnalysisJsonExporter : IAnalysisJsonExporter
         Write(filePath, "processes", version, dataUpdatedAt, items.Select(item => new
         {
             processName = item.ProcessName, pid = item.PID, processPath = item.ProcessPath,
+            tag = item.Tag, isTrusted = item.IsTrusted,
             cpuPercent = item.CpuPercent, readBytesPerSec = item.ReadBytesPerSec,
             writeBytesPerSec = item.WriteBytesPerSec,
             totalBytesPerSec = item.ReadBytesPerSec + item.WriteBytesPerSec,
@@ -37,6 +38,7 @@ public sealed class FileAnalysisJsonExporter : IAnalysisJsonExporter
         Write(filePath, "scheduledTasks", version, dataUpdatedAt, items.Select(item => new
         {
             taskName = item.TaskName, taskPath = item.TaskPath, state = item.State,
+            tag = item.Tag, isTrusted = item.IsTrusted,
             nextRunTime = item.NextRunTime, lastRunTime = item.LastRunTime,
             author = item.Author, taskToRun = item.TaskToRun, scheduleType = item.ScheduleType,
             isMicrosoftTask = item.IsMicrosoftTask, threatLevel = item.ThreatLevel.ToString(),
@@ -49,6 +51,7 @@ public sealed class FileAnalysisJsonExporter : IAnalysisJsonExporter
         Write(filePath, "startupItems", version, dataUpdatedAt, items.Select(item => new
         {
             name = item.Name, command = item.Command, location = item.Location,
+            tag = item.Tag, isTrusted = item.IsTrusted,
             sourceType = item.SourceType, isEnabled = item.IsEnabled,
             threatLevel = item.ThreatLevel.ToString(), threatReason = item.ThreatReason,
             resolvedPath = item.ResolvedPath, fileExists = item.FileExists,

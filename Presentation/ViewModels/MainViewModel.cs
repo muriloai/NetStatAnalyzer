@@ -21,6 +21,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
     {
         private readonly ScanConnectionsUseCase _scanUseCase;
         private readonly ManageAllowlistUseCase _allowlistUseCase;
+        private readonly ManageItemAnnotationsUseCase _annotationUseCase;
         private readonly ExportConnectionsUseCase _exportUseCase;
         private readonly IAnalysisJsonExporter _analysisJsonExporter;
         private readonly ScanProcessMetricsUseCase _metricsUseCase;
@@ -49,17 +50,34 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         private readonly List<StartupItemViewModel> _allStartupItems = new();
         public ObservableCollection<StartupItemViewModel> FilteredStartupItems { get; } = new();
 
+        public ObservableCollection<string> GlobalTagOptions { get; } = new();
+        public IReadOnlyList<string> SavedTags => _annotationUseCase.Tags;
+        private string _globalTagFilter = "Todas as tags";
+        public string GlobalTagFilter
+        {
+            get => _globalTagFilter;
+            set { if (SetProperty(ref _globalTagFilter, value)) ApplyAllFilters(); }
+        }
+
+        private string _globalTrustFilter = "Todas";
+        public string GlobalTrustFilter
+        {
+            get => _globalTrustFilter;
+            set { if (SetProperty(ref _globalTrustFilter, value)) ApplyAllFilters(); }
+        }
+
+        private bool _globalOnlyAlerts;
+        public bool GlobalOnlyAlerts
+        {
+            get => _globalOnlyAlerts;
+            set { if (SetProperty(ref _globalOnlyAlerts, value)) ApplyAllFilters(); }
+        }
+
         private bool _isLoading;
         public bool IsLoading
         {
             get => _isLoading;
-            set
-            {
-                if (SetProperty(ref _isLoading, value))
-                {
-                    OnPropertyChanged(nameof(CurrentTabRefreshText));
-                }
-            }
+            set => SetProperty(ref _isLoading, value);
         }
 
         private readonly string[] _tabStatusMessages =
@@ -112,22 +130,40 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 };
 
                 return lastUpdatedAt is DateTime timestamp
-                    ? $"Dados desta aba atualizados em {timestamp.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.CurrentCulture)}"
+                    ? $"Atualizado: {timestamp.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.CurrentCulture)}"
                     : "Dados desta aba ainda não foram carregados";
             }
         }
 
-        private string _searchQuery = string.Empty;
-        public string SearchQuery
+        private string _connectionSearchQuery = string.Empty;
+        public string ConnectionSearchQuery
         {
-            get => _searchQuery;
+            get => _connectionSearchQuery;
             set
             {
-                if (SetProperty(ref _searchQuery, value))
-                {
-                    ApplyAllFilters();
-                }
+                if (SetProperty(ref _connectionSearchQuery, value)) ApplyFilters();
             }
+        }
+
+        private string _processSearchQuery = string.Empty;
+        public string ProcessSearchQuery
+        {
+            get => _processSearchQuery;
+            set { if (SetProperty(ref _processSearchQuery, value)) ApplyProcessFilters(); }
+        }
+
+        private string _taskSearchQuery = string.Empty;
+        public string TaskSearchQuery
+        {
+            get => _taskSearchQuery;
+            set { if (SetProperty(ref _taskSearchQuery, value)) ApplyTaskFilters(); }
+        }
+
+        private string _startupSearchQuery = string.Empty;
+        public string StartupSearchQuery
+        {
+            get => _startupSearchQuery;
+            set { if (SetProperty(ref _startupSearchQuery, value)) ApplyStartupFilters(); }
         }
 
         private string _selectedProtocol = "Todos";
@@ -157,21 +193,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
         }
 
-        private string _selectedTrustFilter = "Todas";
-        public string SelectedTrustFilter
-        {
-            get => _selectedTrustFilter;
-            set
-            {
-                string safeValue = string.IsNullOrWhiteSpace(value) ? "Todas" : value;
-                if (SetProperty(ref _selectedTrustFilter, safeValue))
-                {
-                    ApplyFilters();
-                }
-            }
-        }
-
-        // Live CPU Cutoff Filter
+        // CPU (%) column filter
         private double _cpuCutoffThreshold = 0.0;
         public double CpuCutoffThreshold
         {
@@ -180,30 +202,16 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 if (SetProperty(ref _cpuCutoffThreshold, value))
                 {
-                    OnPropertyChanged(nameof(CpuCutoffSummary));
                     ApplyFilters();
-                    ApplyProcessFilters();
                 }
             }
         }
 
-        public string CpuCutoffSummary => _cpuCutoffThreshold <= 0.0
-            ? "Corte CPU: Desativado (0%)"
-            : $"Corte CPU: > {_cpuCutoffThreshold:F0}%";
-
-        // Filter: Only Anomalies / Threat Spikes
-        private bool _onlyAnomalies;
-        public bool OnlyAnomalies
+        private double _processCpuCutoffThreshold;
+        public double ProcessCpuCutoffThreshold
         {
-            get => _onlyAnomalies;
-            set
-            {
-                if (SetProperty(ref _onlyAnomalies, value))
-                {
-                    ApplyFilters();
-                    ApplyProcessFilters();
-                }
-            }
+            get => _processCpuCutoffThreshold;
+            set { if (SetProperty(ref _processCpuCutoffThreshold, value)) ApplyProcessFilters(); }
         }
 
         // Filter for Scheduled Tasks
@@ -248,8 +256,6 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     OnPropertyChanged(nameof(IsTasksTabActive));
                     OnPropertyChanged(nameof(IsStartupTabActive));
                     OnPropertyChanged(nameof(CurrentTabSummary));
-                    OnPropertyChanged(nameof(CurrentTabRefreshText));
-                    OnPropertyChanged(nameof(CurrentTabRefreshToolTip));
                     OnPropertyChanged(nameof(CurrentTabLastUpdatedText));
                     OnPropertyChanged(nameof(StatusMessage));
                 }
@@ -275,17 +281,6 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 };
             }
         }
-
-        public string CurrentTabRefreshText => IsLoading ? "Atualizando..." : "Atualizar dados";
-
-        public string CurrentTabRefreshToolTip => SelectedTabIndex switch
-        {
-            0 => "Reexaminar conexões de rede ativas (netstat) da aba atual",
-            1 => "Coletar nova amostra instantânea de consumo de CPU e Banda dos processos",
-            2 => "Recarregar lista de tarefas agendadas do Windows",
-            3 => "Reexaminar programas de inicialização no Registro e Pastas",
-            _ => "Atualizar dados da aba atual"
-        };
 
         // Bandwidth Cutoff Filter (Processos)
         private double _bandwidthCutoffThreshold = 0.0;
@@ -560,6 +555,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public MainViewModel(
             ScanConnectionsUseCase scanUseCase,
             ManageAllowlistUseCase allowlistUseCase,
+            ManageItemAnnotationsUseCase annotationUseCase,
             ExportConnectionsUseCase exportUseCase,
             IAnalysisJsonExporter analysisJsonExporter,
             ScanProcessMetricsUseCase metricsUseCase,
@@ -569,15 +565,17 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         {
             _scanUseCase = scanUseCase ?? throw new ArgumentNullException(nameof(scanUseCase));
             _allowlistUseCase = allowlistUseCase ?? throw new ArgumentNullException(nameof(allowlistUseCase));
+            _annotationUseCase = annotationUseCase ?? throw new ArgumentNullException(nameof(annotationUseCase));
             _exportUseCase = exportUseCase ?? throw new ArgumentNullException(nameof(exportUseCase));
             _analysisJsonExporter = analysisJsonExporter ?? throw new ArgumentNullException(nameof(analysisJsonExporter));
             _metricsUseCase = metricsUseCase ?? throw new ArgumentNullException(nameof(metricsUseCase));
             _tasksUseCase = tasksUseCase ?? throw new ArgumentNullException(nameof(tasksUseCase));
             _startupUseCase = startupUseCase ?? throw new ArgumentNullException(nameof(startupUseCase));
             _windowsToolsLauncher = windowsToolsLauncher ?? throw new ArgumentNullException(nameof(windowsToolsLauncher));
+            UpdateTagOptions();
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.3.1";
+            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.4.1";
 
             ReloadCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
             RefreshCurrentTabCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
@@ -593,6 +591,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _allowlistUseCase.RulesChanged += (s, e) =>
             {
                 ReevaluateTrustedStatus();
+                RefreshAnnotations();
                 UpdateMetrics();
                 ApplyFilters();
             };
@@ -635,8 +634,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 UpdateMetrics();
                 if (!isSilent)
                 {
-                    SetTabStatusMessage(0, $"Conexões atualizadas. Exibindo {FilteredEntries.Count} conexões.");
-                    SetTabStatusMessage(1, $"Dados dos processos atualizados. Exibindo {FilteredProcesses.Count} processos.");
+                    SetTabStatusMessage(0, "Conexões atualizadas.");
+                    SetTabStatusMessage(1, "Amostra de processos atualizada.");
                 }
             }
             catch (Exception ex)
@@ -668,8 +667,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 UpdateProcessMetrics();
                 if (!isSilent)
                 {
-                    SetTabStatusMessage(0, $"Conexões atualizadas. Exibindo {FilteredEntries.Count} conexões.");
-                    SetTabStatusMessage(1, $"Amostra atualizada. Exibindo {FilteredProcesses.Count} processos.");
+                    SetTabStatusMessage(0, "Conexões atualizadas.");
+                    SetTabStatusMessage(1, "Amostra de processos atualizada.");
                 }
             }
             catch (Exception ex)
@@ -695,7 +694,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 SetTabStatusMessage(2, "Consultando tarefas agendadas do Windows...");
                 await LoadScheduledTasksInternalAsync();
                 UpdateTaskMetrics();
-                SetTabStatusMessage(2, $"Tarefas atualizadas. Exibindo {FilteredTasks.Count} tarefas.");
+                SetTabStatusMessage(2, "Tarefas atualizadas.");
             }
             catch (Exception ex)
             {
@@ -716,7 +715,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 SetTabStatusMessage(3, "Examinando chaves de inicialização no Registro e pastas...");
                 await LoadStartupItemsInternalAsync();
                 UpdateStartupMetrics();
-                SetTabStatusMessage(3, $"Itens de inicialização atualizados. Exibindo {FilteredStartupItems.Count} itens.");
+                SetTabStatusMessage(3, "Itens de inicialização atualizados.");
             }
             catch (Exception ex)
             {
@@ -743,8 +742,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 try
                 {
                     await LoadConnectionsInternalAsync();
-                    SetTabStatusMessage(0, $"Conexões atualizadas. Exibindo {FilteredEntries.Count} conexões.");
-                    SetTabStatusMessage(1, $"Processos atualizados. Exibindo {FilteredProcesses.Count} processos.");
+                    SetTabStatusMessage(0, "Conexões atualizadas.");
+                    SetTabStatusMessage(1, "Processos atualizados.");
                 }
                 catch (Exception ex)
                 {
@@ -755,7 +754,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 try
                 {
                     await LoadScheduledTasksInternalAsync();
-                    SetTabStatusMessage(2, $"Tarefas atualizadas. Exibindo {FilteredTasks.Count} tarefas.");
+                    SetTabStatusMessage(2, "Tarefas atualizadas.");
                 }
                 catch (Exception ex)
                 {
@@ -765,7 +764,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 try
                 {
                     await LoadStartupItemsInternalAsync();
-                    SetTabStatusMessage(3, $"Itens de inicialização atualizados. Exibindo {FilteredStartupItems.Count} itens.");
+                    SetTabStatusMessage(3, "Itens de inicialização atualizados.");
                 }
                 catch (Exception ex)
                 {
@@ -794,8 +793,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 SetTabStatusMessage(0, "Carregando conexões de rede e métricas...");
                 SetTabStatusMessage(1, "Carregando métricas dos processos...");
                 await LoadConnectionsInternalAsync();
-                SetTabStatusMessage(0, $"Conexões atualizadas. Exibindo {FilteredEntries.Count} conexões.");
-                SetTabStatusMessage(1, $"Processos atualizados. Exibindo {FilteredProcesses.Count} processos.");
+                SetTabStatusMessage(0, "Conexões atualizadas.");
+                SetTabStatusMessage(1, "Amostra de processos atualizada.");
             }
             catch (Exception ex)
             {
@@ -882,6 +881,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
 
             UpdateStateFilterOptions();
+            RefreshAnnotations();
             UpdateMetrics();
             UpdateProcessMetrics();
             ApplyFilters();
@@ -901,6 +901,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 _allTasks.Add(new ScheduledTaskItemViewModel(t));
             }
+            RefreshAnnotations();
             UpdateTaskMetrics();
             ApplyTaskFilters();
             _tasksLastUpdatedAt = DateTime.Now;
@@ -915,6 +916,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             {
                 _allStartupItems.Add(new StartupItemViewModel(i));
             }
+            RefreshAnnotations();
             UpdateStartupMetrics();
             ApplyStartupFilters();
             _startupLastUpdatedAt = DateTime.Now;
@@ -1025,6 +1027,101 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
         }
 
+        public string Theme => _annotationUseCase.Theme;
+
+        public void SaveTheme(string theme) => _annotationUseCase.SaveTheme(theme);
+
+        private static (string Type, string Key) Identity(ViewModelBase item) => item switch
+        {
+            ConnectionItemViewModel c => ("connection", $"{c.Protocol}|{c.ProcessPath ?? c.ProcessName}|{c.ForeignAddress}"),
+            ProcessAggregateItemViewModel p => ("process", p.ProcessPath ?? p.ProcessName),
+            ScheduledTaskItemViewModel t => ("task", $"{t.TaskPath}|{t.TaskName}"),
+            StartupItemViewModel s => ("startup", $"{s.Location}|{s.Name}"),
+            _ => throw new ArgumentException("Tipo de item desconhecido.", nameof(item))
+        };
+
+        private void UpdateTagOptions()
+        {
+            string selected = GlobalTagFilter;
+            GlobalTagOptions.Clear();
+            GlobalTagOptions.Add("Todas as tags");
+            foreach (var tag in _annotationUseCase.Tags) GlobalTagOptions.Add(tag);
+            GlobalTagFilter = GlobalTagOptions.Contains(selected) ? selected : "Todas as tags";
+        }
+
+        private void RefreshAnnotations()
+        {
+            foreach (ViewModelBase item in _allEntries.Cast<ViewModelBase>()
+                .Concat(_allProcesses).Concat(_allTasks).Concat(_allStartupItems))
+            {
+                var (type, key) = Identity(item);
+                var annotation = _annotationUseCase.Find(type, key);
+                item.TagText = annotation?.Tag ?? string.Empty;
+                item.AnnotationTrusted = item is ConnectionItemViewModel c ? c.IsAllowed : annotation?.IsTrusted ?? false;
+                switch (item)
+                {
+                    case ConnectionItemViewModel connection: connection.Model.Tag = item.TagText; break;
+                    case ScheduledTaskItemViewModel task:
+                        task.Model.Tag = item.TagText;
+                        task.Model.IsTrusted = item.AnnotationTrusted;
+                        break;
+                    case StartupItemViewModel startup:
+                        startup.Model.Tag = item.TagText;
+                        startup.Model.IsTrusted = item.AnnotationTrusted;
+                        break;
+                }
+            }
+        }
+
+        public void SetItemTags(IEnumerable<ViewModelBase> items, string? tag)
+        {
+            var selected = items.ToArray();
+            if (selected.Length == 0) return;
+            _annotationUseCase.SetTags(selected.Select(Identity), tag);
+            UpdateTagOptions();
+            RefreshAnnotations();
+            ApplyAllFilters();
+        }
+
+        public void SetItemsTrust(IEnumerable<ViewModelBase> items, bool trusted)
+        {
+            var selected = items.ToArray();
+            if (selected.Length == 0) return;
+
+            var connections = selected.OfType<ConnectionItemViewModel>().ToArray();
+            if (connections.Length > 0)
+            {
+                var toTrust = connections.Where(item => trusted && !item.IsAllowed).ToArray();
+                var toUntrust = connections.Where(item => !trusted && item.IsAllowed).ToArray();
+                if (toTrust.Length > 0) AddSelectedToAllowlist(toTrust);
+                if (toUntrust.Length > 0) RemoveSelectedFromAllowlist(toUntrust);
+            }
+
+            var annotatedItems = selected.Where(item => item is not ConnectionItemViewModel).ToArray();
+            if (annotatedItems.Length > 0)
+                _annotationUseCase.SetTrust(annotatedItems.Select(Identity), trusted);
+
+            RefreshAnnotations();
+            ApplyAllFilters();
+        }
+
+        private bool PassesGlobalFilters(ViewModelBase item, ThreatLevel level)
+        {
+            if (!string.IsNullOrWhiteSpace(GlobalTagFilter) && GlobalTagFilter != "Todas as tags" &&
+                !item.TagText.Equals(GlobalTagFilter, StringComparison.OrdinalIgnoreCase)) return false;
+            if (GlobalTrustFilter == "Apenas confiáveis" && !item.AnnotationTrusted) return false;
+            if (GlobalTrustFilter == "Não verificados" && item.AnnotationTrusted) return false;
+            return !GlobalOnlyAlerts || level != ThreatLevel.Normal;
+        }
+
+        public void ClearGlobalFilters()
+        {
+            GlobalTagFilter = "Todas as tags";
+            GlobalTrustFilter = "Todas";
+            GlobalOnlyAlerts = false;
+            ApplyAllFilters();
+        }
+
         public void ApplyAllFilters()
         {
             ApplyFilters();
@@ -1035,10 +1132,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public void ApplyFilters()
         {
-            string query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
+            string query = ConnectionSearchQuery.Trim().ToLowerInvariant();
 
             var filtered = _allEntries.Where(entry =>
             {
+                if (!PassesGlobalFilters(entry, entry.ThreatLevel)) return false;
                 if (SelectedProtocol != "Todos" && !entry.Protocol.Equals(SelectedProtocol, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
@@ -1051,23 +1149,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     return false;
                 }
 
-                if (SelectedTrustFilter == "Apenas confiáveis" && !entry.IsAllowed)
-                {
-                    return false;
-                }
-                if (SelectedTrustFilter == "Não verificadas" && entry.IsAllowed)
-                {
-                    return false;
-                }
-
-                // CPU Cutoff filter
+                // Only keep connections that meet the selected CPU (%) level.
                 if (CpuCutoffThreshold > 0.0 && entry.CpuPercent < CpuCutoffThreshold)
-                {
-                    return false;
-                }
-
-                // Only Anomalies filter
-                if (OnlyAnomalies && entry.ThreatLevel == ThreatLevel.Normal)
                 {
                     return false;
                 }
@@ -1107,24 +1190,19 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public void ApplyProcessFilters()
         {
-            string query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
+            string query = ProcessSearchQuery.Trim().ToLowerInvariant();
 
             var filtered = _allProcesses.Where(p =>
             {
-                // CPU cutoff filter
-                if (CpuCutoffThreshold > 0.0 && p.CpuPercent < CpuCutoffThreshold)
+                if (!PassesGlobalFilters(p, p.ThreatLevel)) return false;
+                // Only keep processes that meet the selected CPU (%) level.
+                if (ProcessCpuCutoffThreshold > 0.0 && p.CpuPercent < ProcessCpuCutoffThreshold)
                 {
                     return false;
                 }
 
                 // Bandwidth cutoff filter (Download/Read or Total)
                 if (BandwidthCutoffThreshold > 0.0 && p.TotalBytesPerSec < BandwidthCutoffThreshold)
-                {
-                    return false;
-                }
-
-                // Only Anomalies filter
-                if (OnlyAnomalies && p.ThreatLevel == ThreatLevel.Normal)
                 {
                     return false;
                 }
@@ -1160,10 +1238,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public void ApplyTaskFilters()
         {
-            string query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
+            string query = TaskSearchQuery.Trim().ToLowerInvariant();
 
             var filtered = _allTasks.Where(t =>
             {
+                if (!PassesGlobalFilters(t, t.ThreatLevel)) return false;
                 if (SelectedTaskFilter.Contains("suspeitas", StringComparison.OrdinalIgnoreCase) && (t.IsMicrosoftTask && !t.IsSuspicious))
                 {
                     return false;
@@ -1206,10 +1285,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public void ApplyStartupFilters()
         {
-            string query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
+            string query = StartupSearchQuery.Trim().ToLowerInvariant();
 
             var filtered = _allStartupItems.Where(s =>
             {
+                if (!PassesGlobalFilters(s, s.ThreatLevel)) return false;
                 if (SelectedStartupFilter.Contains("suspeitos", StringComparison.OrdinalIgnoreCase) && !s.IsSuspicious)
                 {
                     return false;
@@ -1255,47 +1335,46 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public void ClearConnectionFilters()
         {
-            SearchQuery = string.Empty;
+            ConnectionSearchQuery = string.Empty;
             SelectedProtocol = "Todos";
             SelectedState = "Todos os Estados";
-            SelectedTrustFilter = "Todas";
             CpuCutoffThreshold = 0.0;
-            OnlyAnomalies = false;
             ApplyFilters();
         }
 
         public void ClearProcessFilters()
         {
-            SearchQuery = string.Empty;
-            CpuCutoffThreshold = 0.0;
+            ProcessSearchQuery = string.Empty;
+            ProcessCpuCutoffThreshold = 0.0;
             BandwidthCutoffThreshold = 0.0;
-            OnlyAnomalies = false;
             ApplyProcessFilters();
         }
 
         public void ClearTaskFilters()
         {
-            SearchQuery = string.Empty;
+            TaskSearchQuery = string.Empty;
             SelectedTaskFilter = "Todas";
             ApplyTaskFilters();
         }
 
         public void ClearStartupFilters()
         {
-            SearchQuery = string.Empty;
+            StartupSearchQuery = string.Empty;
             SelectedStartupFilter = "Todos";
             ApplyStartupFilters();
         }
 
         public void ClearFilters()
         {
-            SearchQuery = string.Empty;
+            ConnectionSearchQuery = string.Empty;
+            ProcessSearchQuery = string.Empty;
+            TaskSearchQuery = string.Empty;
+            StartupSearchQuery = string.Empty;
             SelectedProtocol = "Todos";
             SelectedState = "Todos os Estados";
-            SelectedTrustFilter = "Todas";
             CpuCutoffThreshold = 0.0;
+            ProcessCpuCutoffThreshold = 0.0;
             BandwidthCutoffThreshold = 0.0;
-            OnlyAnomalies = false;
             SelectedTaskFilter = "Todas";
             SelectedStartupFilter = "Todos";
             ApplyAllFilters();
@@ -1369,7 +1448,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     var processes = FilteredProcesses.Select(item => new ProcessAnalysisItem(
                         item.PID, item.ProcessName, item.ProcessPath, item.CpuPercent,
                         item.ReadBytesPerSec, item.WriteBytesPerSec, item.ActiveConnectionsCount,
-                        item.ThreatLevel, item.ThreatReason)).ToArray();
+                        item.ThreatLevel, item.ThreatReason, item.TagText, item.AnnotationTrusted)).ToArray();
                     _analysisJsonExporter.ExportProcesses(filePath, processes, AppVersion, _processesLastUpdatedAt);
                     count = processes.Length;
                     break;

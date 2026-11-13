@@ -9,7 +9,7 @@ using NetStatAnalyzer.Domain.Entities;
 
 namespace NetStatAnalyzer.Infrastructure.Persistence
 {
-    public class JsonFileAllowlistRepository : IAllowlistRepository
+    public class JsonFileAllowlistRepository : IAllowlistRepository, IItemAnnotationRepository
     {
         private readonly string _storageFilePath;
         private readonly string? _legacyStorageFilePath;
@@ -45,28 +45,7 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
         {
             try
             {
-                string? targetPath = null;
-                if (File.Exists(_storageFilePath))
-                {
-                    targetPath = _storageFilePath;
-                }
-                else if (_legacyStorageFilePath != null && File.Exists(_legacyStorageFilePath))
-                {
-                    targetPath = _legacyStorageFilePath;
-                }
-
-                if (targetPath == null) return Array.Empty<AllowlistRule>();
-
-                string json = File.ReadAllText(targetPath);
-                var doc = JsonSerializer.Deserialize<AllowlistDocument>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (doc?.Rules != null)
-                {
-                    return doc.Rules.Where(r => !string.IsNullOrWhiteSpace(r.ProcessName) && !string.IsNullOrWhiteSpace(r.IP)).ToList();
-                }
+                return ReadDocument().Rules.Where(r => !string.IsNullOrWhiteSpace(r.ProcessName) && !string.IsNullOrWhiteSpace(r.IP)).ToList();
             }
             catch (Exception ex)
             {
@@ -80,20 +59,9 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
         {
             try
             {
-                var doc = new AllowlistDocument
-                {
-                    App = "NetStatAnalyzer",
-                    Version = "1.3.1",
-                    ExportedAt = DateTime.Now,
-                    Rules = rules.ToList()
-                };
-
-                string json = JsonSerializer.Serialize(doc, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
-
-                File.WriteAllText(_storageFilePath, json);
+                var doc = ReadDocument();
+                doc.Rules = rules.ToList();
+                WriteDocument(doc);
             }
             catch (Exception ex)
             {
@@ -101,20 +69,54 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
             }
         }
 
-        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.3.1")
+        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.4.1")
         {
-            var doc = new AllowlistDocument
-            {
-                App = "NetStatAnalyzer",
-                Version = appVersion,
-                ExportedAt = DateTime.Now,
-                Rules = rules.ToList()
-            };
+            var doc = ReadDocument();
+            doc.Version = appVersion;
+            doc.ExportedAt = DateTime.Now;
+            doc.Rules = rules.ToList();
 
             return JsonSerializer.Serialize(doc, new JsonSerializerOptions
             {
                 WriteIndented = true
             });
+        }
+
+        public IReadOnlyList<ItemAnnotation> LoadAnnotations() => ReadDocument().Annotations;
+
+        public string LoadTheme() => ReadDocument().Theme;
+
+        public void SaveAnnotations(IEnumerable<ItemAnnotation> annotations)
+        {
+            var doc = ReadDocument();
+            doc.Annotations = annotations.ToList();
+            WriteDocument(doc);
+        }
+
+        public void SaveTheme(string theme)
+        {
+            var doc = ReadDocument();
+            doc.Theme = theme;
+            WriteDocument(doc);
+        }
+
+        private AllowlistDocument ReadDocument()
+        {
+            string? path = File.Exists(_storageFilePath) ? _storageFilePath :
+                _legacyStorageFilePath is not null && File.Exists(_legacyStorageFilePath) ? _legacyStorageFilePath : null;
+            if (path is null) return new AllowlistDocument();
+            return JsonSerializer.Deserialize<AllowlistDocument>(File.ReadAllText(path),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                ?? throw new InvalidDataException("O arquivo de configurações está vazio ou inválido.");
+        }
+
+        private void WriteDocument(AllowlistDocument doc)
+        {
+            doc.Version = "1.4.1";
+            doc.ExportedAt = DateTime.Now;
+            string tempPath = _storageFilePath + ".tmp";
+            File.WriteAllText(tempPath, JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }));
+            File.Move(tempPath, _storageFilePath, true);
         }
 
         public (bool Success, IReadOnlyList<AllowlistRule> Rules, string Version, string Message) ImportFromJson(string jsonContent)
@@ -128,14 +130,14 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
 
                 if (doc == null || doc.Rules == null || doc.Rules.Count == 0)
                 {
-                    return (false, Array.Empty<AllowlistRule>(), doc?.Version ?? "1.3.1", "Nenhuma regra válida encontrada no arquivo.");
+                    return (false, Array.Empty<AllowlistRule>(), doc?.Version ?? "1.4.1", "Nenhuma regra válida encontrada no arquivo.");
                 }
 
                 var validRules = doc.Rules
                     .Where(r => !string.IsNullOrWhiteSpace(r.ProcessName) && !string.IsNullOrWhiteSpace(r.IP))
                     .ToList();
 
-                return (true, validRules, doc.Version ?? "1.3.1", $"{validRules.Count} regras extraídas do arquivo.");
+                return (true, validRules, doc.Version ?? "1.4.1", $"{validRules.Count} regras extraídas do arquivo.");
             }
             catch (Exception ex)
             {

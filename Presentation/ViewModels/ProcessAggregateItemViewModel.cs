@@ -30,7 +30,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public string CpuBadgeBackground => CpuPercent switch
         {
             >= 50.0 => "#7F1D1D",
-            >= 20.0 => "#854D0E",
+            >= 20.0 => "#C2410C",
             >= 5.0 => "#1E3A8A",
             _ => "#1F2937"
         };
@@ -38,7 +38,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public string CpuBadgeForeground => CpuPercent switch
         {
             >= 50.0 => "#FCA5A5",
-            >= 20.0 => "#FDE047",
+            >= 20.0 => "#FED7AA",
             >= 5.0 => "#93C5FD",
             _ => "#E2E8F0"
         };
@@ -56,7 +56,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         {
             ThreatLevel.Critical => "#7F1D1D",
             ThreatLevel.High => "#991B1B",
-            ThreatLevel.Medium => "#854D0E",
+            ThreatLevel.Medium => "#C2410C",
             ThreatLevel.Low => "#1E3A8A",
             _ => "#161B26"
         };
@@ -64,7 +64,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public string ThreatBadgeForeground => ThreatLevel switch
         {
             ThreatLevel.Critical or ThreatLevel.High => "#FCA5A5",
-            ThreatLevel.Medium => "#FDE047",
+            ThreatLevel.Medium => "#FED7AA",
             ThreatLevel.Low => "#93C5FD",
             _ => "#94A3B8"
         };

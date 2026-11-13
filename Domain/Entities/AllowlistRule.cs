@@ -34,7 +34,7 @@ namespace NetStatAnalyzer.Domain.Entities
         public string App { get; set; } = "NetStatAnalyzer";
 
         [JsonPropertyName("version")]
-        public string Version { get; set; } = "1.3.1";
+        public string Version { get; set; } = "1.4.1";
 
         [JsonPropertyName("exportedAt")]
         public DateTime ExportedAt { get; set; } = DateTime.UtcNow;
@@ -44,5 +44,26 @@ namespace NetStatAnalyzer.Domain.Entities
 
         [JsonPropertyName("rules")]
         public List<AllowlistRule> Rules { get; set; } = new();
+
+        [JsonPropertyName("annotations")]
+        public List<ItemAnnotation> Annotations { get; set; } = new();
+
+        [JsonPropertyName("theme")]
+        public string Theme { get; set; } = "Dark";
+    }
+
+    public class ItemAnnotation
+    {
+        [JsonPropertyName("itemType")]
+        public string ItemType { get; set; } = string.Empty;
+
+        [JsonPropertyName("key")]
+        public string Key { get; set; } = string.Empty;
+
+        [JsonPropertyName("tag")]
+        public string Tag { get; set; } = string.Empty;
+
+        [JsonPropertyName("isTrusted")]
+        public bool IsTrusted { get; set; }
     }
 }
