@@ -597,6 +597,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             };
         }
 
+        public bool OpenRegistryEditor(string? keyPath = null) => _windowsToolsLauncher.OpenRegistryEditor(keyPath);
+
         public async Task RefreshCurrentTabAsync()
         {
             switch (SelectedTabIndex)

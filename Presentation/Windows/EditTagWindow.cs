@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,9 +13,9 @@ public sealed class EditTagWindow : Window
 
     public string SelectedTag => _tagBox.Text.Trim();
 
-    public EditTagWindow(IEnumerable<string> savedTags, string currentTag)
+    public EditTagWindow(IEnumerable<string> savedTags, string currentTag, string title = "Editar tag")
     {
-        Title = "Editar tags";
+        Title = title;
         Width = 390;
         SizeToContent = SizeToContent.Height;
         MinHeight = 215;
@@ -25,10 +26,12 @@ public sealed class EditTagWindow : Window
         Foreground = (Brush)FindResource("TextPrimary");
         FontFamily = new FontFamily("Segoe UI");
 
+        bool isApplying = title.StartsWith("Aplicar", StringComparison.OrdinalIgnoreCase);
+
         var panel = new StackPanel { Margin = new Thickness(20) };
         panel.Children.Add(new TextBlock
         {
-            Text = "Tag da seleção",
+            Text = isApplying ? "Aplicar tag na seleção" : "Editar tag da seleção",
             FontWeight = FontWeights.SemiBold,
             Margin = new Thickness(0, 0, 0, 6)
         });
@@ -72,7 +75,7 @@ public sealed class EditTagWindow : Window
         actions.Children.Add(cancel);
         var save = new Button
         {
-            Content = "Aplicar",
+            Content = isApplying ? "Aplicar" : "Salvar",
             Style = (Style)FindResource("ModernPrimaryButton"),
             Margin = new Thickness(8, 0, 0, 0)
         };

@@ -6,7 +6,7 @@
 [![.NET Version](https://img.shields.io/badge/.NET-8.0%20Windows-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![Platform](<https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D6?logo=windows&logoColor=white>)](https://microsoft.com/windows)
 [![CI](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml/badge.svg)](https://github.com/muriloai/NetStatAnalyzer/actions/workflows/tests.yml)
-[![Release](https://img.shields.io/badge/Release-v1.4.1-blue.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
+[![Release](https://img.shields.io/badge/Release-v1.4.2-blue.svg)](https://github.com/muriloai/NetStatAnalyzer/releases)
 
 </div>
 

@@ -115,6 +115,8 @@ namespace NetStatAnalyzer
 
         public void SwitchTab(int index)
         {
+            if (ViewModel == null || TabConnectionsBtn == null || ContinuousReadingToggleBtn == null) return;
+
             ViewModel.SelectedTabIndex = index;
 
             var activeStyle = (Style)FindResource("ModernActiveTabButton");
@@ -130,7 +132,7 @@ namespace NetStatAnalyzer
             TabContentTasks.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
             TabContentStartup.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
 
-            ContinuousReadingToggleBtn.Visibility = index < 2 ? Visibility.Visible : Visibility.Collapsed;
+            ContinuousReadingToggleBtn.Visibility = Visibility.Visible;
             if (index >= 2 && ContinuousReadingToggleBtn.IsChecked == true)
             {
                 ContinuousReadingToggleBtn.IsChecked = false;
@@ -138,6 +140,7 @@ namespace NetStatAnalyzer
                 ViewModel.IsLiveReading = false;
                 ViewModel.StatusMessage = "Leitura contínua pausada; disponível nas abas Conexões e Processos.";
             }
+            UpdateLoadingVisualState();
 
             ConnectionCountText.Text = ViewModel.CurrentTabSummary;
             UpdateSelectionSummary();
@@ -219,6 +222,9 @@ namespace NetStatAnalyzer
 
         private void UpdateLoadingVisualState()
         {
+            if (ViewModel == null || ContinuousReadingToggleBtn == null || RefreshDataButton == null)
+                return;
+
             bool isProcessing = ViewModel.IsLoading;
             bool isLive = ViewModel.IsLiveReading;
             bool isSampleRunning = _isContinuousSampleRunning;
@@ -231,11 +237,21 @@ namespace NetStatAnalyzer
                 ? Visibility.Visible
                 : Visibility.Collapsed;
             RefreshDataButton.IsEnabled = !isProcessing && !isLive && !isSampleRunning;
-            ContinuousReadingToggleBtn.IsEnabled = !isProcessing;
+
+            bool isTabContinuousSupported = ViewModel.SelectedTabIndex < 2;
+            ContinuousReadingToggleBtn.Visibility = Visibility.Visible;
+            ContinuousReadingToggleBtn.IsEnabled = isTabContinuousSupported && !isProcessing;
             ContinuousReadingToggleBtn.Content = isLive ? "Pausar leitura" : "Leitura contínua";
-            ContinuousReadingToggleBtn.ToolTip = isLive
-                ? "Leitura contínua ativa. Clique para pausar."
-                : "Ativar a leitura contínua nas abas Conexões e Processos";
+            if (!isTabContinuousSupported)
+            {
+                ContinuousReadingToggleBtn.ToolTip = "Leitura contínua disponível apenas nas abas Conexões de Rede e Processos & Consumo.";
+            }
+            else
+            {
+                ContinuousReadingToggleBtn.ToolTip = isLive
+                    ? "Leitura contínua ativa. Clique para pausar."
+                    : "Ativar a leitura contínua nas abas Conexões e Processos";
+            }
 
             if (isProcessing)
             {
@@ -570,6 +586,12 @@ namespace NetStatAnalyzer
         // Continuous reading follows the selected table on the two supported tabs.
         private void ContinuousReadingToggleBtn_Click(object sender, RoutedEventArgs e)
         {
+            if (ViewModel.SelectedTabIndex >= 2)
+            {
+                ContinuousReadingToggleBtn.IsChecked = false;
+                return;
+            }
+
             if (ViewModel.IsLoading)
             {
                 ContinuousReadingToggleBtn.IsChecked = ViewModel.IsLiveReading;
@@ -604,13 +626,17 @@ namespace NetStatAnalyzer
             var selected = GetActiveSelection();
             if (selected.Length == 0)
             {
-                MessageBox.Show(this, "Selecione um ou mais registros na tabela.", "Editar tag",
+                MessageBox.Show(this, "Selecione um ou mais registros na tabela.", "Tag",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
+            bool hasTag = selected.Any(i => !string.IsNullOrWhiteSpace(i.TagText));
+            string dialogTitle = hasTag ? "Editar tag" : "Aplicar tag";
+
             var dialog = new EditTagWindow(ViewModel.SavedTags,
-                selected.Length == 1 ? selected[0].TagText : string.Empty) { Owner = this };
+                selected.Length == 1 ? selected[0].TagText : string.Empty,
+                dialogTitle) { Owner = this };
             if (dialog.ShowDialog() != true) return;
             try
             {
@@ -626,18 +652,115 @@ namespace NetStatAnalyzer
         private void TrustActionMenu_Opened(object sender, RoutedEventArgs e)
         {
             if (sender is not ContextMenu menu) return;
-            var trustAction = menu.Items.OfType<MenuItem>()
-                .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "TrustToggle", StringComparison.Ordinal));
-            if (trustAction is null) return;
 
             var selected = GetActiveSelection();
-            bool willTrust = selected.Length == 0 || selected.All(item => !item.AnnotationTrusted);
-            trustAction.Header = willTrust ? "Marcar como confiável" : "Remover confiança";
-            trustAction.IsEnabled = selected.Length > 0;
-            trustAction.Foreground = selected.Length == 0
-                ? (Brush)FindResource("TextMuted")
-                : (Brush)FindResource(willTrust ? "SuccessColor" : "DangerColor");
-            trustAction.FontWeight = FontWeights.SemiBold;
+
+            // 1. Tag Action (Aplicar tag vs Editar tag)
+            var tagAction = menu.Items.OfType<MenuItem>()
+                .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "TagAction", StringComparison.Ordinal));
+            if (tagAction != null)
+            {
+                bool hasAnyTag = selected.Any(item => !string.IsNullOrWhiteSpace(item.TagText));
+                if (selected.Length <= 1)
+                {
+                    tagAction.Header = hasAnyTag ? "Editar tag do item…" : "Aplicar tag no item…";
+                }
+                else
+                {
+                    tagAction.Header = hasAnyTag ? "Editar tag da seleção…" : "Aplicar tag na seleção…";
+                }
+                tagAction.IsEnabled = selected.Length > 0;
+            }
+
+            // 2. Trust Action (Marcar como confiável vs Remover confiança)
+            var trustAction = menu.Items.OfType<MenuItem>()
+                .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "TrustToggle", StringComparison.Ordinal));
+            if (trustAction != null)
+            {
+                bool willTrust = selected.Length == 0 || selected.All(item => !item.AnnotationTrusted);
+                trustAction.Header = willTrust ? "Marcar como confiável" : "Remover confiança";
+                trustAction.IsEnabled = selected.Length > 0;
+                trustAction.Foreground = selected.Length == 0
+                    ? (Brush)FindResource("TextMuted")
+                    : (Brush)FindResource(willTrust ? "SuccessColor" : "DangerColor");
+                trustAction.FontWeight = FontWeights.SemiBold;
+            }
+
+            // 3. Utility Action (Tab 3 dynamic text)
+            var utilityAction = menu.Items.OfType<MenuItem>()
+                .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "UtilityAction", StringComparison.Ordinal));
+            if (utilityAction != null)
+            {
+                var startupSelected = StartupDataGrid.SelectedItems.OfType<StartupItemViewModel>().ToList();
+                if (startupSelected.Count == 0 && StartupDataGrid.SelectedItem is StartupItemViewModel single)
+                {
+                    startupSelected.Add(single);
+                }
+
+                if (startupSelected.Count == 1)
+                {
+                    var item = startupSelected[0];
+                    if (item.SourceType == "Pasta Inicializar" || item.Location.Contains("Pasta Inicializar"))
+                    {
+                        utilityAction.Header = "⚙️ Abrir Configurações de Inicialização (ms-settings)";
+                    }
+                    else
+                    {
+                        utilityAction.Header = "⚙️ Abrir chave no Editor do Registro (regedit)";
+                    }
+                }
+                else
+                {
+                    utilityAction.Header = "⚙️ Abrir no Editor do Registro (regedit)";
+                }
+            }
+
+            // 4. Open Location Action (Enable / Disable if location is accessible on disk)
+            var openLocationAction = menu.Items.OfType<MenuItem>()
+                .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "OpenLocationAction", StringComparison.Ordinal));
+            if (openLocationAction != null)
+            {
+                bool canOpen = CanOpenActiveSelectionLocation();
+                openLocationAction.IsEnabled = canOpen;
+                openLocationAction.ToolTip = canOpen
+                    ? "Abrir pasta contendo o arquivo no Windows Explorer"
+                    : "Localização não disponível no disco (processo interno do sistema, kernel ou acesso restrito)";
+            }
+        }
+
+        private bool CanOpenActiveSelectionLocation()
+        {
+            switch (ViewModel.SelectedTabIndex)
+            {
+                case 0:
+                    var connSelected = DataGrid.SelectedItems.OfType<ConnectionItemViewModel>().ToList();
+                    if (connSelected.Count == 0 && DataGrid.SelectedItem is ConnectionItemViewModel singleConn)
+                        connSelected.Add(singleConn);
+                    return connSelected.Count > 0 && connSelected.Any(c => c.PID > 4 && !string.IsNullOrWhiteSpace(c.ProcessPath));
+
+                case 1:
+                    var procSelected = ProcessesDataGrid.SelectedItems.OfType<ProcessAggregateItemViewModel>().ToList();
+                    if (procSelected.Count == 0 && ProcessesDataGrid.SelectedItem is ProcessAggregateItemViewModel singleProc)
+                        procSelected.Add(singleProc);
+                    return procSelected.Count > 0 && procSelected.Any(p => p.PID > 4 && !string.IsNullOrWhiteSpace(p.ProcessPath));
+
+                case 2:
+                    var taskSelected = TasksDataGrid.SelectedItems.OfType<ScheduledTaskItemViewModel>().ToList();
+                    if (taskSelected.Count == 0 && TasksDataGrid.SelectedItem is ScheduledTaskItemViewModel singleTask)
+                        taskSelected.Add(singleTask);
+                    return taskSelected.Count > 0 && taskSelected.Any(t => !string.IsNullOrWhiteSpace(t.TaskToRun));
+
+                case 3:
+                    var startupSelected = StartupDataGrid.SelectedItems.OfType<StartupItemViewModel>().ToList();
+                    if (startupSelected.Count == 0 && StartupDataGrid.SelectedItem is StartupItemViewModel singleStartup)
+                        startupSelected.Add(singleStartup);
+                    return startupSelected.Count > 0 && startupSelected.Any(s =>
+                        !string.IsNullOrWhiteSpace(s.ResolvedPath) ||
+                        (!string.IsNullOrWhiteSpace(s.Command) && s.SourceType.Contains("Pasta", StringComparison.OrdinalIgnoreCase)));
+
+                default:
+                    return false;
+            }
         }
 
         private void ToggleSelectedTrust_Click(object sender, RoutedEventArgs e)
@@ -757,7 +880,7 @@ namespace NetStatAnalyzer
             {
                 if (string.IsNullOrWhiteSpace(rawPath))
                 {
-                    MessageBox.Show($"Caminho não disponível para '{itemName}'.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ViewModel.StatusMessage = $"Caminho não disponível no disco para '{itemName}' (processo interno ou acesso restrito).";
                     return;
                 }
 
@@ -774,11 +897,53 @@ namespace NetStatAnalyzer
                     return;
                 }
 
-                MessageBox.Show($"O arquivo não foi encontrado no disco:\n{cleanPath}\nPode ser um executável órfão ou requerer elevação de privilégios.", "Arquivo Inexistente", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ViewModel.StatusMessage = $"O arquivo não foi encontrado no disco: {cleanPath}";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao abrir o local do arquivo: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                ViewModel.StatusMessage = $"Erro ao abrir o local do arquivo: {ex.Message}";
+            }
+        }
+
+        private void OpenMultipleFilesInExplorer(IEnumerable<string?> paths)
+        {
+            var distinctList = paths
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Select(p => _executablePathResolver.Resolve(p!))
+                .Where(resolved => !string.IsNullOrWhiteSpace(resolved))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (distinctList.Count == 0)
+            {
+                ViewModel.StatusMessage = "Nenhum caminho válido encontrado para os itens selecionados.";
+                return;
+            }
+
+            int countToOpen = Math.Min(distinctList.Count, 10);
+            for (int i = 0; i < countToOpen; i++)
+            {
+                var resolved = distinctList[i];
+                try
+                {
+                    if (File.Exists(resolved))
+                    {
+                        Process.Start("explorer.exe", $"/select,\"{resolved}\"");
+                    }
+                    else if (Directory.Exists(resolved))
+                    {
+                        Process.Start("explorer.exe", $"\"{resolved}\"");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Erro ao abrir Explorer para '{resolved}': {ex.Message}");
+                }
+            }
+
+            if (distinctList.Count > 10)
+            {
+                ViewModel.StatusMessage = $"Foram encontrados {distinctList.Count} locais distintos. Foram abertos os 10 primeiros para evitar sobrecarga.";
             }
         }
 
@@ -793,13 +958,25 @@ namespace NetStatAnalyzer
 
         private void OpenFileLocation_Click(object sender, RoutedEventArgs e)
         {
-            if (DataGrid.SelectedItem is ConnectionItemViewModel entry)
+            var selected = DataGrid.SelectedItems.OfType<ConnectionItemViewModel>().ToList();
+            if (selected.Count == 0 && DataGrid.SelectedItem is ConnectionItemViewModel single)
             {
-                OpenFileInExplorer(entry.ProcessPath, entry.ProcessName);
+                selected.Add(single);
+            }
+
+            if (selected.Count == 0)
+            {
+                ViewModel.StatusMessage = "Selecione um ou mais processos na tabela para abrir o local do arquivo.";
+                return;
+            }
+
+            if (selected.Count == 1)
+            {
+                OpenFileInExplorer(selected[0].ProcessPath, selected[0].ProcessName);
             }
             else
             {
-                MessageBox.Show("Selecione um processo na tabela para abrir o local do arquivo.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                OpenMultipleFilesInExplorer(selected.Select(s => s.ProcessPath));
             }
         }
 
@@ -890,7 +1067,14 @@ namespace NetStatAnalyzer
                     if (current is DataGridColumnHeader || current is ScrollBar || current is Button) return;
                     if (current is DataGridRow row && row.Item is ConnectionItemViewModel clickedEntry)
                     {
-                        OpenFileInExplorer(clickedEntry.ProcessPath, clickedEntry.ProcessName);
+                        if (clickedEntry.PID > 4 && !string.IsNullOrWhiteSpace(clickedEntry.ProcessPath))
+                        {
+                            OpenFileInExplorer(clickedEntry.ProcessPath, clickedEntry.ProcessName);
+                        }
+                        else
+                        {
+                            ViewModel.StatusMessage = $"Localização não disponível no disco para '{clickedEntry.ProcessName}'.";
+                        }
                         e.Handled = true;
                         return;
                     }
@@ -910,9 +1094,25 @@ namespace NetStatAnalyzer
 
         private void ProcessOpenFileLocation_Click(object sender, RoutedEventArgs e)
         {
-            if (ProcessesDataGrid.SelectedItem is ProcessAggregateItemViewModel item)
+            var selected = ProcessesDataGrid.SelectedItems.OfType<ProcessAggregateItemViewModel>().ToList();
+            if (selected.Count == 0 && ProcessesDataGrid.SelectedItem is ProcessAggregateItemViewModel single)
             {
-                OpenFileInExplorer(item.ProcessPath, item.ProcessName);
+                selected.Add(single);
+            }
+
+            if (selected.Count == 0)
+            {
+                ViewModel.StatusMessage = "Selecione um ou mais processos na tabela para abrir o local do arquivo.";
+                return;
+            }
+
+            if (selected.Count == 1)
+            {
+                OpenFileInExplorer(selected[0].ProcessPath, selected[0].ProcessName);
+            }
+            else
+            {
+                OpenMultipleFilesInExplorer(selected.Select(s => s.ProcessPath));
             }
         }
 
@@ -955,7 +1155,14 @@ namespace NetStatAnalyzer
                     if (current is DataGridColumnHeader || current is ScrollBar || current is Button) return;
                     if (current is DataGridRow row && row.Item is ProcessAggregateItemViewModel item)
                     {
-                        OpenFileInExplorer(item.ProcessPath, item.ProcessName);
+                        if (item.PID > 4 && !string.IsNullOrWhiteSpace(item.ProcessPath))
+                        {
+                            OpenFileInExplorer(item.ProcessPath, item.ProcessName);
+                        }
+                        else
+                        {
+                            ViewModel.StatusMessage = $"Localização não disponível no disco para '{item.ProcessName}'.";
+                        }
                         e.Handled = true;
                         return;
                     }
@@ -975,9 +1182,25 @@ namespace NetStatAnalyzer
 
         private void TaskOpenFileLocation_Click(object sender, RoutedEventArgs e)
         {
-            if (TasksDataGrid.SelectedItem is ScheduledTaskItemViewModel item)
+            var selected = TasksDataGrid.SelectedItems.OfType<ScheduledTaskItemViewModel>().ToList();
+            if (selected.Count == 0 && TasksDataGrid.SelectedItem is ScheduledTaskItemViewModel single)
             {
-                OpenFileInExplorer(item.TaskToRun, item.TaskName);
+                selected.Add(single);
+            }
+
+            if (selected.Count == 0)
+            {
+                ViewModel.StatusMessage = "Selecione uma ou mais tarefas na tabela para abrir o local do arquivo.";
+                return;
+            }
+
+            if (selected.Count == 1)
+            {
+                OpenFileInExplorer(selected[0].TaskToRun, selected[0].TaskName);
+            }
+            else
+            {
+                OpenMultipleFilesInExplorer(selected.Select(s => s.TaskToRun));
             }
         }
 
@@ -1030,10 +1253,80 @@ namespace NetStatAnalyzer
 
         private void StartupOpenFileLocation_Click(object sender, RoutedEventArgs e)
         {
-            if (StartupDataGrid.SelectedItem is StartupItemViewModel item)
+            var selected = StartupDataGrid.SelectedItems.OfType<StartupItemViewModel>().ToList();
+            if (selected.Count == 0 && StartupDataGrid.SelectedItem is StartupItemViewModel single)
             {
-                OpenFileInExplorer(item.Command, item.Name);
+                selected.Add(single);
             }
+
+            if (selected.Count == 0)
+            {
+                ViewModel.StatusMessage = "Selecione um ou mais itens na tabela para abrir o local do arquivo.";
+                return;
+            }
+
+            if (selected.Count == 1)
+            {
+                string path = !string.IsNullOrWhiteSpace(selected[0].ResolvedPath) ? selected[0].ResolvedPath : selected[0].Command;
+                OpenFileInExplorer(path, selected[0].Name);
+            }
+            else
+            {
+                OpenMultipleFilesInExplorer(selected.Select(s => !string.IsNullOrWhiteSpace(s.ResolvedPath) ? s.ResolvedPath : s.Command));
+            }
+        }
+
+        private void StartupOpenWindowsUtility_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = StartupDataGrid.SelectedItems.OfType<StartupItemViewModel>().ToList();
+            if (selected.Count == 0 && StartupDataGrid.SelectedItem is StartupItemViewModel single)
+            {
+                selected.Add(single);
+            }
+
+            if (selected.Count == 1)
+            {
+                var item = selected[0];
+                if (item.SourceType == "Pasta Inicializar" || item.Location.Contains("Pasta Inicializar"))
+                {
+                    ViewModel.OpenStartupSettingsCommand.Execute(null);
+                    return;
+                }
+
+                string regPath = ResolveRegistryFullPath(item.Location);
+                ViewModel.OpenRegistryEditor(regPath);
+            }
+            else
+            {
+                bool hasRegistry = selected.Any(i => i.SourceType == "Registro" || i.Location.Contains("HKCU") || i.Location.Contains("HKLM"));
+                if (hasRegistry || selected.Count == 0)
+                {
+                    ViewModel.OpenRegistryEditor(null);
+                }
+                else
+                {
+                    ViewModel.OpenStartupSettingsCommand.Execute(null);
+                }
+            }
+        }
+
+        private static string ResolveRegistryFullPath(string location)
+        {
+            if (string.IsNullOrWhiteSpace(location))
+                return @"Computer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run";
+
+            if (location.Contains("HKCU RunOnce", StringComparison.OrdinalIgnoreCase))
+                return @"Computer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce";
+            if (location.Contains("HKCU", StringComparison.OrdinalIgnoreCase))
+                return @"Computer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run";
+            if (location.Contains("HKLM RunOnce", StringComparison.OrdinalIgnoreCase))
+                return @"Computer\HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnce";
+            if (location.Contains("32-bit", StringComparison.OrdinalIgnoreCase) || location.Contains("WOW64", StringComparison.OrdinalIgnoreCase))
+                return @"Computer\HKEY_LOCAL_MACHINE\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run";
+            if (location.Contains("HKLM", StringComparison.OrdinalIgnoreCase))
+                return @"Computer\HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run";
+
+            return @"Computer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run";
         }
 
         private void CopyStartupDetails_Click(object sender, RoutedEventArgs e)

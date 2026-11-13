@@ -236,6 +236,6 @@ namespace NetStatAnalyzer.Tests
         public bool OpenTaskManager() => true;
         public bool OpenResourceMonitor() => true;
         public bool OpenStartupFolder() => true;
-        public bool OpenRegistryEditor() => true;
+        public bool OpenRegistryEditor(string? keyPath = null) => true;
     }
 }
