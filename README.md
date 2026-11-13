@@ -75,7 +75,7 @@ Relatórios de inteligência de ameaças alertam sobre o risco decorrente de sof
 - **Tags e confiança:** selecione registros em qualquer aba e use o botão direito ou **Mais ações**. Tags são compartilhadas entre as abas e podem ser filtradas globalmente; a confiança também pode ser atribuída a processos, tarefas e itens de inicialização.
   - Escolha uma tag salva ou digite uma nova.
   - Deixe o campo vazio para remover a tag dos itens selecionados.
-- **Tema:** o ícone no canto superior direito alterna entre claro e escuro. O tema escuro usa superfícies grafite e realces neutros, preservando cores semânticas para alertas. O claro usa cinzas com botões de alto contraste. A preferência é lembrada em `allowlist.json`.
+- **Tema (Claro e Escuro):** o ícone no canto superior direito alterna entre os modos claro e escuro a qualquer momento. A aplicação dispõe tanto do **tema escuro** (com superfícies grafite e realces neutros, preservando cores semânticas de alertas) quanto de uma **versão clara** completa (com paleta suave em cinzas e botões de alto contraste, ideal para ambientes bem iluminados). A preferência é lembrada em `allowlist.json`.
 - **Barra de status:** mantém áreas fixas para estado da leitura, data e quantidade de dados da aba, e resumo dos registros selecionados.
 - **Exportação:** cada aba exporta os registros exibidos em JSON, com data da coleta, tag, confiança e os detalhes técnicos disponíveis.
 
@@ -101,7 +101,10 @@ As tags e a confiança dos registros são armazenadas localmente em `allowlist.j
   Faz amostragem automática a cada 2 segundos e exibe um indicador visual animado de status.
 
 <div align="center">
-<img src="docs/images/preview-main.png" alt="Aba de Conexões de Rede" width="900" />
+<img src="docs/images/preview-main.png" alt="Aba de Conexões de Rede - Tema Escuro" width="900" />
+<br><br>
+<img src="docs/images/preview-main-light.png" alt="Aba de Conexões de Rede - Versão Clara (Tema Claro)" width="900" />
+<p><em>NetStatAnalyzer: visualização em tema escuro (padrão) e versão clara (light theme) da aba de conexões de rede.</em></p>
 </div>
 
 ---
