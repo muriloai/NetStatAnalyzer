@@ -355,7 +355,7 @@ namespace NetStatAnalyzer
             ["DataGridSelectionBorder"] = "#BEBEBE", ["DataGridGridline"] = "#3A3A3A"
         };
 
-        private void ApplyTheme(string theme)
+        public void ApplyTheme(string theme)
         {
             var palette = theme == "Light" ? LightPalette : DarkPalette;
             foreach (var (key, hex) in palette)
