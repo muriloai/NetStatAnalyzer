@@ -12,7 +12,15 @@
   · <a href="docs/desenvolvimento.md">Compilar a partir do código</a>
 </p>
 
-Windows 10 (versão 2004, build 19041 ou posterior) ou Windows 11, em x64. Para usar o pacote portátil autocontido, extraia o ZIP e abra `NetStatAnalyzer.exe`.
+<p align="center">
+ <sub>Windows 10 (versão 2004, build 19041 ou posterior) ou Windows 11, em x64</sub>
+</p>
+
+Esta solução vem como auxílio a profissionais de suporte, desenvolvedores e administradores de sistemas, permitindo **investigar** conexões inesperadas e **identificar** quais programas usam a rede ou mantêm portas abertas no Windows, seja em uso pessoal ou ambiente de desenvolvimento.
+
+Basicamente você pode verificar conexões TCP/UDP, encontrar portas abertas, associar conexões a processos, analisar consumo de CPU e I/O, revisar tarefas agendadas e itens de inicialização, identificar indicadores suspeitos, gerenciar regras de confiança e exportar os resultados em JSON para alimentar outros processos que você tenha.
+
+Ao marcar itens como confiávies você consegue ocultar eles dos resultados, o que lhe permite prestar mais atenção somente no que interessa, isto lhe entrega maiores possibildiades de insights, e consegues detectar, por meio de hash SHA-256, quais itens ditos como confiáveis foram alterados por algo ou alguém, como um vírus ou atualização inesperada que trocou o executável, o qual realiza tráfego em rede.
 
 ![Aba de conexões TCP e UDP do NetStatAnalyzer com endereços, portas, processos e filtros](docs/images/preview-main.png)
 
