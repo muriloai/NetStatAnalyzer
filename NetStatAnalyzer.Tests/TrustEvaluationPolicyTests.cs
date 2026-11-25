@@ -152,5 +152,126 @@ namespace NetStatAnalyzer.Tests
 
             Assert.False(trusted);
         }
+
+        [Fact]
+        public void IsTrusted_WhenExecutableHashMatches_ShouldReturnTrue()
+        {
+            var rules = new List<AllowlistRule>
+            {
+                new AllowlistRule
+                {
+                    ProcessName = "chrome.exe",
+                    IP = "142.250.190.46",
+                    ForeignAddress = "142.250.190.46:443",
+                    ExecutableHash = "abcdef123456"
+                }
+            };
+
+            bool trusted = TrustEvaluationPolicy.IsTrusted(
+                "chrome.exe",
+                "142.250.190.46:443",
+                "192.168.1.5:54321",
+                rules,
+                currentExecutableHash: "ABCDEF123456");
+
+            Assert.True(trusted);
+        }
+
+        [Fact]
+        public void IsTrusted_WhenExecutableHashDiffers_ShouldReturnFalse()
+        {
+            var rules = new List<AllowlistRule>
+            {
+                new AllowlistRule
+                {
+                    ProcessName = "chrome.exe",
+                    IP = "142.250.190.46",
+                    ForeignAddress = "142.250.190.46:443",
+                    ExecutableHash = "abcdef123456"
+                }
+            };
+
+            bool trusted = TrustEvaluationPolicy.IsTrusted(
+                "chrome.exe",
+                "142.250.190.46:443",
+                "192.168.1.5:54321",
+                rules,
+                currentExecutableHash: "999999999999");
+
+            Assert.False(trusted);
+        }
+
+        [Fact]
+        public void IsTrusted_WhenRuleHasHash_AndCurrentHashIsNull_ShouldReturnFalse()
+        {
+            var rules = new List<AllowlistRule>
+            {
+                new AllowlistRule
+                {
+                    ProcessName = "chrome.exe",
+                    IP = "142.250.190.46",
+                    ForeignAddress = "142.250.190.46:443",
+                    ExecutableHash = "abcdef123456"
+                }
+            };
+
+            bool trusted = TrustEvaluationPolicy.IsTrusted(
+                "chrome.exe",
+                "142.250.190.46:443",
+                "192.168.1.5:54321",
+                rules,
+                currentExecutableHash: null);
+
+            Assert.False(trusted);
+        }
+
+        [Fact]
+        public void IsTrusted_WhenRuleHasNoHash_ShouldReturnTrueRegardlessOfHash()
+        {
+            var rules = new List<AllowlistRule>
+            {
+                new AllowlistRule
+                {
+                    ProcessName = "chrome.exe",
+                    IP = "142.250.190.46",
+                    ForeignAddress = "142.250.190.46:443",
+                    ExecutableHash = null
+                }
+            };
+
+            bool trustedWithNull = TrustEvaluationPolicy.IsTrusted(
+                "chrome.exe", "142.250.190.46:443", "192.168.1.5:54321", rules, currentExecutableHash: null);
+            bool trustedWithHash = TrustEvaluationPolicy.IsTrusted(
+                "chrome.exe", "142.250.190.46:443", "192.168.1.5:54321", rules, currentExecutableHash: "any_hash");
+
+            Assert.True(trustedWithNull);
+            Assert.True(trustedWithHash);
+        }
+
+        [Fact]
+        public void IsHashMismatch_WhenHashDiffersOrIsNull_ShouldReturnTrue()
+        {
+            var rules = new List<AllowlistRule>
+            {
+                new AllowlistRule
+                {
+                    ProcessName = "app.exe",
+                    IP = "10.0.0.1",
+                    ForeignAddress = "10.0.0.1:80",
+                    ExecutableHash = "expected_hash"
+                }
+            };
+
+            bool mismatchDiff = TrustEvaluationPolicy.IsHashMismatch(
+                "app.exe", "10.0.0.1:80", "192.168.1.2:12345", rules, "different_hash");
+            bool mismatchNull = TrustEvaluationPolicy.IsHashMismatch(
+                "app.exe", "10.0.0.1:80", "192.168.1.2:12345", rules, null);
+            bool match = TrustEvaluationPolicy.IsHashMismatch(
+                "app.exe", "10.0.0.1:80", "192.168.1.2:12345", rules, "expected_hash");
+
+            Assert.True(mismatchDiff);
+            Assert.True(mismatchNull);
+            Assert.False(match);
+        }
     }
 }

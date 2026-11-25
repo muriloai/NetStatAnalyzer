@@ -223,10 +223,13 @@ namespace NetStatAnalyzer.Tests
 
     public class MockItemAnnotationRepository : IItemAnnotationRepository
     {
+        public bool VerifyExecutableHashByDefault { get; set; } = true;
         public IReadOnlyList<ItemAnnotation> LoadAnnotations() => Array.Empty<ItemAnnotation>();
         public string LoadTheme() => "Dark";
+        public bool LoadVerifyExecutableHashByDefault() => VerifyExecutableHashByDefault;
         public void SaveAnnotations(IEnumerable<ItemAnnotation> annotations) { }
         public void SaveTheme(string theme) { }
+        public void SaveVerifyExecutableHashByDefault(bool verify) => VerifyExecutableHashByDefault = verify;
     }
 
     public class MockWindowsToolsLauncher : IWindowsToolsLauncher

@@ -138,7 +138,7 @@ namespace NetStatAnalyzer
                 ContinuousReadingToggleBtn.IsChecked = false;
                 _liveReadingTimer.Stop();
                 ViewModel.IsLiveReading = false;
-                ViewModel.StatusMessage = "Leitura contínua pausada; disponível nas abas Conexões e Processos.";
+                ViewModel.StatusMessage = "Leitura contínua parada; disponível nas abas Conexões e Processos.";
             }
             UpdateLoadingVisualState();
 
@@ -241,7 +241,7 @@ namespace NetStatAnalyzer
             bool isTabContinuousSupported = ViewModel.SelectedTabIndex < 2;
             ContinuousReadingToggleBtn.Visibility = Visibility.Visible;
             ContinuousReadingToggleBtn.IsEnabled = isTabContinuousSupported && !isProcessing;
-            ContinuousReadingToggleBtn.Content = isLive ? "Pausar leitura" : "Leitura contínua";
+            ContinuousReadingToggleBtn.Content = isLive ? "Parar leitura" : "Leitura contínua";
             if (!isTabContinuousSupported)
             {
                 ContinuousReadingToggleBtn.ToolTip = "Leitura contínua disponível apenas nas abas Conexões de Rede e Processos & Consumo.";
@@ -297,6 +297,40 @@ namespace NetStatAnalyzer
                 btn.ContextMenu.PlacementTarget = btn;
                 btn.ContextMenu.Placement = PlacementMode.Left;
                 btn.ContextMenu.IsOpen = true;
+            }
+        }
+
+        private void SettingsGearBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = PlacementMode.Bottom;
+                btn.ContextMenu.IsOpen = true;
+            }
+        }
+
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SettingsWindow(ViewModel.VerifyExecutableHashByDefault, ViewModel.Theme)
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                if (dialog.VerifyHashResult != ViewModel.VerifyExecutableHashByDefault)
+                {
+                    ViewModel.SaveVerifyExecutableHashByDefault(dialog.VerifyHashResult);
+                }
+
+                if (!string.Equals(dialog.ThemeResult, ViewModel.Theme, StringComparison.OrdinalIgnoreCase))
+                {
+                    ApplyTheme(dialog.ThemeResult);
+                    ViewModel.SaveTheme(dialog.ThemeResult);
+                }
+
+                AutoFitActiveTabGrid();
             }
         }
 
@@ -395,6 +429,12 @@ namespace NetStatAnalyzer
         private void ClearGlobalFilters_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ClearGlobalFilters();
+            AutoFitActiveTabGrid();
+        }
+
+        private void ClearTagFilter_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ClearSelectedTagFilters();
             AutoFitActiveTabGrid();
         }
 
@@ -575,7 +615,8 @@ namespace NetStatAnalyzer
 
         private void MetricCardAllowed_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            ViewModel.GlobalTrustFilter = "Apenas confiáveis";
+            ViewModel.ShowTrusted = true;
+            ViewModel.ShowUntrusted = false;
         }
 
         private void MetricCardThreat_MouseDown(object sender, MouseButtonEventArgs e)
@@ -608,7 +649,7 @@ namespace NetStatAnalyzer
             {
                 _liveReadingTimer.Stop();
                 ViewModel.IsLiveReading = false;
-                ViewModel.StatusMessage = "Leitura contínua pausada.";
+                ViewModel.StatusMessage = "Leitura contínua parada.";
             }
         }
 
@@ -626,21 +667,43 @@ namespace NetStatAnalyzer
             var selected = GetActiveSelection();
             if (selected.Length == 0)
             {
-                MessageBox.Show(this, "Selecione um ou mais registros na tabela.", "Tag",
+                MessageBox.Show(this, "Selecione um ou mais registros na tabela.", "Tags",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            bool hasTag = selected.Any(i => !string.IsNullOrWhiteSpace(i.TagText));
-            string dialogTitle = hasTag ? "Editar tag" : "Aplicar tag";
+            var existingTags = selected
+                .SelectMany(i => i.TagsList)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
-            var dialog = new EditTagWindow(ViewModel.SavedTags,
-                selected.Length == 1 ? selected[0].TagText : string.Empty,
-                dialogTitle) { Owner = this };
+            bool hasTag = existingTags.Length > 0;
+            string dialogTitle = hasTag ? "Editar tags" : "Aplicar tags";
+
+            var dialog = new EditTagWindow(
+                ViewModel.SavedTags,
+                existingTags,
+                dialogTitle,
+                selected.Length,
+                onDeleteSavedTag: tag =>
+                {
+                    ViewModel.DeleteTagGlobally(tag);
+                    AutoFitActiveTabGrid();
+                })
+            {
+                Owner = this
+            };
             if (dialog.ShowDialog() != true) return;
             try
             {
-                ViewModel.SetItemTags(selected, dialog.SelectedTag);
+                if (selected.Length == 1)
+                {
+                    ViewModel.SetItemTags(selected, dialog.SelectedTag);
+                }
+                else
+                {
+                    ViewModel.UpdateItemTags(selected, dialog.AddedTags, dialog.RemovedTags);
+                }
                 AutoFitActiveTabGrid();
             }
             catch (Exception ex)
@@ -649,44 +712,119 @@ namespace NetStatAnalyzer
             }
         }
 
+        private DockPanel CreateMenuHeaderWithBadge(
+            string labelText,
+            string badgeText,
+            Brush? badgeBackground = null,
+            Brush? badgeBorder = null,
+            Brush? badgeForeground = null)
+        {
+            var dock = new DockPanel { LastChildFill = false };
+            dock.Children.Add(new TextBlock { Text = labelText, VerticalAlignment = VerticalAlignment.Center });
+            var badge = new Border
+            {
+                Background = badgeBackground ?? (Brush)FindResource("SurfaceInset"),
+                BorderBrush = badgeBorder ?? (Brush)FindResource("BorderBrush"),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(5, 1, 5, 1),
+                Margin = new Thickness(14, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            DockPanel.SetDock(badge, Dock.Right);
+            badge.Child = new TextBlock
+            {
+                Text = badgeText,
+                FontSize = 10,
+                FontFamily = new FontFamily("Consolas, monospace"),
+                FontWeight = FontWeights.SemiBold,
+                Foreground = badgeForeground ?? (Brush)FindResource("AccentBorder")
+            };
+            dock.Children.Add(badge);
+            return dock;
+        }
+
         private void TrustActionMenu_Opened(object sender, RoutedEventArgs e)
         {
             if (sender is not ContextMenu menu) return;
 
             var selected = GetActiveSelection();
+            bool isNetworkOrProcessTab = ViewModel.SelectedTabIndex == 0 || ViewModel.SelectedTabIndex == 1;
+            bool willTrust = selected.Length == 0 || selected.All(item => !item.AnnotationTrusted);
+            bool defaultWithHash = ViewModel.VerifyExecutableHashByDefault;
 
-            // 1. Tag Action (Aplicar tag vs Editar tag)
+            // 1. Tag Action (Aplicar tags vs Editar tags)
             var tagAction = menu.Items.OfType<MenuItem>()
                 .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "TagAction", StringComparison.Ordinal));
             if (tagAction != null)
             {
-                bool hasAnyTag = selected.Any(item => !string.IsNullOrWhiteSpace(item.TagText));
+                bool hasAnyTag = selected.Any(item => item.HasTags);
                 if (selected.Length <= 1)
                 {
-                    tagAction.Header = hasAnyTag ? "Editar tag do item…" : "Aplicar tag no item…";
+                    tagAction.Header = hasAnyTag ? "Editar tags do item" : "Aplicar tags no item";
                 }
                 else
                 {
-                    tagAction.Header = hasAnyTag ? "Editar tag da seleção…" : "Aplicar tag na seleção…";
+                    tagAction.Header = hasAnyTag ? "Editar tags da seleção" : "Aplicar tags na seleção";
                 }
                 tagAction.IsEnabled = selected.Length > 0;
             }
 
-            // 2. Trust Action (Marcar como confiável vs Remover confiança)
+            // 2. Trust Action #1 (Posição FIXA: em Conexões/Processos sempre valida SHA-256 em verde, ou Remove confiança)
             var trustAction = menu.Items.OfType<MenuItem>()
                 .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "TrustToggle", StringComparison.Ordinal));
             if (trustAction != null)
             {
-                bool willTrust = selected.Length == 0 || selected.All(item => !item.AnnotationTrusted);
-                trustAction.Header = willTrust ? "Marcar como confiável" : "Remover confiança";
                 trustAction.IsEnabled = selected.Length > 0;
                 trustAction.Foreground = selected.Length == 0
                     ? (Brush)FindResource("TextMuted")
                     : (Brush)FindResource(willTrust ? "SuccessColor" : "DangerColor");
-                trustAction.FontWeight = FontWeights.SemiBold;
+
+                if (willTrust && isNetworkOrProcessTab)
+                {
+                    trustAction.FontWeight = defaultWithHash ? FontWeights.Bold : FontWeights.Normal;
+                    trustAction.Header = CreateMenuHeaderWithBadge(
+                        "Marcar como confiável",
+                        "SHA-256",
+                        (Brush)FindResource("SuccessSurface"),
+                        (Brush)FindResource("SuccessBorder"),
+                        (Brush)FindResource("SuccessColor"));
+                    trustAction.ToolTip = "Marca como confiável validando o hash SHA-256 do executável em disco.";
+                }
+                else
+                {
+                    trustAction.FontWeight = FontWeights.SemiBold;
+                    trustAction.Header = willTrust ? "Marcar como confiável" : "Remover confiança";
+                    trustAction.ToolTip = null;
+                }
             }
 
-            // 3. Utility Action (Tab 3 dynamic text)
+            // 2.1. Trust Action #2 (Posição FIXA: em Conexões/Processos sempre sem validação de SHA-256)
+            var altHashAction = menu.Items.OfType<MenuItem>()
+                .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "TrustToggleAltHash", StringComparison.Ordinal));
+            if (altHashAction != null)
+            {
+                bool showAlt = isNetworkOrProcessTab && willTrust;
+                altHashAction.Visibility = showAlt ? Visibility.Visible : Visibility.Collapsed;
+                altHashAction.IsEnabled = selected.Length > 0;
+                altHashAction.FontWeight = !defaultWithHash ? FontWeights.Bold : FontWeights.Normal;
+                altHashAction.Foreground = selected.Length == 0
+                    ? (Brush)FindResource("TextMuted")
+                    : (Brush)FindResource("TextPrimary");
+
+                if (showAlt)
+                {
+                    altHashAction.Header = CreateMenuHeaderWithBadge(
+                        "Confiar sem validar arquivo",
+                        "Sem SHA-256",
+                        (Brush)FindResource("SurfaceInset"),
+                        (Brush)FindResource("BorderBrush"),
+                        (Brush)FindResource("TextSecondary"));
+                    altHashAction.ToolTip = "Marca como confiável sem exigir validação de hash SHA-256 do executável.";
+                }
+            }
+
+            // 3. Utility Action (Tab 3 dynamic text com badge: only shown if registry item is selected)
             var utilityAction = menu.Items.OfType<MenuItem>()
                 .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "UtilityAction", StringComparison.Ordinal));
             if (utilityAction != null)
@@ -697,21 +835,17 @@ namespace NetStatAnalyzer
                     startupSelected.Add(single);
                 }
 
-                if (startupSelected.Count == 1)
+                bool isRegistry = startupSelected.Count > 0 && startupSelected.Any(i => i.SourceType == "Registro" || i.Location.Contains("HKCU") || i.Location.Contains("HKLM"));
+                utilityAction.Visibility = isRegistry ? Visibility.Visible : Visibility.Collapsed;
+                if (isRegistry)
                 {
-                    var item = startupSelected[0];
-                    if (item.SourceType == "Pasta Inicializar" || item.Location.Contains("Pasta Inicializar"))
-                    {
-                        utilityAction.Header = "⚙️ Abrir Configurações de Inicialização (ms-settings)";
-                    }
-                    else
-                    {
-                        utilityAction.Header = "⚙️ Abrir chave no Editor do Registro (regedit)";
-                    }
-                }
-                else
-                {
-                    utilityAction.Header = "⚙️ Abrir no Editor do Registro (regedit)";
+                    utilityAction.Header = CreateMenuHeaderWithBadge(
+                        "⚙️ Abrir chave no Editor do Registro",
+                        "regedit",
+                        (Brush)FindResource("SurfaceInset"),
+                        (Brush)FindResource("BorderBrush"),
+                        (Brush)FindResource("AccentBorder"));
+                    utilityAction.ToolTip = "Abre o Editor do Registro (regedit.exe) diretamente na chave deste item.";
                 }
             }
 
@@ -769,9 +903,34 @@ namespace NetStatAnalyzer
             if (selected.Length == 0) return;
 
             bool trusted = selected.All(item => !item.AnnotationTrusted);
+            bool isNetworkOrProcessTab = ViewModel.SelectedTabIndex == 0 || ViewModel.SelectedTabIndex == 1;
             try
             {
-                ViewModel.SetItemsTrust(selected, trusted);
+                if (trusted && isNetworkOrProcessTab)
+                {
+                    ViewModel.SetItemsTrust(selected, true, forceHash: true);
+                }
+                else
+                {
+                    ViewModel.SetItemsTrust(selected, trusted);
+                }
+                AutoFitActiveTabGrid();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Não foi possível atualizar a confiança",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ToggleSelectedTrustAltHash_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = GetActiveSelection();
+            if (selected.Length == 0) return;
+
+            try
+            {
+                ViewModel.SetItemsTrust(selected, true, forceHash: false);
                 AutoFitActiveTabGrid();
             }
             catch (Exception ex)
@@ -1284,30 +1443,18 @@ namespace NetStatAnalyzer
                 selected.Add(single);
             }
 
-            if (selected.Count == 1)
+            if (selected.Count > 0)
             {
-                var item = selected[0];
-                if (item.SourceType == "Pasta Inicializar" || item.Location.Contains("Pasta Inicializar"))
+                var regItem = selected.FirstOrDefault(i => i.SourceType == "Registro" || i.Location.Contains("HKCU") || i.Location.Contains("HKLM"));
+                if (regItem != null)
                 {
-                    ViewModel.OpenStartupSettingsCommand.Execute(null);
+                    string regPath = ResolveRegistryFullPath(regItem.Location);
+                    ViewModel.OpenRegistryEditor(regPath);
                     return;
                 }
+            }
 
-                string regPath = ResolveRegistryFullPath(item.Location);
-                ViewModel.OpenRegistryEditor(regPath);
-            }
-            else
-            {
-                bool hasRegistry = selected.Any(i => i.SourceType == "Registro" || i.Location.Contains("HKCU") || i.Location.Contains("HKLM"));
-                if (hasRegistry || selected.Count == 0)
-                {
-                    ViewModel.OpenRegistryEditor(null);
-                }
-                else
-                {
-                    ViewModel.OpenStartupSettingsCommand.Execute(null);
-                }
-            }
+            ViewModel.OpenRegistryEditor(null);
         }
 
         private static string ResolveRegistryFullPath(string location)

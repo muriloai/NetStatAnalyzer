@@ -114,5 +114,43 @@ namespace NetStatAnalyzer.Tests
 
             Assert.Empty(useCase.GetAllRules());
         }
+
+        [Fact]
+        public void AddRules_WithExecutableHash_ShouldSaveHashAndPath()
+        {
+            var repo = new InMemoryAllowlistRepository();
+            var useCase = new ManageAllowlistUseCase(repo);
+
+            int added = useCase.AddRules(new (string, string, string, string?, string?, string?)[]
+            {
+                ("secure.exe", "1.1.1.1:443", "TCP", "192.168.1.10:50000", "C:\\app\\secure.exe", "hash123456")
+            });
+
+            Assert.Equal(1, added);
+            var rule = Assert.Single(useCase.GetAllRules());
+            Assert.Equal("C:\\app\\secure.exe", rule.ExecutablePath);
+            Assert.Equal("hash123456", rule.ExecutableHash);
+        }
+
+        [Fact]
+        public void AddRules_WhenRuleExists_ShouldUpdateExecutableHash()
+        {
+            var repo = new InMemoryAllowlistRepository();
+            var useCase = new ManageAllowlistUseCase(repo);
+
+            useCase.AddRules(new (string, string, string, string?, string?, string?)[]
+            {
+                ("secure.exe", "1.1.1.1:443", "TCP", "192.168.1.10:50000", "C:\\app\\secure.exe", "old_hash")
+            });
+
+            int updated = useCase.AddRules(new (string, string, string, string?, string?, string?)[]
+            {
+                ("secure.exe", "1.1.1.1:443", "TCP", "192.168.1.10:50000", "C:\\app\\secure.exe", "new_hash")
+            });
+
+            Assert.Equal(1, updated);
+            var rule = Assert.Single(useCase.GetAllRules());
+            Assert.Equal("new_hash", rule.ExecutableHash);
+        }
     }
 }

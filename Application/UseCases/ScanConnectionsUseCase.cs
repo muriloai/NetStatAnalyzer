@@ -12,17 +12,23 @@ namespace NetStatAnalyzer.Application.UseCases
     {
         private readonly INetworkScanner _scanner;
         private readonly IProcessResolver _processResolver;
+        private readonly IExecutableHashResolver? _hashResolver;
 
-        public ScanConnectionsUseCase(INetworkScanner scanner, IProcessResolver processResolver)
+        public ScanConnectionsUseCase(
+            INetworkScanner scanner,
+            IProcessResolver processResolver,
+            IExecutableHashResolver? hashResolver = null)
         {
             _scanner = scanner;
             _processResolver = processResolver;
+            _hashResolver = hashResolver;
         }
 
         public async Task<List<NetworkConnection>> ExecuteAsync(IEnumerable<AllowlistRule> trustedRules)
         {
             var rawSockets = await _scanner.ScanSocketsAsync();
             var connections = new List<NetworkConnection>(rawSockets.Count);
+            var rulesList = trustedRules as IList<AllowlistRule> ?? trustedRules.ToList();
 
             foreach (var raw in rawSockets)
             {
@@ -31,12 +37,23 @@ namespace NetStatAnalyzer.Application.UseCases
                 string processName = _processResolver.GetProcessName(raw.PID);
                 string? processPath = _processResolver.GetProcessPath(raw.PID);
 
+                string? hash = null;
+                if (_hashResolver != null && !string.IsNullOrEmpty(processPath))
+                {
+                    if (rulesList.Any(r => !string.IsNullOrEmpty(r.ExecutableHash) &&
+                                           r.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        hash = _hashResolver.ComputeSha256(processPath);
+                    }
+                }
+
                 bool isTrusted = TrustEvaluationPolicy.IsTrusted(
                     processName,
                     raw.ForeignAddress,
                     raw.LocalAddress,
-                    trustedRules,
-                    raw.Protocol);
+                    rulesList,
+                    raw.Protocol,
+                    hash);
 
                 connections.Add(new NetworkConnection
                 {

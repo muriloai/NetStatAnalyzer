@@ -21,6 +21,12 @@ namespace NetStatAnalyzer.Domain.Entities
         [JsonPropertyName("protocol")]
         public string? Protocol { get; set; }
 
+        [JsonPropertyName("executablePath")]
+        public string? ExecutablePath { get; set; }
+
+        [JsonPropertyName("executableHash")]
+        public string? ExecutableHash { get; set; }
+
         [JsonPropertyName("addedAt")]
         public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 
@@ -34,7 +40,7 @@ namespace NetStatAnalyzer.Domain.Entities
         public string App { get; set; } = "NetStatAnalyzer";
 
         [JsonPropertyName("version")]
-        public string Version { get; set; } = "1.4.1";
+        public string Version { get; set; } = "1.5.1";
 
         [JsonPropertyName("exportedAt")]
         public DateTime ExportedAt { get; set; } = DateTime.UtcNow;
@@ -50,6 +56,9 @@ namespace NetStatAnalyzer.Domain.Entities
 
         [JsonPropertyName("theme")]
         public string Theme { get; set; } = "Dark";
+
+        [JsonPropertyName("verifyExecutableHashByDefault")]
+        public bool VerifyExecutableHashByDefault { get; set; } = true;
     }
 
     public class ItemAnnotation
@@ -65,5 +74,11 @@ namespace NetStatAnalyzer.Domain.Entities
 
         [JsonPropertyName("isTrusted")]
         public bool IsTrusted { get; set; }
+
+        [JsonPropertyName("executablePath")]
+        public string? ExecutablePath { get; set; }
+
+        [JsonPropertyName("executableHash")]
+        public string? ExecutableHash { get; set; }
     }
 }

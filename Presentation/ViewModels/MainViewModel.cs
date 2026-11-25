@@ -28,6 +28,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         private readonly ScanScheduledTasksUseCase _tasksUseCase;
         private readonly ScanStartupItemsUseCase _startupUseCase;
         private readonly IWindowsToolsLauncher _windowsToolsLauncher;
+        private readonly IExecutableHashResolver _hashResolver;
 
         // 1. Network Connections Tab
         public object EntriesLock { get; } = new();
@@ -51,19 +52,118 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public ObservableCollection<StartupItemViewModel> FilteredStartupItems { get; } = new();
 
         public ObservableCollection<string> GlobalTagOptions { get; } = new();
+        public ObservableCollection<TagFilterOption> GlobalTagFilterItems { get; } = new();
         public IReadOnlyList<string> SavedTags => _annotationUseCase.Tags;
+
+        private bool _suppressTagFilterUpdates;
+
+        private bool _matchAllSelectedTags = true;
+        public bool MatchAllSelectedTags
+        {
+            get => _matchAllSelectedTags;
+            set
+            {
+                if (SetProperty(ref _matchAllSelectedTags, value))
+                {
+                    OnPropertyChanged(nameof(GlobalTagFilterToolTip));
+                    ApplyAllFilters();
+                }
+            }
+        }
+
+        public bool HasAnySavedTags => GlobalTagFilterItems.Count > 0;
+        public bool HasSelectedTagFilters => GlobalTagFilterItems.Any(t => t.IsSelected);
+
+        public string GlobalTagFilterSummary
+        {
+            get
+            {
+                var selected = GlobalTagFilterItems.Where(t => t.IsSelected).Select(t => t.Name).ToList();
+                if (selected.Count == 0) return "Todas as tags";
+                if (selected.Count == 1) return selected[0];
+                string joined = string.Join(", ", selected);
+                return joined.Length <= 22 ? joined : $"{selected.Count} tags";
+            }
+        }
+
+        public string GlobalTagFilterToolTip
+        {
+            get
+            {
+                var selected = GlobalTagFilterItems.Where(t => t.IsSelected).Select(t => t.Name).ToList();
+                if (selected.Count == 0) return "Filtrar todas as abas por uma ou mais tags";
+                string mode = MatchAllSelectedTags ? "todas as selecionadas" : "qualquer uma";
+                return $"Tags filtradas ({mode}): {string.Join(", ", selected)}";
+            }
+        }
+
         private string _globalTagFilter = "Todas as tags";
         public string GlobalTagFilter
         {
             get => _globalTagFilter;
-            set { if (SetProperty(ref _globalTagFilter, value)) ApplyAllFilters(); }
+            set
+            {
+                if (SetProperty(ref _globalTagFilter, value))
+                {
+                    _suppressTagFilterUpdates = true;
+                    foreach (var option in GlobalTagFilterItems)
+                    {
+                        option.IsSelected = !string.IsNullOrWhiteSpace(value) &&
+                                            value != "Todas as tags" &&
+                                            option.Name.Equals(value, StringComparison.OrdinalIgnoreCase);
+                    }
+                    _suppressTagFilterUpdates = false;
+                    NotifyTagFilterChanged();
+                    ApplyAllFilters();
+                }
+            }
         }
 
-        private string _globalTrustFilter = "Todas";
+        private bool _showTrusted = true;
+        public bool ShowTrusted
+        {
+            get => _showTrusted;
+            set { if (SetProperty(ref _showTrusted, value)) ApplyAllFilters(); }
+        }
+
+        private bool _showUntrusted = true;
+        public bool ShowUntrusted
+        {
+            get => _showUntrusted;
+            set { if (SetProperty(ref _showUntrusted, value)) ApplyAllFilters(); }
+        }
+
         public string GlobalTrustFilter
         {
-            get => _globalTrustFilter;
-            set { if (SetProperty(ref _globalTrustFilter, value)) ApplyAllFilters(); }
+            get
+            {
+                if (ShowTrusted && ShowUntrusted) return "Todas";
+                if (ShowTrusted) return "Apenas confiáveis";
+                if (ShowUntrusted) return "Não verificados";
+                return "Nenhuma";
+            }
+            set
+            {
+                if (value == "Apenas confiáveis")
+                {
+                    _showTrusted = true;
+                    _showUntrusted = false;
+                }
+                else if (value == "Não verificados")
+                {
+                    _showTrusted = false;
+                    _showUntrusted = true;
+                }
+                else
+                {
+                    _showTrusted = true;
+                    _showUntrusted = true;
+                }
+                OnPropertyChanged(nameof(ShowTrusted));
+                OnPropertyChanged(nameof(ShowUntrusted));
+                OnPropertyChanged(nameof(GlobalTrustFilter));
+                ApplyAllFilters();
+            }
         }
 
         private bool _globalOnlyAlerts;
@@ -561,7 +661,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ScanProcessMetricsUseCase metricsUseCase,
             ScanScheduledTasksUseCase tasksUseCase,
             ScanStartupItemsUseCase startupUseCase,
-            IWindowsToolsLauncher windowsToolsLauncher)
+            IWindowsToolsLauncher windowsToolsLauncher,
+            IExecutableHashResolver? hashResolver = null)
         {
             _scanUseCase = scanUseCase ?? throw new ArgumentNullException(nameof(scanUseCase));
             _allowlistUseCase = allowlistUseCase ?? throw new ArgumentNullException(nameof(allowlistUseCase));
@@ -572,10 +673,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _tasksUseCase = tasksUseCase ?? throw new ArgumentNullException(nameof(tasksUseCase));
             _startupUseCase = startupUseCase ?? throw new ArgumentNullException(nameof(startupUseCase));
             _windowsToolsLauncher = windowsToolsLauncher ?? throw new ArgumentNullException(nameof(windowsToolsLauncher));
+            _hashResolver = hashResolver ?? new NetStatAnalyzer.Infrastructure.System.ExecutableHashResolver();
             UpdateTagOptions();
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.4.1";
+            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.5.1";
 
             ReloadCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
             RefreshCurrentTabCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
@@ -949,12 +1051,27 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             var rules = _allowlistUseCase.GetAllRules();
             foreach (var item in _allEntries)
             {
+                string? hash = null;
+                if (!string.IsNullOrEmpty(item.ProcessPath) &&
+                    rules.Any(r => !string.IsNullOrEmpty(r.ExecutableHash) && r.ProcessName.Equals(item.ProcessName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    hash = _hashResolver.ComputeSha256(item.ProcessPath);
+                }
+
                 item.IsAllowed = TrustEvaluationPolicy.IsTrusted(
                     item.ProcessName,
                     item.ForeignAddress,
                     item.LocalAddress,
                     rules,
-                    item.Protocol);
+                    item.Protocol,
+                    hash);
+
+                item.HasHashMismatch = !item.IsAllowed && TrustEvaluationPolicy.IsHashMismatch(
+                    item.ProcessName,
+                    item.ForeignAddress,
+                    item.LocalAddress,
+                    rules,
+                    hash);
             }
         }
 
@@ -1033,22 +1150,85 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public void SaveTheme(string theme) => _annotationUseCase.SaveTheme(theme);
 
+        public bool VerifyExecutableHashByDefault => _annotationUseCase.VerifyExecutableHashByDefault;
+
+        public void SaveVerifyExecutableHashByDefault(bool verify)
+        {
+            _annotationUseCase.SaveVerifyExecutableHashByDefault(verify);
+            OnPropertyChanged(nameof(VerifyExecutableHashByDefault));
+            ReevaluateTrustedStatus();
+            RefreshAnnotations();
+            ApplyAllFilters();
+        }
+
         private static (string Type, string Key) Identity(ViewModelBase item) => item switch
         {
-            ConnectionItemViewModel c => ("connection", $"{c.Protocol}|{c.ProcessPath ?? c.ProcessName}|{c.ForeignAddress}"),
+            ConnectionItemViewModel c => ("connection", TrustEvaluationPolicy.IsWildcardOrListeningAddress(c.ForeignAddress)
+                ? $"{c.Protocol}|{c.ProcessPath ?? c.ProcessName}|LOCAL:{c.LocalAddress}"
+                : $"{c.Protocol}|{c.ProcessPath ?? c.ProcessName}|{c.ForeignAddress}"),
             ProcessAggregateItemViewModel p => ("process", p.ProcessPath ?? p.ProcessName),
             ScheduledTaskItemViewModel t => ("task", $"{t.TaskPath}|{t.TaskName}"),
             StartupItemViewModel s => ("startup", $"{s.Location}|{s.Name}"),
             _ => throw new ArgumentException("Tipo de item desconhecido.", nameof(item))
         };
 
+        private void OnTagFilterOptionChanged()
+        {
+            if (_suppressTagFilterUpdates) return;
+            NotifyTagFilterChanged();
+            ApplyAllFilters();
+        }
+
+        private void NotifyTagFilterChanged()
+        {
+            OnPropertyChanged(nameof(HasAnySavedTags));
+            OnPropertyChanged(nameof(HasSelectedTagFilters));
+            OnPropertyChanged(nameof(GlobalTagFilterSummary));
+            OnPropertyChanged(nameof(GlobalTagFilterToolTip));
+        }
+
         private void UpdateTagOptions()
         {
-            string selected = GlobalTagFilter;
+            var previouslySelected = new HashSet<string>(
+                GlobalTagFilterItems.Where(t => t.IsSelected).Select(t => t.Name),
+                StringComparer.OrdinalIgnoreCase);
+
+            _suppressTagFilterUpdates = true;
             GlobalTagOptions.Clear();
             GlobalTagOptions.Add("Todas as tags");
-            foreach (var tag in _annotationUseCase.Tags) GlobalTagOptions.Add(tag);
-            GlobalTagFilter = GlobalTagOptions.Contains(selected) ? selected : "Todas as tags";
+            GlobalTagFilterItems.Clear();
+
+            foreach (var tag in _annotationUseCase.Tags)
+            {
+                GlobalTagOptions.Add(tag);
+                GlobalTagFilterItems.Add(new TagFilterOption(tag, previouslySelected.Contains(tag), OnTagFilterOptionChanged));
+            }
+            _suppressTagFilterUpdates = false;
+            NotifyTagFilterChanged();
+        }
+
+        public void ClearSelectedTagFilters()
+        {
+            if (!HasSelectedTagFilters) return;
+            _suppressTagFilterUpdates = true;
+            foreach (var item in GlobalTagFilterItems)
+            {
+                item.IsSelected = false;
+            }
+            _suppressTagFilterUpdates = false;
+            _globalTagFilter = "Todas as tags";
+            OnPropertyChanged(nameof(GlobalTagFilter));
+            NotifyTagFilterChanged();
+            ApplyAllFilters();
+        }
+
+        public void DeleteTagGlobally(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag)) return;
+            _annotationUseCase.DeleteTagGlobally(tag);
+            UpdateTagOptions();
+            RefreshAnnotations();
+            ApplyAllFilters();
         }
 
         private void RefreshAnnotations()
@@ -1059,7 +1239,43 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 var (type, key) = Identity(item);
                 var annotation = _annotationUseCase.Find(type, key);
                 item.TagText = annotation?.Tag ?? string.Empty;
-                item.AnnotationTrusted = item is ConnectionItemViewModel c ? c.IsAllowed : annotation?.IsTrusted ?? false;
+
+                if (item is ConnectionItemViewModel c)
+                {
+                    item.AnnotationTrusted = c.IsAllowed;
+                }
+                else
+                {
+                    bool isTrusted = annotation?.IsTrusted ?? false;
+                    bool hashMismatch = false;
+
+                    if (isTrusted && !string.IsNullOrWhiteSpace(annotation?.ExecutableHash))
+                    {
+                        string? path = item switch
+                        {
+                            ProcessAggregateItemViewModel p => p.ProcessPath,
+                            ScheduledTaskItemViewModel t => t.ResolvedPath,
+                            StartupItemViewModel s => s.ResolvedPath,
+                            _ => null
+                        };
+                        string? currentHash = _hashResolver.ComputeSha256(path);
+
+                        if (!string.IsNullOrWhiteSpace(currentHash) &&
+                            annotation.ExecutableHash.Equals(currentHash, StringComparison.OrdinalIgnoreCase))
+                        {
+                            isTrusted = true;
+                        }
+                        else
+                        {
+                            isTrusted = false;
+                            hashMismatch = true;
+                        }
+                    }
+
+                    item.AnnotationTrusted = isTrusted;
+                    item.HasHashMismatch = hashMismatch;
+                }
+
                 switch (item)
                 {
                     case ConnectionItemViewModel connection: connection.Model.Tag = item.TagText; break;
@@ -1085,23 +1301,57 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ApplyAllFilters();
         }
 
-        public void SetItemsTrust(IEnumerable<ViewModelBase> items, bool trusted)
+        public void UpdateItemTags(IEnumerable<ViewModelBase> items, IEnumerable<string> tagsToAdd, IEnumerable<string> tagsToRemove)
+        {
+            var selected = items.ToArray();
+            if (selected.Length == 0) return;
+            _annotationUseCase.UpdateTags(selected.Select(Identity), tagsToAdd, tagsToRemove);
+            UpdateTagOptions();
+            RefreshAnnotations();
+            ApplyAllFilters();
+        }
+
+        public void SetItemsTrust(IEnumerable<ViewModelBase> items, bool trusted, bool? forceHash = null)
         {
             var selected = items.ToArray();
             if (selected.Length == 0) return;
 
+            bool requireHash = forceHash ?? VerifyExecutableHashByDefault;
+
             var connections = selected.OfType<ConnectionItemViewModel>().ToArray();
             if (connections.Length > 0)
             {
-                var toTrust = connections.Where(item => trusted && !item.IsAllowed).ToArray();
+                var toTrust = connections.Where(item => trusted && (!item.IsAllowed || forceHash.HasValue)).ToArray();
                 var toUntrust = connections.Where(item => !trusted && item.IsAllowed).ToArray();
-                if (toTrust.Length > 0) AddSelectedToAllowlist(toTrust);
+                if (toTrust.Length > 0) AddSelectedToAllowlist(toTrust, forceHash);
                 if (toUntrust.Length > 0) RemoveSelectedFromAllowlist(toUntrust);
             }
 
             var annotatedItems = selected.Where(item => item is not ConnectionItemViewModel).ToArray();
             if (annotatedItems.Length > 0)
-                _annotationUseCase.SetTrust(annotatedItems.Select(Identity), trusted);
+            {
+                if (trusted)
+                {
+                    var withDetails = annotatedItems.Select(item =>
+                    {
+                        var id = Identity(item);
+                        string? path = item switch
+                        {
+                            ProcessAggregateItemViewModel p => p.ProcessPath,
+                            ScheduledTaskItemViewModel t => t.ResolvedPath,
+                            StartupItemViewModel s => s.ResolvedPath,
+                            _ => null
+                        };
+                        string? hash = requireHash ? _hashResolver.ComputeSha256(path) : null;
+                        return (id.Type, id.Key, path, hash);
+                    });
+                    _annotationUseCase.SetTrust(withDetails, true);
+                }
+                else
+                {
+                    _annotationUseCase.SetTrust(annotatedItems.Select(Identity), false);
+                }
+            }
 
             RefreshAnnotations();
             ApplyAllFilters();
@@ -1109,17 +1359,35 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         private bool PassesGlobalFilters(ViewModelBase item, ThreatLevel level)
         {
-            if (!string.IsNullOrWhiteSpace(GlobalTagFilter) && GlobalTagFilter != "Todas as tags" &&
-                !item.TagText.Equals(GlobalTagFilter, StringComparison.OrdinalIgnoreCase)) return false;
-            if (GlobalTrustFilter == "Apenas confiáveis" && !item.AnnotationTrusted) return false;
-            if (GlobalTrustFilter == "Não verificados" && item.AnnotationTrusted) return false;
+            var selectedTags = GlobalTagFilterItems.Where(t => t.IsSelected).Select(t => t.Name).ToArray();
+            if (selectedTags.Length > 0)
+            {
+                bool matches = MatchAllSelectedTags
+                    ? selectedTags.All(sel => item.TagsList.Any(t => t.Equals(sel, StringComparison.OrdinalIgnoreCase)))
+                    : selectedTags.Any(sel => item.TagsList.Any(t => t.Equals(sel, StringComparison.OrdinalIgnoreCase)));
+
+                if (!matches) return false;
+            }
+
+            if (item.AnnotationTrusted && !ShowTrusted) return false;
+            if (!item.AnnotationTrusted && !ShowUntrusted) return false;
             return !GlobalOnlyAlerts || level != ThreatLevel.Normal;
         }
 
         public void ClearGlobalFilters()
         {
-            GlobalTagFilter = "Todas as tags";
-            GlobalTrustFilter = "Todas";
+            _suppressTagFilterUpdates = true;
+            foreach (var item in GlobalTagFilterItems)
+            {
+                item.IsSelected = false;
+            }
+            _suppressTagFilterUpdates = false;
+            _globalTagFilter = "Todas as tags";
+            OnPropertyChanged(nameof(GlobalTagFilter));
+            NotifyTagFilterChanged();
+
+            ShowTrusted = true;
+            ShowUntrusted = true;
             GlobalOnlyAlerts = false;
             ApplyAllFilters();
         }
@@ -1382,13 +1650,18 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ApplyAllFilters();
         }
 
-        public int AddSelectedToAllowlist(IEnumerable<ConnectionItemViewModel> items)
+        public int AddSelectedToAllowlist(IEnumerable<ConnectionItemViewModel> items, bool? forceHash = null)
         {
             var list = items.ToList();
             if (list.Count == 0) return 0;
 
+            bool requireHash = forceHash ?? VerifyExecutableHashByDefault;
+
             int added = _allowlistUseCase.AddRules(list.Select(e =>
-                (e.ProcessName, e.ForeignAddress, e.Protocol, (string?)e.LocalAddress)));
+            {
+                string? hash = requireHash ? _hashResolver.ComputeSha256(e.ProcessPath) : null;
+                return (e.ProcessName, e.ForeignAddress, e.Protocol, (string?)e.LocalAddress, e.ProcessPath, hash);
+            }));
 
             ReevaluateTrustedStatus();
             UpdateMetrics();
@@ -1470,6 +1743,32 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
             StatusMessage = $"{count} itens exportados para '{Path.GetFileName(filePath)}'.";
             return count;
+        }
+    }
+
+    public sealed class TagFilterOption : ViewModelBase
+    {
+        private readonly Action _onChanged;
+        public string Name { get; }
+
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (SetProperty(ref _isSelected, value))
+                {
+                    _onChanged();
+                }
+            }
+        }
+
+        public TagFilterOption(string name, bool isSelected, Action onChanged)
+        {
+            Name = name;
+            _isSelected = isSelected;
+            _onChanged = onChanged;
         }
     }
 }

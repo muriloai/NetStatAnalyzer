@@ -35,7 +35,7 @@
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="NetStatAnalyzer" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
-                    <TextBlock x:Name="VersionTextBlock" Text="v1.4.1" FontSize="11" FontWeight="Normal" Foreground="{DynamicResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="VersionTextBlock" Text="v1.5.1" FontSize="11" FontWeight="Normal" Foreground="{DynamicResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
                 </StackPanel>
                 <TextBlock Text="Auditoria de conexões de rede, processos ativos, consumo de banda e CPU e execução automática no Windows" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,3,0,0" />
             </StackPanel>
@@ -46,39 +46,93 @@
                 <Button x:Name="WindowsToolsBtn" 
                         Content="Ferramentas do Windows ▾"
                         Style="{StaticResource ModernSecondaryButton}" 
+                        Height="32"
                         ToolTip="Menu rápido para abrir utilitários oficiais do sistema operacional Windows"
                         Click="WindowsToolsBtn_Click">
                     <Button.ContextMenu>
                         <ContextMenu x:Name="WindowsToolsMenu" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
-                            <MenuItem Header="Monitor de Recursos"
-                                      ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)" 
-                                      Foreground="{DynamicResource TextPrimary}" Click="OpenResourceMonitor_Click" />
-                            <MenuItem Header="Agendador de Tarefas"
-                                      ToolTip="Abrir o Agendador de Tarefas oficial do Windows (taskschd.msc)" 
-                                      Foreground="{DynamicResource TextPrimary}" Click="OpenTaskScheduler_Click" />
-                            <MenuItem Header="Aplicativos de Inicialização"
-                                      ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)" 
-                                      Foreground="{DynamicResource TextPrimary}" Click="OpenStartupSettings_Click" />
-                            <MenuItem Header="Gerenciador de Tarefas"
-                                      ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)" 
-                                      Foreground="{DynamicResource TextPrimary}" Click="OpenTaskManager_Click" />
+                            <MenuItem ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)" 
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenResourceMonitor_Click">
+                                <MenuItem.Header>
+                                    <DockPanel LastChildFill="False">
+                                        <TextBlock Text="Monitor de Recursos" VerticalAlignment="Center" />
+                                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="resmon" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                        </Border>
+                                    </DockPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem ToolTip="Abrir o Agendador de Tarefas oficial do Windows (taskschd.msc)" 
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenTaskScheduler_Click">
+                                <MenuItem.Header>
+                                    <DockPanel LastChildFill="False">
+                                        <TextBlock Text="Agendador de Tarefas" VerticalAlignment="Center" />
+                                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="taskschd" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                        </Border>
+                                    </DockPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)" 
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenStartupSettings_Click">
+                                <MenuItem.Header>
+                                    <DockPanel LastChildFill="False">
+                                        <TextBlock Text="Aplicativos de Inicialização" VerticalAlignment="Center" />
+                                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="ms-settings" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                        </Border>
+                                    </DockPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)" 
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenTaskManager_Click">
+                                <MenuItem.Header>
+                                    <DockPanel LastChildFill="False">
+                                        <TextBlock Text="Gerenciador de Tarefas" VerticalAlignment="Center" />
+                                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="taskmgr" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                        </Border>
+                                    </DockPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
                             <Separator Background="{DynamicResource BorderBrush}" />
-                            <MenuItem Header="Pasta de Inicialização"
-                                      ToolTip="Abrir a pasta de inicialização do usuário (shell:startup)" 
-                                      Foreground="{DynamicResource TextPrimary}" Click="OpenStartupFolder_Click" />
-                            <MenuItem Header="Editor do Registro"
-                                      ToolTip="Abrir o Editor do Registro do Windows (regedit.exe)" 
-                                      Foreground="{DynamicResource TextPrimary}" Click="OpenRegistryEditor_Click" />
+                            <MenuItem ToolTip="Abrir a pasta de inicialização do usuário (shell:startup)" 
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenStartupFolder_Click">
+                                <MenuItem.Header>
+                                    <DockPanel LastChildFill="False">
+                                        <TextBlock Text="Pasta de Inicialização" VerticalAlignment="Center" />
+                                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="startup" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                        </Border>
+                                    </DockPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem ToolTip="Abrir o Editor do Registro do Windows (regedit.exe)" 
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenRegistryEditor_Click">
+                                <MenuItem.Header>
+                                    <DockPanel LastChildFill="False">
+                                        <TextBlock Text="Editor do Registro" VerticalAlignment="Center" />
+                                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="regedit" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                        </Border>
+                                    </DockPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
-                <Button Content="◐" Style="{StaticResource ModernSecondaryButton}"
-                        ToolTip="Tema da interface" Width="36" Margin="8,0,0,0"
-                        Click="TabActionsButton_Click">
+                <Button x:Name="SettingsGearBtn" Style="{StaticResource ModernSecondaryButton}"
+                        ToolTip="Configurações e temas" Width="34" Height="32" Padding="0" Margin="8,0,0,0"
+                        Click="SettingsGearBtn_Click">
+                    <Path Width="16" Height="16" Stretch="Uniform" Fill="{DynamicResource TextPrimary}"
+                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87c-0.12,0.22-0.08,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
                     <Button.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Tema claro" Click="LightTheme_Click" />
-                            <MenuItem Header="Tema escuro" Click="DarkTheme_Click" />
+                        <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <MenuItem Header="Tema claro" Click="LightTheme_Click" Foreground="{DynamicResource TextPrimary}" />
+                            <MenuItem Header="Tema escuro" Click="DarkTheme_Click" Foreground="{DynamicResource TextPrimary}" />
+                            <Separator Background="{DynamicResource BorderBrush}" />
+                            <MenuItem Header="Configurações" Click="OpenSettings_Click" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold" />
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
@@ -119,16 +173,85 @@
             <Border Grid.Column="1" Background="{DynamicResource SurfaceRaised}" BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1" CornerRadius="8" Padding="8">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ComboBox x:Name="GlobalTagComboBox" Width="145" Height="32" Margin="0,0,6,0"
-                              Style="{StaticResource ModernComboBox}" ItemsSource="{Binding GlobalTagOptions}"
-                              SelectedItem="{Binding GlobalTagFilter, Mode=TwoWay}" ToolTip="Filtrar todas as abas por tag" />
-                    <ComboBox Width="155" Height="32" Margin="0,0,8,0" Style="{StaticResource ModernComboBox}"
-                              SelectedValuePath="Content" SelectedValue="{Binding GlobalTrustFilter, Mode=TwoWay}"
-                              ToolTip="Filtrar confiança em todas as abas">
-                        <ComboBoxItem Content="Todas" />
-                        <ComboBoxItem Content="Apenas confiáveis" />
-                        <ComboBoxItem Content="Não verificados" />
-                    </ComboBox>
+                    <Grid Margin="0,0,8,0">
+                        <ToggleButton x:Name="GlobalTagFilterToggleBtn"
+                                      Style="{StaticResource ModernToggleButtonStyle}"
+                                      MinWidth="155" Height="32" Padding="10,0"
+                                      ToolTip="{Binding GlobalTagFilterToolTip}">
+                            <DockPanel LastChildFill="True">
+                                <Path DockPanel.Dock="Right" Data="M 0 0 L 4 4 L 8 0 Z" Fill="{DynamicResource TextSecondary}"
+                                      VerticalAlignment="Center" Margin="10,1,0,0" />
+                                <TextBlock Text="{Binding GlobalTagFilterSummary}" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" MaxWidth="145" />
+                            </DockPanel>
+                        </ToggleButton>
+                        <Popup IsOpen="{Binding IsChecked, ElementName=GlobalTagFilterToggleBtn, Mode=TwoWay}"
+                               PlacementTarget="{Binding ElementName=GlobalTagFilterToggleBtn}"
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                            <Border Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,3,0,0" MinWidth="220" MaxHeight="320">
+                                <StackPanel>
+                                    <TextBlock Text="Filtrar por tags" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8" />
+                                    <TextBlock Text="Nenhuma tag cadastrada." FontSize="11" Foreground="{DynamicResource TextMuted}"
+                                               Margin="0,0,0,6">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasAnySavedTags}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <ScrollViewer MaxHeight="190" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding GlobalTagFilterItems}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                              Margin="0,3,0,3" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                    <StackPanel>
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasAnySavedTags}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <Separator Background="{DynamicResource BorderBrush}" Margin="0,8,0,8" />
+                                        <CheckBox Content="Exigir todas marcadas (E)" IsChecked="{Binding MatchAllSelectedTags, Mode=TwoWay}"
+                                                  FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"
+                                                  ToolTip="Marcado: exibe itens que possuam TODAS as tags selecionadas. Desmarcado: exibe itens com QUALQUER uma delas." />
+                                        <Button Content="Limpar tags" Style="{StaticResource ModernSecondaryButton}"
+                                                Height="28" FontSize="11" HorizontalAlignment="Right"
+                                                IsEnabled="{Binding HasSelectedTagFilters}"
+                                                Click="ClearTagFilter_Click" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <Border Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="6" Height="32" Padding="10,0" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Confiança:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <CheckBox Content="Confiáveis" IsChecked="{Binding ShowTrusted, Mode=TwoWay}"
+                                      Foreground="{DynamicResource SuccessColor}" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,8,0"
+                                      ToolTip="Exibir itens marcados como confiáveis nas abas" />
+                            <CheckBox Content="Não verificadas" IsChecked="{Binding ShowUntrusted, Mode=TwoWay}"
+                                      Foreground="{DynamicResource TextSecondary}" FontWeight="Medium" VerticalAlignment="Center"
+                                      ToolTip="Exibir itens sem validação de confiança nas abas" />
+                        </StackPanel>
+                    </Border>
                     <CheckBox Content="Só alertas" IsChecked="{Binding GlobalOnlyAlerts, Mode=TwoWay}"
                               Foreground="{DynamicResource DangerColor}" VerticalAlignment="Center" Margin="0,0,10,0" />
                     <Button Content="Limpar" Style="{StaticResource ModernSecondaryButton}"
@@ -299,24 +422,33 @@
                             </StackPanel>
                         </Grid>
                         </Border>
-                        <Button Grid.Column="1" Content="Mais ações ▾"
-                                Style="{StaticResource ModernSecondaryButton}"
-                                Height="38" Padding="12,0"
-                                ToolTip="Tags, confiança e exportação das conexões exibidas"
-                                Click="TabActionsButton_Click">
-                            <Button.ContextMenu>
-                                <ContextMenu x:Name="ConnectionsActionsMenu" Opened="TrustActionMenu_Opened">
-                                    <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
-                                    <Separator />
-                                    <MenuItem Header="Gerenciar conexões confiáveis" Click="OpenAllowManager_Click" />
-                                    <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
-                                    <Separator />
-                                    <MenuItem Header="⚙️ Abrir no Monitor de Recursos (resmon)" Click="OpenResourceMonitor_Click" />
-                                    <Separator />
-                                    <MenuItem Header="Exportar conexões exibidas" Click="ExportConnections_Click" />
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                        </Button>
+                        <Border Grid.Column="1" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" VerticalAlignment="Stretch">
+                            <Button Content="Mais ações ▾"
+                                    Style="{StaticResource ModernSecondaryButton}"
+                                    Height="32" Padding="12,0" VerticalAlignment="Center"
+                                    ToolTip="Gerenciador de confiáveis, utilitários e exportação das conexões"
+                                    Click="TabActionsButton_Click">
+                                    <Button.ContextMenu>
+                                        <ContextMenu x:Name="ConnectionsActionsMenu">
+                                            <MenuItem Header="Gerenciar conexões confiáveis" Click="OpenAllowManager_Click" />
+                                            <Separator />
+                                            <MenuItem Click="OpenResourceMonitor_Click" Foreground="{DynamicResource TextPrimary}"
+                                                      ToolTip="Abrir o Monitor de Recursos do Windows (resmon.exe)">
+                                                <MenuItem.Header>
+                                                    <DockPanel LastChildFill="False">
+                                                        <TextBlock Text="⚙️ Abrir no Monitor de Recursos" VerticalAlignment="Center" />
+                                                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                            <TextBlock Text="resmon" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                                        </Border>
+                                                    </DockPanel>
+                                                </MenuItem.Header>
+                                            </MenuItem>
+                                            <Separator />
+                                            <MenuItem Header="Exportar conexões exibidas" Click="ExportConnections_Click" />
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
+                        </Border>
                     </Grid>
 
                     <!-- DataGrid Connections -->
@@ -338,17 +470,41 @@
                                                 <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
                                                 <Setter Property="BorderThickness" Value="3,1,0,1" />
                                             </DataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsAllowed}" Value="True" />
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True" />
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" Value="{DynamicResource SuccessHoverBackground}" />
+                                            </MultiDataTrigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource DataGridSelectionBorder}" />
+                                                <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                                <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                            </Trigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsAllowed}" Value="True" />
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource SuccessColor}" />
+                                                <Setter Property="BorderThickness" Value="4,1,0,1" />
+                                                <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                            </MultiDataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </DataGrid.RowStyle>
                                 <DataGrid.ContextMenu>
                                     <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
-                                        <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
+                                        <MenuItem Header="Editar tags da seleção" Tag="TagAction" Click="EditTagSelection_Click" />
                                         <Separator Background="{DynamicResource BorderBrush}" />
-                                        <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" />
+                                        <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" FontWeight="SemiBold" Foreground="{DynamicResource SuccessColor}" />
+                                        <MenuItem Header="Marcar como confiável" Tag="TrustToggleAltHash" Click="ToggleSelectedTrustAltHash_Click" />
                                         <Separator Background="{DynamicResource BorderBrush}" />
                                         <MenuItem Header="📁 Abrir localização do processo" Tag="OpenLocationAction" Click="OpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
-                                        <MenuItem Header="⚙️ Abrir no Monitor de Recursos (resmon)" Click="OpenResourceMonitor_Click" Foreground="{DynamicResource TextPrimary}" />
                                         <Separator Background="{DynamicResource BorderBrush}" />
                                         <MenuItem Header="Copiar detalhes das conexões selecionadas" Click="CopyDetails_Click" Foreground="{DynamicResource TextPrimary}" />
                                         <MenuItem Header="Copiar endereços remotos" Click="CopyForeignIP_Click" Foreground="{DynamicResource TextPrimary}" />
@@ -371,7 +527,8 @@
                                                             Width="140"
                                                             MinWidth="110" />
 
-                                    <DataGridTextColumn Header="TAG" Binding="{Binding TagText}" SortMemberPath="TagText" Width="110" MinWidth="85" />
+                                    <DataGridTemplateColumn Header="TAGS" SortMemberPath="TagText" Width="130" MinWidth="85"
+                                                            CellTemplate="{StaticResource TagsBadgesTemplate}" />
 
                                     <!-- PROCESSO -->
                                     <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="200" MinWidth="160">
@@ -585,20 +742,29 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
-                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
-                            ToolTip="Tags, confiança e exportação dos processos exibidos" Click="TabActionsButton_Click">
-                        <Button.ContextMenu>
-                            <ContextMenu Opened="TrustActionMenu_Opened">
-                                <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
-                                <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
-                                <Separator />
-                                <MenuItem Header="⚙️ Abrir no Gerenciador de Tarefas (taskmgr)" Click="OpenTaskManager_Click" />
-                                <Separator />
-                                <MenuItem Header="Exportar processos exibidos em JSON" Click="ExportCurrentTabJson_Click" />
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
+                    <Border Grid.Column="1" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="8,0,0,0" VerticalAlignment="Stretch">
+                        <Button Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                                Height="32" Padding="12,0" VerticalAlignment="Center"
+                                ToolTip="Tags, confiança e exportação dos processos exibidos" Click="TabActionsButton_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Click="OpenTaskManager_Click" Foreground="{DynamicResource TextPrimary}"
+                                              ToolTip="Abrir o Gerenciador de Tarefas do Windows (taskmgr.exe)">
+                                        <MenuItem.Header>
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock Text="⚙️ Abrir no Gerenciador de Tarefas" VerticalAlignment="Center" />
+                                                <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="taskmgr" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                                </Border>
+                                            </DockPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                    <Separator />
+                                    <MenuItem Header="Exportar processos exibidos em JSON" Click="ExportCurrentTabJson_Click" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </Border>
                     </Grid>
 
                     <!-- DataGrid Aggregated Processes -->
@@ -612,11 +778,12 @@
                                   MouseDoubleClick="ProcessesDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
-                                    <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Editar tags da seleção" Tag="TagAction" Click="EditTagSelection_Click" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                    <MenuItem Header="Marcar como confiável" Tag="TrustToggleAltHash" Click="ToggleSelectedTrustAltHash_Click" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="📁 Abrir localização do processo" Tag="OpenLocationAction" Click="ProcessOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
-                                    <MenuItem Header="⚙️ Abrir no Gerenciador de Tarefas (taskmgr)" Click="OpenTaskManager_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Copiar detalhes do processo" Click="CopyProcessDetails_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <MenuItem Header="Copiar PID" Click="CopyProcessPID_Click" Foreground="{DynamicResource TextPrimary}" />
@@ -630,6 +797,30 @@
                                             <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
                                             <Setter Property="BorderThickness" Value="3,1,0,1" />
                                         </DataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding AnnotationTrusted}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="False" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="{DynamicResource SuccessHoverBackground}" />
+                                        </MultiDataTrigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource DataGridSelectionBorder}" />
+                                            <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                            <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                        </Trigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding AnnotationTrusted}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessColor}" />
+                                            <Setter Property="BorderThickness" Value="4,1,0,1" />
+                                            <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                        </MultiDataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </DataGrid.RowStyle>
@@ -646,7 +837,8 @@
                                                         Width="130"
                                                         MinWidth="105" />
 
-                                <DataGridTextColumn Header="TAG" Binding="{Binding TagText}" SortMemberPath="TagText" Width="110" MinWidth="85" />
+                                <DataGridTemplateColumn Header="TAGS" SortMemberPath="TagText" Width="130" MinWidth="85"
+                                                        CellTemplate="{StaticResource TagsBadgesTemplate}" />
 
                                 <!-- PROCESSO -->
                                 <DataGridTemplateColumn Header="PROCESSO" SortMemberPath="ProcessName" Width="*" MinWidth="180">
@@ -801,20 +993,29 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
-                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
-                            ToolTip="Tags, confiança e exportação das tarefas exibidas" Click="TabActionsButton_Click">
-                        <Button.ContextMenu>
-                            <ContextMenu Opened="TrustActionMenu_Opened">
-                                <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
-                                <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
-                                <Separator />
-                                <MenuItem Header="⚙️ Abrir no Agendador de Tarefas (taskschd.msc)" Click="OpenTaskScheduler_Click" />
-                                <Separator />
-                                <MenuItem Header="Exportar tarefas exibidas em JSON" Click="ExportCurrentTabJson_Click" />
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
+                    <Border Grid.Column="1" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="8,0,0,0" VerticalAlignment="Stretch">
+                        <Button Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                                Height="32" Padding="12,0" VerticalAlignment="Center"
+                                ToolTip="Tags, confiança e exportação das tarefas exibidas" Click="TabActionsButton_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Click="OpenTaskScheduler_Click" Foreground="{DynamicResource TextPrimary}"
+                                              ToolTip="Abrir o Agendador de Tarefas oficial do Windows (taskschd.msc)">
+                                        <MenuItem.Header>
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock Text="⚙️ Abrir no Agendador de Tarefas" VerticalAlignment="Center" />
+                                                <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="taskschd" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                                </Border>
+                                            </DockPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                    <Separator />
+                                    <MenuItem Header="Exportar tarefas exibidas em JSON" Click="ExportCurrentTabJson_Click" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </Border>
                     </Grid>
 
                     <!-- DataGrid Scheduled Tasks -->
@@ -828,11 +1029,11 @@
                                   MouseDoubleClick="TasksDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
-                                    <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Editar tags da seleção" Tag="TagAction" Click="EditTagSelection_Click" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="📁 Abrir localização da tarefa" Tag="OpenLocationAction" Click="TaskOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
-                                    <MenuItem Header="⚙️ Abrir no Agendador de Tarefas (taskschd.msc)" Click="OpenTaskScheduler_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Copiar detalhes da tarefa" Click="CopyTaskDetails_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <MenuItem Header="Copiar ação ou comando" Click="CopyTaskCommand_Click" Foreground="{DynamicResource TextPrimary}" />
@@ -846,6 +1047,30 @@
                                             <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
                                             <Setter Property="BorderThickness" Value="3,1,0,1" />
                                         </DataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding AnnotationTrusted}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="False" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="{DynamicResource SuccessHoverBackground}" />
+                                        </MultiDataTrigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource DataGridSelectionBorder}" />
+                                            <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                            <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                        </Trigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding AnnotationTrusted}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessColor}" />
+                                            <Setter Property="BorderThickness" Value="4,1,0,1" />
+                                            <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                        </MultiDataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </DataGrid.RowStyle>
@@ -862,7 +1087,8 @@
                                                         Width="140"
                                                         MinWidth="120" />
 
-                                <DataGridTextColumn Header="TAG" Binding="{Binding TagText}" SortMemberPath="TagText" Width="110" MinWidth="85" />
+                                <DataGridTemplateColumn Header="TAGS" SortMemberPath="TagText" Width="130" MinWidth="85"
+                                                        CellTemplate="{StaticResource TagsBadgesTemplate}" />
 
                                 <!-- NOME DA TAREFA -->
                                 <DataGridTextColumn Header="NOME DA TAREFA" Binding="{Binding TaskName}" FontWeight="Bold" Width="200" MinWidth="150" />
@@ -997,20 +1223,40 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="1" Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
-                            Height="38" Padding="12,0" Margin="8,0,0,0" VerticalAlignment="Center"
-                            ToolTip="Tags, confiança e exportação dos itens de inicialização exibidos" Click="TabActionsButton_Click">
-                        <Button.ContextMenu>
-                            <ContextMenu Opened="TrustActionMenu_Opened">
-                                <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
-                                <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
-                                <Separator />
-                                <MenuItem Header="⚙️ Abrir no utilitário do Windows" Tag="UtilityAction" Click="StartupOpenWindowsUtility_Click" />
-                                <Separator />
-                                <MenuItem Header="Exportar itens exibidos em JSON" Click="ExportCurrentTabJson_Click" />
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
+                    <Border Grid.Column="1" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="8,0,0,0" VerticalAlignment="Stretch">
+                        <Button Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                                Height="32" Padding="12,0" VerticalAlignment="Center"
+                                ToolTip="Ferramentas e exportação dos itens de inicialização" Click="TabActionsButton_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Click="OpenStartupSettings_Click" Foreground="{DynamicResource TextPrimary}"
+                                              ToolTip="Abrir Configurações do Windows > Aplicativos de Inicialização (ms-settings:startupapps)">
+                                        <MenuItem.Header>
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock Text="⚙️ Abrir Configurações de Inicialização" VerticalAlignment="Center" />
+                                                <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="ms-settings" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                                </Border>
+                                            </DockPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                    <MenuItem Click="OpenRegistryEditor_Click" Foreground="{DynamicResource TextPrimary}"
+                                              ToolTip="Abrir o Editor do Registro do Windows (regedit.exe)">
+                                        <MenuItem.Header>
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock Text="⚙️ Abrir no Editor do Registro" VerticalAlignment="Center" />
+                                                <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="regedit" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                                </Border>
+                                            </DockPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                    <Separator />
+                                    <MenuItem Header="Exportar itens exibidos em JSON" Click="ExportCurrentTabJson_Click" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </Border>
                     </Grid>
 
                     <!-- DataGrid Startup Items -->
@@ -1024,11 +1270,12 @@
                                   MouseDoubleClick="StartupDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="TrustActionMenu_Opened">
-                                    <MenuItem Header="Editar tag da seleção…" Tag="TagAction" Click="EditTagSelection_Click" />
+                                    <MenuItem Header="Editar tags da seleção" Tag="TagAction" Click="EditTagSelection_Click" />
+                                    <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="📁 Abrir localização do item" Tag="OpenLocationAction" Click="StartupOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
-                                    <MenuItem Header="⚙️ Abrir no utilitário do Windows" Tag="UtilityAction" Click="StartupOpenWindowsUtility_Click" Foreground="{DynamicResource TextPrimary}" />
+                                    <MenuItem Header="⚙️ Abrir chave no Editor do Registro" Tag="UtilityAction" Click="StartupOpenWindowsUtility_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <Separator Background="{DynamicResource BorderBrush}" />
                                     <MenuItem Header="Copiar detalhes do item" Click="CopyStartupDetails_Click" Foreground="{DynamicResource TextPrimary}" />
                                     <MenuItem Header="Copiar comando ou chave" Click="CopyStartupCommand_Click" Foreground="{DynamicResource TextPrimary}" />
@@ -1042,6 +1289,30 @@
                                             <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
                                             <Setter Property="BorderThickness" Value="3,1,0,1" />
                                         </DataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding AnnotationTrusted}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="False" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="{DynamicResource SuccessHoverBackground}" />
+                                        </MultiDataTrigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource DataGridSelectionBorder}" />
+                                            <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                            <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                        </Trigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding AnnotationTrusted}" Value="True" />
+                                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessColor}" />
+                                            <Setter Property="BorderThickness" Value="4,1,0,1" />
+                                            <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                        </MultiDataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </DataGrid.RowStyle>
@@ -1058,7 +1329,8 @@
                                                         Width="140"
                                                         MinWidth="120" />
 
-                                <DataGridTextColumn Header="TAG" Binding="{Binding TagText}" SortMemberPath="TagText" Width="110" MinWidth="85" />
+                                <DataGridTemplateColumn Header="TAGS" SortMemberPath="TagText" Width="130" MinWidth="85"
+                                                        CellTemplate="{StaticResource TagsBadgesTemplate}" />
 
                                 <!-- NOME -->
                                 <DataGridTextColumn Header="NOME DO APLICATIVO" Binding="{Binding Name}" FontWeight="Bold" Width="200" MinWidth="150" />
