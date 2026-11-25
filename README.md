@@ -16,7 +16,7 @@ Windows 10 (versão 2004, build 19041 ou posterior) ou Windows 11, em x64. Para 
 
 ![Aba de conexões TCP e UDP do NetStatAnalyzer com endereços, portas, processos e filtros](docs/images/preview-main.png)
 
-## O que você pode consultar
+## O que você pode consultar?
 
 - **Conexões TCP/UDP.** Veja endereços, portas e estados de conexão e identifique o processo pelo PID.
 - **Processos.** Consulte a quantidade de conexões, o uso de CPU e as taxas de leitura e escrita por processo.
@@ -25,7 +25,7 @@ Windows 10 (versão 2004, build 19041 ou posterior) ou Windows 11, em x64. Para 
 
 A coleta usa amostras do Windows, então conexões muito breves podem passar entre leituras. As taxas de leitura e escrita vêm dos contadores de I/O do processo e podem incluir operações de disco. Os alertas seguem regras locais e servem como pistas para investigação.
 
-## Tecnologias
+## Tecnologias | <img src="https://skillicons.dev/icons?i=cs,dotnet,windows,githubactions" alt="C#, .NET, Windows e GitHub Actions" height="26" align="absmiddle">
 
 - **Aplicação desktop:** C#, .NET 8, WPF e XAML.
 - **Integração com o Windows:** `netstat.exe`, `schtasks.exe`, `System.Diagnostics.Process`, APIs Win32 via P/Invoke e Registro do Windows.
@@ -36,7 +36,7 @@ A coleta usa amostras do Windows, então conexões muito breves podem passar ent
 
 ## Arquitetura e padrões
 
-O código é organizado em camadas inspiradas em Clean Architecture. O domínio permanece independente de WPF e das integrações com o sistema operacional. A aplicação concentra casos de uso e contratos, enquanto a infraestrutura implementa esses contratos com adaptadores para Windows e arquivos.
+O código é organizado em camadas inspiradas em **Clean Architecture**, sendo assim, o domínio permanece independente de WPF e das integrações com o sistema operacional. A aplicação concentra casos de uso e contratos, enquanto a infraestrutura implementa esses contratos com adaptadores para Windows e arquivos.
 
 ```mermaid
 flowchart TD
@@ -48,8 +48,9 @@ flowchart TD
     Composition -. injeta .-> UseCases
     Composition -. injeta .-> Infrastructure
 ```
+[Navegue por este diagrama em tela cheia](https://dataxstudios.com.br/br/apps/markdown-studio/#c=hZHBSgNBDIbvPkXYs-0jCGWLIFgooq2w9BBmUp2yMxknWftAHgRhz97dF5OZbrHWg7dJ-P9_viTblvfmGZPC_fwCAGCZSCgoquPQVLM4lsP78Mbw9Qnr5fUlPM4Wt0CwWK0W1QYmkyt4EKpRSLKldeZHb1BYwBJ0wtWmfHHUFmPNQRMalaY6PJUl-yInxWKk3LUIBIJDb3FMuQnbhKKpM9olaqpSU25olzBHoMWoaDmRwNoFy3sBAkwvnXtlyeBTcD625POEMD2l-Qs6Z48uNNWc_dAHV4ajoM6ipZwbuR16dQZlBKzZRxZ3WORJAXfMmt2eg-ITebBl0EjBDh_BODyyhR2NXKdXOQ8_kx6h_5H9Xt83&theme=default)
 
-| Padrão ou prática | Onde aparece |
+| Padrão/Prática | Local de uso |
 | --- | --- |
 | **MVVM** | Views em WPF/XAML usam ViewModels e data binding para separar interface e estado da aplicação. Veja [MainViewModel](Presentation/ViewModels/MainViewModel.cs) e [ViewModelBase](Presentation/Common/ViewModelBase.cs). |
 | **Use Cases** | Operações como leitura de conexões, métricas, tarefas agendadas e regras de confiança ficam em classes próprias, como [ScanConnectionsUseCase](Application/UseCases/ScanConnectionsUseCase.cs). |
@@ -59,7 +60,7 @@ flowchart TD
 | **Command** | [RelayCommand](Presentation/Common/RelayCommand.cs) e [AsyncRelayCommand](Presentation/Common/AsyncRelayCommand.cs) conectam ações síncronas e assíncronas aos comandos do WPF. |
 | **Composition Root e injeção por construtor** | [ApplicationCompositionRoot](ApplicationCompositionRoot.cs) monta adaptadores e casos de uso e entrega suas dependências pelos construtores. |
 
-Os contratos permitem testar os casos de uso com dependências simuladas. A [suíte xUnit](NetStatAnalyzer.Tests) cobre regras de confiança e detecção, coleta, métricas, filtros e exportação. O [workflow do GitHub Actions](.github/workflows/tests.yml) executa restauração, compilação e testes em pushes e pull requests direcionados à branch `main`.
+Os contratos permitem testar os casos de uso com dependências simuladas, com isso, a [suíte xUnit](NetStatAnalyzer.Tests) cobre regras de confiança e detecção, coleta, métricas, filtros e exportação, e a parte de [workflow do GitHub Actions](.github/workflows/tests.yml) executa restauração, compilação e testes em pushes e pull requests direcionados à branch `main`.
 
 ## Documentação
 
