@@ -50,7 +50,8 @@ namespace NetStatAnalyzer.Domain.Policies
             string foreignAddress,
             string localAddress,
             IEnumerable<AllowlistRule> rules,
-            string protocol = "")
+            string protocol = "",
+            string? currentExecutableHash = null)
         {
             if (string.IsNullOrWhiteSpace(processName)) return false;
 
@@ -62,6 +63,16 @@ namespace NetStatAnalyzer.Domain.Policies
                 if (!r.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
+                }
+
+                // Se a regra gravou um hash SHA-256 do executável, exige integridade exata
+                if (!string.IsNullOrWhiteSpace(r.ExecutableHash))
+                {
+                    if (string.IsNullOrWhiteSpace(currentExecutableHash) ||
+                        !r.ExecutableHash.Equals(currentExecutableHash, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
 
                 if (isListeningOrWildcard)
@@ -88,6 +99,55 @@ namespace NetStatAnalyzer.Domain.Policies
                 }
 
                 return false;
+            });
+        }
+
+        public static bool IsHashMismatch(
+            string processName,
+            string foreignAddress,
+            string localAddress,
+            IEnumerable<AllowlistRule> rules,
+            string? currentExecutableHash)
+        {
+            if (string.IsNullOrWhiteSpace(processName)) return false;
+
+            bool isListeningOrWildcard = IsWildcardOrListeningAddress(foreignAddress);
+            string foreignIP = ExtractIP(foreignAddress);
+
+            return rules.Any(r =>
+            {
+                if (!r.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Apenas regras que exigem validação de hash
+                if (string.IsNullOrWhiteSpace(r.ExecutableHash))
+                {
+                    return false;
+                }
+
+                bool addressMatches = false;
+                if (isListeningOrWildcard)
+                {
+                    addressMatches = !string.IsNullOrEmpty(r.LocalAddress) &&
+                                     r.LocalAddress.Equals(localAddress, StringComparison.OrdinalIgnoreCase);
+                }
+                else if (!string.IsNullOrEmpty(r.ForeignAddress) && !IsWildcardOrListeningAddress(r.ForeignAddress))
+                {
+                    addressMatches = r.ForeignAddress.Equals(foreignAddress, StringComparison.OrdinalIgnoreCase);
+                }
+                else if (!string.IsNullOrEmpty(foreignIP) && !IsWildcardOrListeningAddress(foreignIP))
+                {
+                    addressMatches = !string.IsNullOrEmpty(r.IP) && !IsWildcardOrListeningAddress(r.IP) &&
+                                     r.IP.Equals(foreignIP, StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (!addressMatches) return false;
+
+                // Endereço bateu e regra tem hash exigido: se o hash atual for diferente ou nulo, há divergência
+                return string.IsNullOrWhiteSpace(currentExecutableHash) ||
+                       !r.ExecutableHash.Equals(currentExecutableHash, StringComparison.OrdinalIgnoreCase);
             });
         }
     }

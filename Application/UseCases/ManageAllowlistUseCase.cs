@@ -41,7 +41,12 @@ namespace NetStatAnalyzer.Application.UseCases
 
         public int AddRules(IEnumerable<(string ProcessName, string ForeignAddress, string Protocol, string? LocalAddress)> entries)
         {
-            int addedCount = 0;
+            return AddRules(entries.Select(e => (e.ProcessName, e.ForeignAddress, e.Protocol, e.LocalAddress, (string?)null, (string?)null)));
+        }
+
+        public int AddRules(IEnumerable<(string ProcessName, string ForeignAddress, string Protocol, string? LocalAddress, string? ExecutablePath, string? ExecutableHash)> entries)
+        {
+            int modifiedCount = 0;
             lock (_syncLock)
             {
                 foreach (var entry in entries)
@@ -52,7 +57,7 @@ namespace NetStatAnalyzer.Application.UseCases
                     string ip = isListening ? TrustEvaluationPolicy.ExtractIP(entry.LocalAddress) : TrustEvaluationPolicy.ExtractIP(entry.ForeignAddress);
                     if (string.IsNullOrWhiteSpace(ip)) ip = isListening ? entry.LocalAddress ?? "0.0.0.0" : entry.ForeignAddress;
 
-                    bool exists = _rules.Any(r =>
+                    var existing = _rules.FirstOrDefault(r =>
                     {
                         if (!r.ProcessName.Equals(entry.ProcessName, StringComparison.OrdinalIgnoreCase)) return false;
 
@@ -66,7 +71,7 @@ namespace NetStatAnalyzer.Application.UseCases
                                r.ForeignAddress.Equals(entry.ForeignAddress, StringComparison.OrdinalIgnoreCase);
                     });
 
-                    if (!exists)
+                    if (existing is null)
                     {
                         _rules.Add(new AllowlistRule
                         {
@@ -75,24 +80,38 @@ namespace NetStatAnalyzer.Application.UseCases
                             ForeignAddress = entry.ForeignAddress,
                             LocalAddress = entry.LocalAddress,
                             Protocol = entry.Protocol,
+                            ExecutablePath = entry.ExecutablePath,
+                            ExecutableHash = entry.ExecutableHash,
                             AddedAt = DateTime.Now
                         });
-                        addedCount++;
+                        modifiedCount++;
+                    }
+                    else
+                    {
+                        bool hashChanged = existing.ExecutableHash != entry.ExecutableHash;
+                        bool pathChanged = existing.ExecutablePath != entry.ExecutablePath;
+                        if (hashChanged || pathChanged)
+                        {
+                            existing.ExecutablePath = entry.ExecutablePath;
+                            existing.ExecutableHash = entry.ExecutableHash;
+                            existing.AddedAt = DateTime.Now;
+                            modifiedCount++;
+                        }
                     }
                 }
 
-                if (addedCount > 0)
+                if (modifiedCount > 0)
                 {
                     _repository.SaveAll(_rules);
                 }
             }
 
-            if (addedCount > 0)
+            if (modifiedCount > 0)
             {
                 RulesChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            return addedCount;
+            return modifiedCount;
         }
 
         public int RemoveRules(IEnumerable<(string ProcessName, string ForeignAddress, string? LocalAddress)> entries)
@@ -173,7 +192,7 @@ namespace NetStatAnalyzer.Application.UseCases
             RulesChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public string ExportToJson(string version = "1.4.1")
+        public string ExportToJson(string version = "1.5.1")
         {
             lock (_syncLock)
             {

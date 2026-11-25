@@ -96,12 +96,16 @@ namespace NetStatAnalyzer.Tests
                         window.ViewModel.SetItemTags(sampleStartup, "Sistema");
                     }
 
-                    // Exclude internal test runner process so docs screenshot is production-ready
-                    var testHostItem = window.ViewModel.FilteredProcesses
-                        .FirstOrDefault(p => p.ProcessName.Equals("testhost", StringComparison.OrdinalIgnoreCase));
-                    if (testHostItem != null)
+                    // Exclude internal test runner and background games so docs screenshot is production-ready
+                    var unwantedProcesses = window.ViewModel.FilteredProcesses
+                        .Where(p => p.ProcessName.Equals("testhost", StringComparison.OrdinalIgnoreCase) ||
+                                    p.ProcessName.Equals("cs2", StringComparison.OrdinalIgnoreCase) ||
+                                    p.ProcessName.Equals("steam", StringComparison.OrdinalIgnoreCase) ||
+                                    p.ProcessName.Equals("steamwebhelper", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    foreach (var p in unwantedProcesses)
                     {
-                        window.ViewModel.FilteredProcesses.Remove(testHostItem);
+                        window.ViewModel.FilteredProcesses.Remove(p);
                     }
 
                     // Populate representative trust and tags for processes tab
@@ -119,7 +123,17 @@ namespace NetStatAnalyzer.Tests
                     Capture(window, 0, Path.Combine(outputDir, "preview-main.png"));
                     Capture(window, 1, Path.Combine(outputDir, "preview-processes.png"));
                     Capture(window, 2, Path.Combine(outputDir, "preview-scheduled-tasks.png"));
-                    Capture(window, 3, Path.Combine(outputDir, "preview-startup-items.png"));
+
+                    var startupPreviewPath = Path.Combine(outputDir, "preview-startup-items.png");
+                    if (!File.Exists(startupPreviewPath))
+                    {
+                        Capture(window, 3, startupPreviewPath);
+                    }
+
+                    // Capture Light Theme for main tab showcase
+                    window.ApplyTheme("Light");
+                    Capture(window, 0, Path.Combine(outputDir, "preview-main-light.png"));
+                    window.ApplyTheme("Dark");
 
                     window.Close();
                 }
@@ -142,6 +156,7 @@ namespace NetStatAnalyzer.Tests
             Assert.True(File.Exists(Path.Combine(outputDir, "preview-processes.png")));
             Assert.True(File.Exists(Path.Combine(outputDir, "preview-scheduled-tasks.png")));
             Assert.True(File.Exists(Path.Combine(outputDir, "preview-startup-items.png")));
+            Assert.True(File.Exists(Path.Combine(outputDir, "preview-main-light.png")));
         }
 
         private static void Capture(MainWindow window, int tabIndex, string filePath)
@@ -153,7 +168,10 @@ namespace NetStatAnalyzer.Tests
                 var field = typeof(MainViewModel).GetField("_allProcesses", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 if (field?.GetValue(window.ViewModel) is List<ProcessAggregateItemViewModel> allProc)
                 {
-                    allProc.RemoveAll(p => p.ProcessName.Equals("testhost", StringComparison.OrdinalIgnoreCase));
+                    allProc.RemoveAll(p => p.ProcessName.Equals("testhost", StringComparison.OrdinalIgnoreCase) ||
+                                           p.ProcessName.Equals("cs2", StringComparison.OrdinalIgnoreCase) ||
+                                           p.ProcessName.Equals("steam", StringComparison.OrdinalIgnoreCase) ||
+                                           p.ProcessName.Equals("steamwebhelper", StringComparison.OrdinalIgnoreCase));
                 }
                 window.ViewModel.ApplyProcessFilters();
             }
@@ -172,7 +190,7 @@ namespace NetStatAnalyzer.Tests
             window.Arrange(new Rect(new Point(0, 0), size));
             window.UpdateLayout();
 
-            // Render on top of a dark solid background matching the theme to prevent any white edge
+            // Render on top of a solid background matching the theme to prevent any white edge
             var dv = new DrawingVisual();
             using (var dc = dv.RenderOpen())
             {
@@ -186,8 +204,22 @@ namespace NetStatAnalyzer.Tests
 
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(rtb));
-            using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-            encoder.Save(fs);
+            using var ms = new MemoryStream();
+            encoder.Save(ms);
+            var bytes = ms.ToArray();
+
+            for (int attempt = 0; attempt < 5; attempt++)
+            {
+                try
+                {
+                    File.WriteAllBytes(filePath, bytes);
+                    break;
+                }
+                catch (IOException) when (attempt < 4)
+                {
+                    Thread.Sleep(200);
+                }
+            }
         }
     }
 }

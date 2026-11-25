@@ -9,8 +9,24 @@ namespace NetStatAnalyzer.Presentation.Common
         public string TagText
         {
             get => _tagText;
-            set => SetProperty(ref _tagText, value);
+            set
+            {
+                if (SetProperty(ref _tagText, value))
+                {
+                    OnPropertyChanged(nameof(TagsList));
+                    OnPropertyChanged(nameof(HasTags));
+                }
+            }
         }
+
+        public IReadOnlyList<string> TagsList => string.IsNullOrWhiteSpace(TagText)
+            ? System.Array.Empty<string>()
+            : TagText.Split(new[] { ',', ';' }, System.StringSplitOptions.RemoveEmptyEntries | System.StringSplitOptions.TrimEntries)
+                     .Where(t => !string.IsNullOrWhiteSpace(t))
+                     .Distinct(System.StringComparer.OrdinalIgnoreCase)
+                     .ToArray();
+
+        public bool HasTags => TagsList.Count > 0;
 
         private bool _annotationTrusted;
         public bool AnnotationTrusted
@@ -18,11 +34,37 @@ namespace NetStatAnalyzer.Presentation.Common
             get => _annotationTrusted;
             set
             {
-                if (SetProperty(ref _annotationTrusted, value)) OnPropertyChanged(nameof(AnnotationTrustText));
+                if (SetProperty(ref _annotationTrusted, value))
+                {
+                    OnPropertyChanged(nameof(AnnotationTrustText));
+                    OnPropertyChanged(nameof(AnnotationTrustToolTip));
+                }
             }
         }
 
-        public string AnnotationTrustText => AnnotationTrusted ? "Confiável" : "Não verificado";
+        private bool _hasHashMismatch;
+        public bool HasHashMismatch
+        {
+            get => _hasHashMismatch;
+            set
+            {
+                if (SetProperty(ref _hasHashMismatch, value))
+                {
+                    OnPropertyChanged(nameof(AnnotationTrustText));
+                    OnPropertyChanged(nameof(AnnotationTrustToolTip));
+                }
+            }
+        }
+
+        public string AnnotationTrustText => AnnotationTrusted
+            ? "Confiável"
+            : (HasHashMismatch ? "⚠️ Hash alterado" : "Não verificado");
+
+        public string AnnotationTrustToolTip => AnnotationTrusted
+            ? "Item verificado e marcado como confiável."
+            : (HasHashMismatch
+                ? "⚠️ O executável foi modificado ou atualizado em disco desde a aprovação da confiança. Revalide a confiança do item para aprovar a nova versão."
+                : "Sem anotação de confiança cadastrada.");
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

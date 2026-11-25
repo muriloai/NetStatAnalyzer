@@ -69,7 +69,7 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
             }
         }
 
-        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.4.1")
+        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.5.1")
         {
             var doc = ReadDocument();
             doc.Version = appVersion;
@@ -86,6 +86,8 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
 
         public string LoadTheme() => ReadDocument().Theme;
 
+        public bool LoadVerifyExecutableHashByDefault() => ReadDocument().VerifyExecutableHashByDefault;
+
         public void SaveAnnotations(IEnumerable<ItemAnnotation> annotations)
         {
             var doc = ReadDocument();
@@ -97,6 +99,13 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
         {
             var doc = ReadDocument();
             doc.Theme = theme;
+            WriteDocument(doc);
+        }
+
+        public void SaveVerifyExecutableHashByDefault(bool verify)
+        {
+            var doc = ReadDocument();
+            doc.VerifyExecutableHashByDefault = verify;
             WriteDocument(doc);
         }
 
@@ -112,7 +121,7 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
 
         private void WriteDocument(AllowlistDocument doc)
         {
-            doc.Version = "1.4.1";
+            doc.Version = "1.5.1";
             doc.ExportedAt = DateTime.Now;
             string tempPath = _storageFilePath + ".tmp";
             File.WriteAllText(tempPath, JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }));
@@ -130,14 +139,14 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
 
                 if (doc == null || doc.Rules == null || doc.Rules.Count == 0)
                 {
-                    return (false, Array.Empty<AllowlistRule>(), doc?.Version ?? "1.4.1", "Nenhuma regra válida encontrada no arquivo.");
+                    return (false, Array.Empty<AllowlistRule>(), doc?.Version ?? "1.5.1", "Nenhuma regra válida encontrada no arquivo.");
                 }
 
                 var validRules = doc.Rules
                     .Where(r => !string.IsNullOrWhiteSpace(r.ProcessName) && !string.IsNullOrWhiteSpace(r.IP))
                     .ToList();
 
-                return (true, validRules, doc.Version ?? "1.4.1", $"{validRules.Count} regras extraídas do arquivo.");
+                return (true, validRules, doc.Version ?? "1.5.1", $"{validRules.Count} regras extraídas do arquivo.");
             }
             catch (Exception ex)
             {

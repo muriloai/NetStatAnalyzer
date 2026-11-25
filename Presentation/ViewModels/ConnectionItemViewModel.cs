@@ -44,10 +44,15 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
         public BitmapImage? ProcessIcon => ProcessIconCache.Instance.GetIcon(Model.ProcessPath);
 
-        public string AllowBadgeText => IsAllowed ? "Confiável" : "Não verificada";
+        public string AllowBadgeText => IsAllowed
+            ? "Confiável"
+            : (HasHashMismatch ? "⚠️ Hash alterado" : "Não verificada");
+
         public string AllowBadgeToolTip => IsAllowed
             ? "Esta conexão corresponde a uma regra adicionada à lista de confiança."
-            : "Sem regra de confiança cadastrada. A conexão continua sendo monitorada; isso, por si só, não significa que seja maliciosa.";
+            : (HasHashMismatch
+                ? "⚠️ O executável foi modificado ou atualizado em disco desde a aprovação da regra de confiança. Revalide a confiança do item para aprovar a nova versão."
+                : "Sem regra de confiança cadastrada. A conexão continua sendo monitorada; isso, por si só, não significa que seja maliciosa.");
         public Visibility AllowBadgeVisibility => Visibility.Visible;
 
         public string CpuBadgeBackground => CpuPercent switch
