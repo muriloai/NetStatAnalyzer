@@ -27,23 +27,39 @@ A coleta usa amostras do Windows, então conexões muito breves podem passar ent
 
 ## Tecnologias
 
-![Ícones de C#, .NET, Windows e GitHub Actions](https://skillicons.dev/icons?i=cs,dotnet,windows,githubactions)
+- **Aplicação desktop:** C#, .NET 8, WPF e XAML.
+- **Integração com o Windows:** `netstat.exe`, `schtasks.exe`, `System.Diagnostics.Process`, APIs Win32 via P/Invoke e Registro do Windows.
+- **Persistência e exportação:** `System.Text.Json` e arquivos JSON locais para regras, anotações, preferências e relatórios.
+- **Testes e CI:** xUnit e GitHub Actions. O workflow restaura, compila e executa os testes em Windows com .NET 8.
+- **Distribuição:** publicação autocontida em arquivo único para Windows x64, com o runtime .NET incluído.
+- **Qualidade do código:** tipos de referência anuláveis habilitados nos projetos da solução.
 
-- **C# e .NET 8** para a aplicação desktop. A interface usa **WPF, XAML e MVVM**.
-- **`netstat.exe`, `schtasks.exe`, APIs Win32 e Registro do Windows** para a coleta local.
-- **`System.Text.Json`** para configurações, regras de confiança e exportação.
-- **xUnit e GitHub Actions** para os testes automatizados no Windows.
+## Arquitetura e padrões
 
-## Arquitetura
+O código é organizado em camadas inspiradas em Clean Architecture. O domínio permanece independente de WPF e das integrações com o sistema operacional. A aplicação concentra casos de uso e contratos, enquanto a infraestrutura implementa esses contratos com adaptadores para Windows e arquivos.
 
 ```mermaid
 flowchart TD
-    Presentation["Apresentação · WPF e ViewModels"] --> Application["Aplicação · casos de uso e contratos"]
-    Infrastructure["Infraestrutura · Windows e arquivos"] --> Application
-    Application --> Domain["Domínio · entidades e regras"]
+    Presentation["Apresentação · WPF, XAML e MVVM"] --> UseCases["Aplicação · casos de uso"]
+    UseCases --> Contracts["Contratos · portas de entrada e saída"]
+    Infrastructure["Infraestrutura · adaptadores Windows e arquivos"] -. implementa .-> Contracts
+    UseCases --> Domain["Domínio · entidades e políticas"]
+    Composition["Composition Root · montagem das dependências"] -. injeta .-> Presentation
+    Composition -. injeta .-> UseCases
+    Composition -. injeta .-> Infrastructure
 ```
 
-As setas seguem as dependências principais entre as camadas. A interface chama os casos de uso e os adaptadores de infraestrutura implementam os contratos usados na coleta e na persistência.
+| Padrão ou prática | Onde aparece |
+| --- | --- |
+| **MVVM** | Views em WPF/XAML usam ViewModels e data binding para separar interface e estado da aplicação. Veja [MainViewModel](Presentation/ViewModels/MainViewModel.cs) e [ViewModelBase](Presentation/Common/ViewModelBase.cs). |
+| **Use Cases** | Operações como leitura de conexões, métricas, tarefas agendadas e regras de confiança ficam em classes próprias, como [ScanConnectionsUseCase](Application/UseCases/ScanConnectionsUseCase.cs). |
+| **Ports and Adapters (Hexagonal)** | Contratos como [INetworkScanner](Application/Contracts/INetworkScanner.cs) e [IProcessResolver](Application/Contracts/IProcessResolver.cs) ficam na aplicação. [NetStatCliScanner](Infrastructure/Scanning/NetStatCliScanner.cs) e [Win32ProcessResolver](Infrastructure/Processes/Win32ProcessResolver.cs) implementam esses contratos na infraestrutura. |
+| **Repository** | [JsonFileAllowlistRepository](Infrastructure/Persistence/JsonFileAllowlistRepository.cs) encapsula a leitura e gravação local de regras e anotações. |
+| **Policy Objects de domínio** | [TrustEvaluationPolicy](Domain/Policies/TrustEvaluationPolicy.cs) e [ThreatDetectionPolicy](Domain/Policies/ThreatDetectionPolicy.cs) concentram decisões de confiança e classificação de alertas. |
+| **Command** | [RelayCommand](Presentation/Common/RelayCommand.cs) e [AsyncRelayCommand](Presentation/Common/AsyncRelayCommand.cs) conectam ações síncronas e assíncronas aos comandos do WPF. |
+| **Composition Root e injeção por construtor** | [ApplicationCompositionRoot](ApplicationCompositionRoot.cs) monta adaptadores e casos de uso e entrega suas dependências pelos construtores. |
+
+Os contratos permitem testar os casos de uso com dependências simuladas. A [suíte xUnit](NetStatAnalyzer.Tests) cobre regras de confiança e detecção, coleta, métricas, filtros e exportação. O [workflow do GitHub Actions](.github/workflows/tests.yml) executa restauração, compilação e testes em pushes e pull requests direcionados à branch `main`.
 
 ## Documentação
 
