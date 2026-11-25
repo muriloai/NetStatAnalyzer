@@ -1,8 +1,7 @@
-<p align="center">
-  <img src="assets/icon-dark.png" alt="" width="112" height="112">
-</p>
-
-<h1 align="center">NetStatAnalyzer</h1>
+<h1 align="center">
+  <img src="assets/icon.png" alt="NetStatAnalyzer" width="60" height="60" align="absmiddle">
+  NetStatAnalyzer
+</h1>
 
 <p align="center">
   Conexões TCP/UDP, portas em escuta e processos do Windows em uma interface desktop.
