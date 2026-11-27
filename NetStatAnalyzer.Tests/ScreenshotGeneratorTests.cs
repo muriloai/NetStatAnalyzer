@@ -120,15 +120,34 @@ namespace NetStatAnalyzer.Tests
                         window.ViewModel.SetItemTags(sampleProcesses, "Sistema");
                     }
 
+                    // Populate representative pinned services for services tab showcase
+                    window.ViewModel.SelectedServicesSubTabIndex = 1;
+                    window.ViewModel.ApplyServiceFilters();
+
+                    var sampleServices = window.ViewModel.FilteredServices
+                        .Where(s => s.ServiceName.Equals("Spooler", StringComparison.OrdinalIgnoreCase) ||
+                                    s.ServiceName.Equals("wuauserv", StringComparison.OrdinalIgnoreCase) ||
+                                    s.ServiceName.Equals("Themes", StringComparison.OrdinalIgnoreCase) ||
+                                    s.ServiceName.Equals("LanmanServer", StringComparison.OrdinalIgnoreCase))
+                        .Take(3)
+                        .ToList();
+                    if (sampleServices.Count == 0 && window.ViewModel.FilteredServices.Count > 0)
+                    {
+                        sampleServices = window.ViewModel.FilteredServices.Take(3).ToList();
+                    }
+                    if (sampleServices.Count > 0)
+                    {
+                        window.ViewModel.SetServicesPinned(sampleServices, true);
+                    }
+
+                    window.ViewModel.SelectedServicesSubTabIndex = 0;
+                    window.ViewModel.ApplyServiceFilters();
+
                     Capture(window, 0, Path.Combine(outputDir, "preview-main.png"));
                     Capture(window, 1, Path.Combine(outputDir, "preview-processes.png"));
                     Capture(window, 2, Path.Combine(outputDir, "preview-scheduled-tasks.png"));
-
-                    var startupPreviewPath = Path.Combine(outputDir, "preview-startup-items.png");
-                    if (!File.Exists(startupPreviewPath))
-                    {
-                        Capture(window, 3, startupPreviewPath);
-                    }
+                    Capture(window, 3, Path.Combine(outputDir, "preview-startup-items.png"));
+                    Capture(window, 4, Path.Combine(outputDir, "preview-services.png"));
 
                     // Capture Light Theme for main tab showcase
                     window.ApplyTheme("Light");
@@ -156,6 +175,7 @@ namespace NetStatAnalyzer.Tests
             Assert.True(File.Exists(Path.Combine(outputDir, "preview-processes.png")));
             Assert.True(File.Exists(Path.Combine(outputDir, "preview-scheduled-tasks.png")));
             Assert.True(File.Exists(Path.Combine(outputDir, "preview-startup-items.png")));
+            Assert.True(File.Exists(Path.Combine(outputDir, "preview-services.png")));
             Assert.True(File.Exists(Path.Combine(outputDir, "preview-main-light.png")));
         }
 

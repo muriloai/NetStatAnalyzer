@@ -19,3 +19,7 @@
 ## Itens de inicialização
 
 ![Aba de itens de inicialização com a origem e o comando de cada entrada](preview-startup-items.png)
+
+## Serviços do Windows
+
+![Aba de serviços do Windows com sub-aba de itens fixados, status e menu de controle de serviços](preview-services.png)

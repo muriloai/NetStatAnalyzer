@@ -22,6 +22,7 @@ Windows 10 (versão 2004, build 19041 ou posterior) ou Windows 11, em x64. Para 
 - **Conexões TCP/UDP.** Veja endereços, portas e estados de conexão e identifique o processo pelo PID.
 - **Processos.** Consulte a quantidade de conexões, o uso de CPU e as taxas de leitura e escrita por processo.
 - **Tarefas agendadas e itens de inicialização.** Veja o que está configurado para rodar automaticamente e confira os comandos e arquivos associados.
+- **Serviços do Windows.** Consulte e controle serviços do sistema (`services.msc`), fixe seus serviços favoritos para acompanhamento contínuo e aplique ações (Iniciar, Parar, Pausar, Continuar e Reiniciar) em seleções individuais ou múltiplas com elevação inteligente em lote.
 - **Triagem local.** Filtre os dados por tag, confiança ou alerta e exporte os registros exibidos em JSON.
 
 A coleta usa amostras do Windows, então conexões muito breves podem passar entre leituras. As taxas de leitura e escrita vêm dos contadores de I/O do processo e podem incluir operações de disco. Os alertas seguem regras locais e servem como pistas para investigação.
@@ -49,7 +50,7 @@ As setas seguem as dependências principais entre as camadas. A interface chama 
 ## Documentação
 
 - [Guia de uso](docs/uso.md) com filtros, regras de confiança, exportação e atalhos do Windows.
-- [Capturas de tela](docs/images/README.md) das quatro abas e do tema claro.
+- [Capturas de tela](docs/images/README.md) das cinco abas e do tema claro.
 - [Arquitetura e limites da coleta](docs/arquitetura.md) com as fontes de dados do Windows e o fluxo de uma leitura.
 - [Compilação, testes e distribuição](docs/desenvolvimento.md).
 

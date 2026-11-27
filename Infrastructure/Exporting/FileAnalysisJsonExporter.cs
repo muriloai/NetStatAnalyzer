@@ -59,6 +59,32 @@ public sealed class FileAnalysisJsonExporter : IAnalysisJsonExporter
             isMicrosoft = item.IsMicrosoft, companyName = item.CompanyName
         }));
 
+    public void ExportServices(string filePath, IEnumerable<WindowsServiceItem> items, string version, DateTime? dataUpdatedAt) =>
+        Write(filePath, "windowsServices", version, dataUpdatedAt, items.Select(item => new
+        {
+            serviceName = item.ServiceName,
+            displayName = item.DisplayName,
+            description = item.Description,
+            state = item.State.ToString(),
+            startType = item.StartType.ToString(),
+            pid = item.ProcessId,
+            binaryPathName = item.BinaryPathName,
+            resolvedPath = item.ResolvedPath,
+            serviceAccount = item.ServiceAccount,
+            isPinned = item.IsPinned,
+            tag = item.Tag,
+            isTrusted = item.IsTrusted,
+            acceptsStop = item.AcceptsStop,
+            acceptsPauseAndContinue = item.AcceptsPauseAndContinue,
+            fileExists = item.FileExists,
+            isSigned = item.IsSigned,
+            isMicrosoft = item.IsMicrosoft,
+            signerName = item.SignerName,
+            companyName = item.CompanyName,
+            threatLevel = item.ThreatLevel.ToString(),
+            threatReason = item.ThreatReason
+        }));
+
     private static void Write<T>(string filePath, string dataType, string version, DateTime? dataUpdatedAt, IEnumerable<T> items)
     {
         var data = items.ToArray();

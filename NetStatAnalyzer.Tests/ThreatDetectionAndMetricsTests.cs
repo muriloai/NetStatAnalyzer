@@ -240,5 +240,6 @@ namespace NetStatAnalyzer.Tests
         public bool OpenResourceMonitor() => true;
         public bool OpenStartupFolder() => true;
         public bool OpenRegistryEditor(string? keyPath = null) => true;
+        public bool OpenServicesConsole() => true;
     }
 }

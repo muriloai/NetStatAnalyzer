@@ -9,7 +9,7 @@ using NetStatAnalyzer.Domain.Entities;
 
 namespace NetStatAnalyzer.Infrastructure.Persistence
 {
-    public class JsonFileAllowlistRepository : IAllowlistRepository, IItemAnnotationRepository
+    public class JsonFileAllowlistRepository : IAllowlistRepository, IItemAnnotationRepository, IPinnedServicesRepository
     {
         private readonly string _storageFilePath;
         private readonly string? _legacyStorageFilePath;
@@ -69,7 +69,7 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
             }
         }
 
-        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.5.1")
+        public string ExportToJson(IEnumerable<AllowlistRule> rules, string appVersion = "1.6.0")
         {
             var doc = ReadDocument();
             doc.Version = appVersion;
@@ -109,6 +109,35 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
             WriteDocument(doc);
         }
 
+        public IReadOnlyList<string> LoadPinnedServices()
+        {
+            try
+            {
+                var doc = ReadDocument();
+                return doc.PinnedServices
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Select(s => s.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Erro ao ler serviços fixados: {ex.Message}");
+                return Array.Empty<string>();
+            }
+        }
+
+        public void SavePinnedServices(IEnumerable<string> serviceNames)
+        {
+            var doc = ReadDocument();
+            doc.PinnedServices = serviceNames
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => s.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            WriteDocument(doc);
+        }
+
         private AllowlistDocument ReadDocument()
         {
             string? path = File.Exists(_storageFilePath) ? _storageFilePath :
@@ -121,7 +150,7 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
 
         private void WriteDocument(AllowlistDocument doc)
         {
-            doc.Version = "1.5.1";
+            doc.Version = "1.6.0";
             doc.ExportedAt = DateTime.Now;
             string tempPath = _storageFilePath + ".tmp";
             File.WriteAllText(tempPath, JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }));
@@ -139,14 +168,14 @@ namespace NetStatAnalyzer.Infrastructure.Persistence
 
                 if (doc == null || doc.Rules == null || doc.Rules.Count == 0)
                 {
-                    return (false, Array.Empty<AllowlistRule>(), doc?.Version ?? "1.5.1", "Nenhuma regra válida encontrada no arquivo.");
+                    return (false, Array.Empty<AllowlistRule>(), doc?.Version ?? "1.6.0", "Nenhuma regra válida encontrada no arquivo.");
                 }
 
                 var validRules = doc.Rules
                     .Where(r => !string.IsNullOrWhiteSpace(r.ProcessName) && !string.IsNullOrWhiteSpace(r.IP))
                     .ToList();
 
-                return (true, validRules, doc.Version ?? "1.5.1", $"{validRules.Count} regras extraídas do arquivo.");
+                return (true, validRules, doc.Version ?? "1.6.0", $"{validRules.Count} regras extraídas do arquivo.");
             }
             catch (Exception ex)
             {

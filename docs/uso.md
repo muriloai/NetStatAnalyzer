@@ -10,8 +10,9 @@
 | Processos e consumo | Conexões agrupadas por processo, CPU e taxas de leitura e escrita. Os contadores de I/O incluem operações além da rede. | Use mínimos de CPU (`1%`, `5%`, `10%`, `25%`, `50%`) e de I/O (`10 KB/s`, `100 KB/s`, `1 MB/s`, `10 MB/s`). Na interface, o filtro de I/O aparece como **Banda total**. |
 | Tarefas agendadas | Tarefas que a consulta local consegue listar, com estado, comando, autor e horários quando disponíveis. | Veja apenas tarefas habilitadas ou use o filtro de tarefas suspeitas ou sem identificação da Microsoft. |
 | Itens de inicialização | Entradas do Registro e das pastas Inicializar, com origem, comando e indicadores sobre o arquivo associado. | Filtre pelo tipo de origem ou pelos itens sinalizados. |
+| Serviços do Windows | Serviços locais (`services.msc`) com nome, nome de exibição, status (Em Execução, Parado, etc.), inicialização, PID e assinatura. Possui sub-abas: **Meus Serviços Fixados** (itens salvos para monitoramento direto) e **Pesquisar e Selecionar** (catálogo completo com destaque verde nos fixados). | Pesquise por nome ou exibição e filtre por status. Marque a caixa para fixar (salva automaticamente). Clique com botão direito no status ou em múltiplos itens para Iniciar, Parar, Pausar, Continuar e Reiniciar (com elevação UAC em lote único quando necessário). |
 
-O botão **Atualizar dados** consulta as quatro abas. A leitura contínua usa um intervalo de dois segundos nas abas de conexões e processos, com uma coleta por vez. Pause a leitura contínua para voltar à atualização manual. A barra de status mostra o andamento da coleta, os dados da aba e um resumo da seleção.
+O botão **Atualizar dados** consulta as cinco abas. A leitura contínua usa um intervalo de dois segundos nas abas de conexões e processos, com uma coleta por vez. Pause a leitura contínua para voltar à atualização manual. A barra de status mostra o andamento da coleta, os dados da aba e um resumo da seleção.
 
 Os filtros de tag, confiança e alertas valem para todas as abas. A busca e os demais filtros de cada aba valem para a tabela ativa. O tema claro ou escuro é salvo nas preferências locais.
 
@@ -37,3 +38,4 @@ Em **Mais ações**, exporte os itens exibidos após aplicar os filtros. O JSON 
 | Gerenciador de Tarefas (`taskmgr.exe`) | Conferir processos e consumo de recursos. |
 | Pasta Inicializar (`shell:startup`) | Inspecionar arquivos e atalhos que rodam ao entrar na sessão. |
 | Editor do Registro (`regedit.exe`) | Conferir a chave de origem de um item. |
+| Serviços do Windows (`services.msc`) | Gerenciar, configurar e inspecionar serviços do sistema. |

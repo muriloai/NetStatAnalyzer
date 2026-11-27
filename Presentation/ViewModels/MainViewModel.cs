@@ -29,6 +29,9 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         private readonly ScanStartupItemsUseCase _startupUseCase;
         private readonly IWindowsToolsLauncher _windowsToolsLauncher;
         private readonly IExecutableHashResolver _hashResolver;
+        private readonly ScanWindowsServicesUseCase _servicesUseCase;
+        private readonly ManagePinnedServicesUseCase _pinnedServicesUseCase;
+        private readonly ControlWindowsServicesUseCase _serviceControlUseCase;
 
         // 1. Network Connections Tab
         public object EntriesLock { get; } = new();
@@ -50,6 +53,11 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public object StartupLock { get; } = new();
         private readonly List<StartupItemViewModel> _allStartupItems = new();
         public ObservableCollection<StartupItemViewModel> FilteredStartupItems { get; } = new();
+
+        // 5. Windows Services Tab
+        public object ServicesLock { get; } = new();
+        private readonly List<WindowsServiceItemViewModel> _allServices = new();
+        public ObservableCollection<WindowsServiceItemViewModel> FilteredServices { get; } = new();
 
         public ObservableCollection<string> GlobalTagOptions { get; } = new();
         public ObservableCollection<TagFilterOption> GlobalTagFilterItems { get; } = new();
@@ -185,7 +193,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             "Aguardando leitura das conexões.",
             "Aguardando leitura dos processos.",
             "Aguardando leitura das tarefas.",
-            "Aguardando leitura dos itens de inicialização."
+            "Aguardando leitura dos itens de inicialização.",
+            "Aguardando leitura dos serviços do Windows."
         };
 
         public string StatusMessage
@@ -194,7 +203,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             set => SetTabStatusMessage(SelectedTabIndex, value);
         }
 
-        private static int GetStatusTabIndex(int tabIndex) => tabIndex is >= 0 and < 4 ? tabIndex : 0;
+        private static int GetStatusTabIndex(int tabIndex) => tabIndex is >= 0 and < 5 ? tabIndex : 0;
 
         private void SetTabStatusMessage(int tabIndex, string message)
         {
@@ -215,6 +224,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         private DateTime? _processesLastUpdatedAt;
         private DateTime? _tasksLastUpdatedAt;
         private DateTime? _startupLastUpdatedAt;
+        private DateTime? _servicesLastUpdatedAt;
 
         public string CurrentTabLastUpdatedText
         {
@@ -226,6 +236,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     1 => _processesLastUpdatedAt,
                     2 => _tasksLastUpdatedAt,
                     3 => _startupLastUpdatedAt,
+                    4 => _servicesLastUpdatedAt,
                     _ => _connectionsLastUpdatedAt
                 };
 
@@ -342,7 +353,65 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
         }
 
-        // Tab selection (0: Conexões, 1: Processos, 2: Tarefas Agendadas, 3: Itens Inicialização, 4: Insights)
+        // Sub-tabs for Windows Services: 0 = Pinned (default), 1 = Catalog / Search
+        private int _selectedServicesSubTabIndex = 0;
+        public int SelectedServicesSubTabIndex
+        {
+            get => _selectedServicesSubTabIndex;
+            set
+            {
+                if (SetProperty(ref _selectedServicesSubTabIndex, value))
+                {
+                    OnPropertyChanged(nameof(IsPinnedServicesSubTabActive));
+                    OnPropertyChanged(nameof(IsCatalogServicesSubTabActive));
+                    ApplyServiceFilters();
+                }
+            }
+        }
+
+        public bool IsPinnedServicesSubTabActive => SelectedServicesSubTabIndex == 0;
+        public bool IsCatalogServicesSubTabActive => SelectedServicesSubTabIndex == 1;
+
+        private string _serviceSearchQuery = string.Empty;
+        public string ServiceSearchQuery
+        {
+            get => _serviceSearchQuery;
+            set
+            {
+                if (SetProperty(ref _serviceSearchQuery, value))
+                {
+                    ApplyServiceFilters();
+                }
+            }
+        }
+
+        private string _selectedServiceStateFilter = "Todos os estados";
+        public string SelectedServiceStateFilter
+        {
+            get => _selectedServiceStateFilter;
+            set
+            {
+                if (SetProperty(ref _selectedServiceStateFilter, value))
+                {
+                    ApplyServiceFilters();
+                }
+            }
+        }
+
+        private string _selectedServiceStartupFilter = "Todos";
+        public string SelectedServiceStartupFilter
+        {
+            get => _selectedServiceStartupFilter;
+            set
+            {
+                if (SetProperty(ref _selectedServiceStartupFilter, value))
+                {
+                    ApplyServiceFilters();
+                }
+            }
+        }
+
+        // Tab selection (0: Conexões, 1: Processos, 2: Tarefas Agendadas, 3: Itens Inicialização, 4: Serviços)
         private int _selectedTabIndex = 0;
         public int SelectedTabIndex
         {
@@ -355,6 +424,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     OnPropertyChanged(nameof(IsProcessesTabActive));
                     OnPropertyChanged(nameof(IsTasksTabActive));
                     OnPropertyChanged(nameof(IsStartupTabActive));
+                    OnPropertyChanged(nameof(IsServicesTabActive));
                     OnPropertyChanged(nameof(CurrentTabSummary));
                     OnPropertyChanged(nameof(CurrentTabLastUpdatedText));
                     OnPropertyChanged(nameof(StatusMessage));
@@ -366,6 +436,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public bool IsProcessesTabActive => SelectedTabIndex == 1;
         public bool IsTasksTabActive => SelectedTabIndex == 2;
         public bool IsStartupTabActive => SelectedTabIndex == 3;
+        public bool IsServicesTabActive => SelectedTabIndex == 4;
         
         public string CurrentTabSummary
         {
@@ -377,6 +448,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     1 => ProcessCountSummary,
                     2 => TaskCountSummary,
                     3 => StartupCountSummary,
+                    4 => ServicesCountSummary,
                     _ => ConnectionCountSummary
                 };
             }
@@ -580,6 +652,55 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             }
         }
 
+        // Metrics & Counters - Tab 4: Serviços do Windows
+        private int _metricServicesPinned;
+        public int MetricServicesPinned
+        {
+            get => _metricServicesPinned;
+            set => SetProperty(ref _metricServicesPinned, value);
+        }
+
+        private int _metricServicesRunning;
+        public int MetricServicesRunning
+        {
+            get => _metricServicesRunning;
+            set => SetProperty(ref _metricServicesRunning, value);
+        }
+
+        private int _metricServicesStopped;
+        public int MetricServicesStopped
+        {
+            get => _metricServicesStopped;
+            set => SetProperty(ref _metricServicesStopped, value);
+        }
+
+        private int _metricServicesPaused;
+        public int MetricServicesPaused
+        {
+            get => _metricServicesPaused;
+            set => SetProperty(ref _metricServicesPaused, value);
+        }
+
+        private int _metricServicesCatalogTotal;
+        public int MetricServicesCatalogTotal
+        {
+            get => _metricServicesCatalogTotal;
+            set => SetProperty(ref _metricServicesCatalogTotal, value);
+        }
+
+        private string _servicesCountSummary = "0 serviços listados";
+        public string ServicesCountSummary
+        {
+            get => _servicesCountSummary;
+            set
+            {
+                if (SetProperty(ref _servicesCountSummary, value))
+                {
+                    OnPropertyChanged(nameof(CurrentTabSummary));
+                }
+            }
+        }
+
         // Threat intelligence counters
         private int _threatCountProxy;
         public int ThreatCountProxy
@@ -651,6 +772,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         public ICommand OpenResourceMonitorCommand { get; }
         public ICommand OpenStartupFolderCommand { get; }
         public ICommand OpenRegistryEditorCommand { get; }
+        public ICommand OpenServicesConsoleCommand { get; }
 
         public MainViewModel(
             ScanConnectionsUseCase scanUseCase,
@@ -662,7 +784,10 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ScanScheduledTasksUseCase tasksUseCase,
             ScanStartupItemsUseCase startupUseCase,
             IWindowsToolsLauncher windowsToolsLauncher,
-            IExecutableHashResolver? hashResolver = null)
+            IExecutableHashResolver? hashResolver = null,
+            ScanWindowsServicesUseCase? servicesUseCase = null,
+            ManagePinnedServicesUseCase? pinnedServicesUseCase = null,
+            ControlWindowsServicesUseCase? serviceControlUseCase = null)
         {
             _scanUseCase = scanUseCase ?? throw new ArgumentNullException(nameof(scanUseCase));
             _allowlistUseCase = allowlistUseCase ?? throw new ArgumentNullException(nameof(allowlistUseCase));
@@ -674,10 +799,19 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             _startupUseCase = startupUseCase ?? throw new ArgumentNullException(nameof(startupUseCase));
             _windowsToolsLauncher = windowsToolsLauncher ?? throw new ArgumentNullException(nameof(windowsToolsLauncher));
             _hashResolver = hashResolver ?? new NetStatAnalyzer.Infrastructure.System.ExecutableHashResolver();
+
+            var pinnedRepo = new NetStatAnalyzer.Infrastructure.Persistence.JsonFileAllowlistRepository();
+            _pinnedServicesUseCase = pinnedServicesUseCase ?? new ManagePinnedServicesUseCase(pinnedRepo);
+            _servicesUseCase = servicesUseCase ?? new ScanWindowsServicesUseCase(
+                new NetStatAnalyzer.Infrastructure.System.WindowsServiceScanner(),
+                _pinnedServicesUseCase);
+            _serviceControlUseCase = serviceControlUseCase ?? new ControlWindowsServicesUseCase(
+                new NetStatAnalyzer.Infrastructure.System.Win32WindowsServiceController());
+
             UpdateTagOptions();
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.5.1";
+            AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.6.0";
 
             ReloadCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
             RefreshCurrentTabCommand = new AsyncRelayCommand(RefreshCurrentTabAsync);
@@ -689,6 +823,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             OpenResourceMonitorCommand = new RelayCommand(() => _windowsToolsLauncher.OpenResourceMonitor());
             OpenStartupFolderCommand = new RelayCommand(() => _windowsToolsLauncher.OpenStartupFolder());
             OpenRegistryEditorCommand = new RelayCommand(() => _windowsToolsLauncher.OpenRegistryEditor());
+            OpenServicesConsoleCommand = new RelayCommand(() => _windowsToolsLauncher.OpenServicesConsole());
 
             _allowlistUseCase.RulesChanged += (s, e) =>
             {
@@ -716,6 +851,9 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     break;
                 case 3:
                     await RefreshStartupItemsAsync();
+                    break;
+                case 4:
+                    await RefreshServicesAsync();
                     break;
                 default:
                     await RefreshConnectionsAsync();
@@ -873,6 +1011,16 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                 catch (Exception ex)
                 {
                     SetTabStatusMessage(3, $"Erro ao carregar itens de inicialização: {ex.Message}");
+                }
+
+                try
+                {
+                    await LoadServicesInternalAsync();
+                    SetTabStatusMessage(4, "Serviços atualizados.");
+                }
+                catch (Exception ex)
+                {
+                    SetTabStatusMessage(4, $"Erro ao carregar serviços: {ex.Message}");
                 }
 
                 UpdateThreatIntelligenceMetrics();
@@ -1117,6 +1265,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             UpdateProcessMetrics();
             UpdateTaskMetrics();
             UpdateStartupMetrics();
+            UpdateServiceMetrics();
         }
 
         private void UpdateStateFilterOptions()
@@ -1169,6 +1318,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ProcessAggregateItemViewModel p => ("process", p.ProcessPath ?? p.ProcessName),
             ScheduledTaskItemViewModel t => ("task", $"{t.TaskPath}|{t.TaskName}"),
             StartupItemViewModel s => ("startup", $"{s.Location}|{s.Name}"),
+            WindowsServiceItemViewModel w => ("service", w.ServiceName),
             _ => throw new ArgumentException("Tipo de item desconhecido.", nameof(item))
         };
 
@@ -1234,7 +1384,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
         private void RefreshAnnotations()
         {
             foreach (ViewModelBase item in _allEntries.Cast<ViewModelBase>()
-                .Concat(_allProcesses).Concat(_allTasks).Concat(_allStartupItems))
+                .Concat(_allProcesses).Concat(_allTasks).Concat(_allStartupItems).Concat(_allServices))
             {
                 var (type, key) = Identity(item);
                 var annotation = _annotationUseCase.Find(type, key);
@@ -1256,6 +1406,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                             ProcessAggregateItemViewModel p => p.ProcessPath,
                             ScheduledTaskItemViewModel t => t.ResolvedPath,
                             StartupItemViewModel s => s.ResolvedPath,
+                            WindowsServiceItemViewModel w => w.ResolvedPath,
                             _ => null
                         };
                         string? currentHash = _hashResolver.ComputeSha256(path);
@@ -1286,6 +1437,10 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     case StartupItemViewModel startup:
                         startup.Model.Tag = item.TagText;
                         startup.Model.IsTrusted = item.AnnotationTrusted;
+                        break;
+                    case WindowsServiceItemViewModel service:
+                        service.Model.Tag = item.TagText;
+                        service.Model.IsTrusted = item.AnnotationTrusted;
                         break;
                 }
             }
@@ -1340,6 +1495,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                             ProcessAggregateItemViewModel p => p.ProcessPath,
                             ScheduledTaskItemViewModel t => t.ResolvedPath,
                             StartupItemViewModel s => s.ResolvedPath,
+                            WindowsServiceItemViewModel w => w.ResolvedPath,
                             _ => null
                         };
                         string? hash = requireHash ? _hashResolver.ComputeSha256(path) : null;
@@ -1398,6 +1554,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ApplyProcessFilters();
             ApplyTaskFilters();
             ApplyStartupFilters();
+            ApplyServiceFilters();
         }
 
         public void ApplyFilters()
@@ -1640,6 +1797,7 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             ProcessSearchQuery = string.Empty;
             TaskSearchQuery = string.Empty;
             StartupSearchQuery = string.Empty;
+            ServiceSearchQuery = string.Empty;
             SelectedProtocol = "Todos";
             SelectedState = "Todos os Estados";
             CpuCutoffThreshold = 0.0;
@@ -1647,6 +1805,8 @@ namespace NetStatAnalyzer.Presentation.ViewModels
             BandwidthCutoffThreshold = 0.0;
             SelectedTaskFilter = "Todas";
             SelectedStartupFilter = "Todos";
+            SelectedServiceStateFilter = "Todos os estados";
+            SelectedServiceStartupFilter = "Todos";
             ApplyAllFilters();
         }
 
@@ -1735,6 +1895,10 @@ namespace NetStatAnalyzer.Presentation.ViewModels
                     _analysisJsonExporter.ExportStartupItems(filePath, FilteredStartupItems.Select(item => item.Model), AppVersion, _startupLastUpdatedAt);
                     count = FilteredStartupItems.Count;
                     break;
+                case 4:
+                    _analysisJsonExporter.ExportServices(filePath, FilteredServices.Select(item => item.Model), AppVersion, _servicesLastUpdatedAt);
+                    count = FilteredServices.Count;
+                    break;
                 default:
                     _analysisJsonExporter.ExportConnections(filePath, FilteredEntries.Select(item => item.Model), AppVersion, _connectionsLastUpdatedAt);
                     count = FilteredEntries.Count;
@@ -1743,6 +1907,208 @@ namespace NetStatAnalyzer.Presentation.ViewModels
 
             StatusMessage = $"{count} itens exportados para '{Path.GetFileName(filePath)}'.";
             return count;
+        }
+
+        public async Task RefreshServicesAsync(bool isSilent = false)
+        {
+            if (IsLoading) return;
+            try
+            {
+                if (!isSilent)
+                {
+                    IsLoading = true;
+                    SetTabStatusMessage(4, "Consultando serviços do Windows (SCM)...");
+                }
+                await LoadServicesInternalAsync();
+                UpdateServiceMetrics();
+                if (!isSilent)
+                {
+                    SetTabStatusMessage(4, "Serviços atualizados.");
+                }
+            }
+            catch (Exception ex)
+            {
+                SetTabStatusMessage(4, $"Erro ao carregar serviços: {ex.Message}");
+            }
+            finally
+            {
+                if (!isSilent)
+                {
+                    IsLoading = false;
+                }
+            }
+        }
+
+        private async Task LoadServicesInternalAsync()
+        {
+            var services = await _servicesUseCase.ExecuteAsync();
+            _allServices.Clear();
+            foreach (var s in services)
+            {
+                _allServices.Add(new WindowsServiceItemViewModel(s, (item, isPinned) =>
+                {
+                    ToggleServicePinned(item, isPinned);
+                }));
+            }
+            RefreshAnnotations();
+            UpdateServiceMetrics();
+            ApplyServiceFilters();
+            _servicesLastUpdatedAt = DateTime.Now;
+            OnPropertyChanged(nameof(CurrentTabLastUpdatedText));
+        }
+
+        private void UpdateServiceMetrics()
+        {
+            MetricServicesPinned = _allServices.Count(s => s.IsPinned);
+            MetricServicesRunning = _allServices.Count(s => s.State == Domain.Enums.WindowsServiceState.Running);
+            MetricServicesStopped = _allServices.Count(s => s.State == Domain.Enums.WindowsServiceState.Stopped);
+            MetricServicesPaused = _allServices.Count(s => s.State == Domain.Enums.WindowsServiceState.Paused);
+            MetricServicesCatalogTotal = _allServices.Count;
+        }
+
+        public void ApplyServiceFilters()
+        {
+            string query = ServiceSearchQuery.Trim().ToLowerInvariant();
+
+            var filtered = _allServices.Where(s =>
+            {
+                if (SelectedServicesSubTabIndex == 0 && !s.IsPinned)
+                {
+                    return false;
+                }
+
+                if (!PassesGlobalFilters(s, s.ThreatLevel)) return false;
+
+                if (SelectedServiceStateFilter.Equals("Em execução", StringComparison.OrdinalIgnoreCase) && s.State != Domain.Enums.WindowsServiceState.Running)
+                    return false;
+                if (SelectedServiceStateFilter.Equals("Parado", StringComparison.OrdinalIgnoreCase) && s.State != Domain.Enums.WindowsServiceState.Stopped)
+                    return false;
+                if (SelectedServiceStateFilter.Equals("Pausado", StringComparison.OrdinalIgnoreCase) && s.State != Domain.Enums.WindowsServiceState.Paused)
+                    return false;
+
+                if (SelectedServiceStartupFilter.Equals("Apenas marcados", StringComparison.OrdinalIgnoreCase) && !s.IsPinned)
+                    return false;
+                if (SelectedServiceStartupFilter.Equals("Automático", StringComparison.OrdinalIgnoreCase) &&
+                    s.StartType != Domain.Enums.WindowsServiceStartType.Automatic && s.StartType != Domain.Enums.WindowsServiceStartType.AutomaticDelayed)
+                    return false;
+                if (SelectedServiceStartupFilter.Equals("Manual", StringComparison.OrdinalIgnoreCase) && s.StartType != Domain.Enums.WindowsServiceStartType.Manual)
+                    return false;
+                if (SelectedServiceStartupFilter.Equals("Desativado", StringComparison.OrdinalIgnoreCase) && s.StartType != Domain.Enums.WindowsServiceStartType.Disabled)
+                    return false;
+
+                if (!string.IsNullOrEmpty(query))
+                {
+                    bool matchesDisplayName = s.DisplayName.ToLowerInvariant().Contains(query);
+                    bool matchesServiceName = s.ServiceName.ToLowerInvariant().Contains(query);
+                    bool matchesDesc = s.Description.ToLowerInvariant().Contains(query);
+                    bool matchesPath = s.BinaryPathName.ToLowerInvariant().Contains(query);
+                    bool matchesPid = s.ProcessId > 0 && s.ProcessId.ToString().Contains(query);
+                    bool matchesThreat = !string.IsNullOrEmpty(s.ThreatReason) && s.ThreatReason.ToLowerInvariant().Contains(query);
+
+                    if (!matchesDisplayName && !matchesServiceName && !matchesDesc && !matchesPath && !matchesPid && !matchesThreat)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+            .OrderByDescending(s => s.IsPinned)
+            .ThenBy(s => s.DisplayName)
+            .ToList();
+
+            lock (ServicesLock)
+            {
+                FilteredServices.Clear();
+                foreach (var item in filtered)
+                {
+                    FilteredServices.Add(item);
+                }
+            }
+
+            ServicesCountSummary = SelectedServicesSubTabIndex == 0
+                ? $"Exibindo {FilteredServices.Count} de {_allServices.Count(s => s.IsPinned)} serviços fixados"
+                : $"Exibindo {FilteredServices.Count} de {_allServices.Count} serviços no sistema";
+        }
+
+        public void ClearServiceFilters()
+        {
+            ServiceSearchQuery = string.Empty;
+            SelectedServiceStateFilter = "Todos os estados";
+            SelectedServiceStartupFilter = "Todos";
+            ApplyServiceFilters();
+        }
+
+        public void ToggleServicePinned(WindowsServiceItemViewModel item, bool isPinned)
+        {
+            if (item == null) return;
+            _pinnedServicesUseCase.SetPinned(item.ServiceName, isPinned);
+            item.Model.IsPinned = isPinned;
+            UpdateServiceMetrics();
+            ApplyServiceFilters();
+        }
+
+        public void SetServicesPinned(IEnumerable<WindowsServiceItemViewModel> items, bool isPinned)
+        {
+            var list = items?.ToList() ?? new List<WindowsServiceItemViewModel>();
+            if (list.Count == 0) return;
+
+            _pinnedServicesUseCase.SetPinned(list.Select(s => s.ServiceName), isPinned);
+            foreach (var item in list)
+            {
+                item.Model.IsPinned = isPinned;
+            }
+            UpdateServiceMetrics();
+            ApplyServiceFilters();
+            StatusMessage = isPinned
+                ? $"{list.Count} serviço(s) fixado(s) na aba Meus Serviços Fixados."
+                : $"{list.Count} serviço(s) removido(s) dos fixados.";
+        }
+
+        public async Task<ServiceControlExecutionSummary> ExecuteServiceActionAsync(
+            IEnumerable<WindowsServiceItemViewModel> items,
+            Domain.Enums.WindowsServiceAction action)
+        {
+            var selectedList = items?.ToList() ?? new List<WindowsServiceItemViewModel>();
+            if (selectedList.Count == 0)
+            {
+                return new ServiceControlExecutionSummary(action, 0, 0, 0, 0, Array.Empty<string>(), false);
+            }
+
+            string actionVerb = action switch
+            {
+                Domain.Enums.WindowsServiceAction.Start => "Iniciar",
+                Domain.Enums.WindowsServiceAction.Stop => "Parar",
+                Domain.Enums.WindowsServiceAction.Pause => "Pausar",
+                Domain.Enums.WindowsServiceAction.Continue => "Continuar",
+                Domain.Enums.WindowsServiceAction.Restart => "Reiniciar",
+                _ => "Executar"
+            };
+
+            StatusMessage = $"Executando '{actionVerb}' em {selectedList.Count} serviço(s)...";
+
+            var summary = await _serviceControlUseCase.ExecuteAsync(
+                selectedList.Select(vm => vm.Model),
+                action);
+
+            await RefreshServicesAsync(isSilent: true);
+
+            if (summary.ElevationCancelled)
+            {
+                StatusMessage = "Ação cancelada pelo usuário (solicitação de Administrador não autorizada).";
+            }
+            else if (summary.FailedMessages.Count > 0)
+            {
+                StatusMessage = $"Ação '{actionVerb}': {summary.SucceededCount} aplicado(s), {summary.SkippedCount} ignorado(s), {summary.FailedMessages.Count} erro(s).";
+            }
+            else
+            {
+                StatusMessage = summary.SkippedCount > 0
+                    ? $"Ação '{actionVerb}': {summary.SucceededCount} concluído(s) com sucesso ({summary.SkippedCount} ignorado(s) por já estarem no estado correto ou incompatíveis)."
+                    : $"Ação '{actionVerb}': {summary.SucceededCount} serviço(s) alterado(s) com sucesso.";
+            }
+
+            return summary;
         }
     }
 
