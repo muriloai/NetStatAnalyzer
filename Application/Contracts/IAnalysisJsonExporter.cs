@@ -9,4 +9,5 @@ public interface IAnalysisJsonExporter
     void ExportProcesses(string filePath, IEnumerable<ProcessAnalysisItem> items, string version, DateTime? dataUpdatedAt);
     void ExportTasks(string filePath, IEnumerable<ScheduledTaskItem> items, string version, DateTime? dataUpdatedAt);
     void ExportStartupItems(string filePath, IEnumerable<StartupItem> items, string version, DateTime? dataUpdatedAt);
+    void ExportServices(string filePath, IEnumerable<WindowsServiceItem> items, string version, DateTime? dataUpdatedAt);
 }

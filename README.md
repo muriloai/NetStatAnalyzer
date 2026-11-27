@@ -29,6 +29,7 @@ Ao marcar itens como confiávies você consegue ocultar eles dos resultados, o q
 - **Conexões TCP/UDP.** Veja endereços, portas e estados de conexão e identifique o processo pelo PID.
 - **Processos.** Consulte a quantidade de conexões, o uso de CPU e as taxas de leitura e escrita por processo.
 - **Tarefas agendadas e itens de inicialização.** Veja o que está configurado para rodar automaticamente e confira os comandos e arquivos associados.
+- **Serviços do Windows.** Consulte e controle serviços do sistema (`services.msc`), fixe seus serviços favoritos para acompanhamento contínuo e aplique ações (Iniciar, Parar, Pausar, Continuar e Reiniciar) em seleções individuais ou múltiplas com elevação inteligente em lote.
 - **Triagem local.** Filtre os dados por tag, confiança ou alerta e exporte os registros exibidos em JSON.
 
 A coleta usa amostras do Windows, então conexões muito breves podem passar entre leituras. As taxas de leitura e escrita vêm dos contadores de I/O do processo e podem incluir operações de disco. Os alertas seguem regras locais e servem como pistas para investigação.
@@ -73,7 +74,7 @@ Os contratos permitem testar os casos de uso com dependências simuladas, com is
 ## Documentação
 
 - [Guia de uso](docs/uso.md) com filtros, regras de confiança, exportação e atalhos do Windows.
-- [Capturas de tela](docs/images/README.md) das quatro abas e do tema claro.
+- [Capturas de tela](docs/images/README.md) das cinco abas e do tema claro.
 - [Arquitetura e limites da coleta](docs/arquitetura.md) com as fontes de dados do Windows e o fluxo de uma leitura.
 - [Compilação, testes e distribuição](docs/desenvolvimento.md).
 

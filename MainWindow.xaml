@@ -35,7 +35,7 @@
             <StackPanel VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="NetStatAnalyzer" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
-                    <TextBlock x:Name="VersionTextBlock" Text="v1.5.1" FontSize="11" FontWeight="Normal" Foreground="{DynamicResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="VersionTextBlock" Text="v1.6.0" FontSize="11" FontWeight="Normal" Foreground="{DynamicResource TextMuted}" Margin="8,2,0,0" VerticalAlignment="Center" />
                 </StackPanel>
                 <TextBlock Text="Auditoria de conexões de rede, processos ativos, consumo de banda e CPU e execução automática no Windows" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,3,0,0" />
             </StackPanel>
@@ -114,6 +114,17 @@
                                         <TextBlock Text="Editor do Registro" VerticalAlignment="Center" />
                                         <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
                                             <TextBlock Text="regedit" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                        </Border>
+                                    </DockPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem ToolTip="Abrir o console oficial de Serviços do Windows (services.msc)" 
+                                      Foreground="{DynamicResource TextPrimary}" Click="OpenServicesConsole_Click">
+                                <MenuItem.Header>
+                                    <DockPanel LastChildFill="False">
+                                        <TextBlock Text="Serviços do Windows" VerticalAlignment="Center" />
+                                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="services" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
                                         </Border>
                                     </DockPanel>
                                 </MenuItem.Header>
@@ -278,6 +289,10 @@
             <Button x:Name="TabStartupBtn" Content="🚀 Itens de Inicialização" 
                     Style="{StaticResource ModernTabButton}" 
                     Click="TabButton_Click" Tag="3" />
+
+            <Button x:Name="TabServicesBtn" Content="🛠️ Serviços do Windows" 
+                    Style="{StaticResource ModernTabButton}" 
+                    Click="TabButton_Click" Tag="4" />
         </StackPanel>
 
         <!-- ROW 2: ACTIVE TAB EMBRACING CARD CONTAINER (Foto 2: Delimiting frame that visually unites the active tab) -->
@@ -1362,6 +1377,339 @@
                                 </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
+                    </Border>
+                </Grid>
+
+                <!-- ========================================== -->
+                <!-- TAB 4: SERVIÇOS DO WINDOWS (SERVICES.MSC) -->
+                <!-- ========================================== -->
+                <Grid x:Name="TabContentServices" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /> <!-- Contextual Service Metric Cards -->
+                        <RowDefinition Height="Auto" /> <!-- Sub-tabs + Filter Bar -->
+                        <RowDefinition Height="*" />    <!-- DataGrid -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Contextual Metrics: Services -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="{DynamicResource SuccessSurface}" BorderBrush="{DynamicResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Serviços fixados nesta aba. Clique para alternar para a sub-aba de fixados." MouseDown="MetricCardServicesPinned_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="SERVIÇOS FIXADOS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricServicesPinnedText" Text="{Binding MetricServicesPinned}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1" Background="{DynamicResource SuccessSurface}" BorderBrush="{DynamicResource SuccessBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Serviços em execução. Clique para filtrar por este estado." MouseDown="MetricCardServicesRunning_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="EM EXECUÇÃO" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricServicesRunningText" Text="{Binding MetricServicesRunning}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource SuccessColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Serviços parados. Clique para filtrar por este estado." MouseDown="MetricCardServicesStopped_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="PARADOS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricServicesStoppedText" Text="{Binding MetricServicesStopped}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="3" Background="{DynamicResource WarningSurface}" BorderBrush="{DynamicResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0"
+                                Cursor="Hand" ToolTip="Serviços pausados. Clique para filtrar por este estado." MouseDown="MetricCardServicesPaused_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="PAUSADOS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningColor}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricServicesPausedText" Text="{Binding MetricServicesPaused}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WarningColor}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="4" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="12,8"
+                                Cursor="Hand" ToolTip="Total de serviços locais do Windows. Clique para alternar para a sub-aba de pesquisa." MouseDown="MetricCardServicesCatalog_MouseDown">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="TOTAL NO WINDOWS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="MetricServicesCatalogTotalText" Text="{Binding MetricServicesCatalogTotal}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Sub-tabs + Filters Bar: Serviços do Windows -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Sub-tab Selector Pills -->
+                        <Border Grid.Column="0" Background="{DynamicResource SurfaceRaised}" BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="8" Padding="4" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="SubTabPinnedBtn" Content="📌 Meus Serviços Fixados"
+                                        Style="{StaticResource ModernPrimaryButton}" Height="30" Margin="0,0,4,0"
+                                        ToolTip="Exibir apenas os serviços marcados e mantidos fixos nesta aba (padrão)"
+                                        Click="SubTabPinnedBtn_Click" />
+                                <Button x:Name="SubTabCatalogBtn" Content="🔍 Pesquisar e Selecionar (services.msc)"
+                                        Style="{StaticResource ModernSecondaryButton}" Height="30"
+                                        ToolTip="Pesquisar e listar todos os serviços do Windows para marcar ou desmarcar"
+                                        Click="SubTabCatalogBtn_Click" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Filters -->
+                        <Border Grid.Column="1" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" MinWidth="160" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
+                                    <TextBlock Text="Buscar serviços por nome, descrição, executável ou PID" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,3" />
+                                    <TextBox x:Name="ServiceSearchTextBox" 
+                                             Style="{StaticResource ModernTextBox}" 
+                                             Height="30" HorizontalAlignment="Stretch"
+                                             TextChanged="ServiceSearchTextBox_TextChanged" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,8,0">
+                                    <TextBlock Text="Estado" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,3" />
+                                    <ComboBox x:Name="ServiceStateFilterComboBox" 
+                                              Style="{StaticResource ModernComboBox}" 
+                                              SelectedIndex="0" 
+                                              Width="140" Height="30" 
+                                              SelectionChanged="ServiceFilterComboBox_SelectionChanged">
+                                        <ComboBoxItem Content="Todos os estados" IsSelected="True" />
+                                        <ComboBoxItem Content="Em execução" />
+                                        <ComboBoxItem Content="Parado" />
+                                        <ComboBoxItem Content="Pausado" />
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,8,0">
+                                    <TextBlock Text="Inicialização" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,3" />
+                                    <ComboBox x:Name="ServiceStartupFilterComboBox" 
+                                              Style="{StaticResource ModernComboBox}" 
+                                              SelectedIndex="0" 
+                                              Width="150" Height="30" 
+                                              SelectionChanged="ServiceFilterComboBox_SelectionChanged">
+                                        <ComboBoxItem Content="Todos" IsSelected="True" />
+                                        <ComboBoxItem Content="Apenas marcados" />
+                                        <ComboBoxItem Content="Automático" />
+                                        <ComboBoxItem Content="Manual" />
+                                        <ComboBoxItem Content="Desativado" />
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                    <Button Content="Limpar" 
+                                            Style="{StaticResource ModernSecondaryButton}" 
+                                            Height="30" Margin="0,0,4,0"
+                                            ToolTip="Redefinir busca e filtros desta aba"
+                                            Click="ClearServiceFilters_Click" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- More actions -->
+                        <Border Grid.Column="2" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="8,0,0,0" VerticalAlignment="Stretch">
+                            <Button Content="Mais ações ▾" Style="{StaticResource ModernSecondaryButton}"
+                                    Height="30" Padding="12,0" VerticalAlignment="Center"
+                                    ToolTip="Utilitários e exportação dos serviços" Click="TabActionsButton_Click">
+                                <Button.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Click="OpenServicesConsole_Click" Foreground="{DynamicResource TextPrimary}"
+                                                  ToolTip="Abrir o console oficial de Serviços do Windows (services.msc)">
+                                            <MenuItem.Header>
+                                                <DockPanel LastChildFill="False">
+                                                    <TextBlock Text="⚙️ Abrir no console de Serviços" VerticalAlignment="Center" />
+                                                    <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceInset}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="services.msc" FontSize="10" FontFamily="Consolas, monospace" Foreground="{DynamicResource AccentBorder}" />
+                                                    </Border>
+                                                </DockPanel>
+                                            </MenuItem.Header>
+                                        </MenuItem>
+                                        <Separator />
+                                        <MenuItem Header="Exportar serviços exibidos em JSON" Click="ExportCurrentTabJson_Click" />
+                                    </ContextMenu>
+                                </Button.ContextMenu>
+                            </Button>
+                        </Border>
+                    </Grid>
+
+                    <!-- DataGrid Windows Services -->
+                    <Border Grid.Row="2" Background="{DynamicResource DataGridSurface}" BorderBrush="{DynamicResource DataGridGridline}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                        <Grid>
+                            <DataGrid x:Name="ServicesDataGrid" 
+                                      ItemsSource="{Binding FilteredServices}" 
+                                      CanUserResizeColumns="True" 
+                                      CanUserSortColumns="True"
+                                      SelectionMode="Extended"
+                                      PreviewMouseRightButtonDown="ServicesDataGrid_PreviewMouseRightButtonDown"
+                                      SelectionChanged="DataGrid_SelectionChanged"
+                                      MouseDoubleClick="ServicesDataGrid_MouseDoubleClick">
+                                <DataGrid.ContextMenu>
+                                    <ContextMenu Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Opened="ServicesContextMenu_Opened">
+                                        <!-- 5 Windows Service Control Actions -->
+                                        <MenuItem Tag="ServiceActionStart" Click="ServiceActionStart_Click" FontWeight="SemiBold" Foreground="{DynamicResource SuccessColor}" />
+                                        <MenuItem Tag="ServiceActionStop" Click="ServiceActionStop_Click" FontWeight="SemiBold" Foreground="{DynamicResource DangerColor}" />
+                                        <MenuItem Tag="ServiceActionPause" Click="ServiceActionPause_Click" Foreground="{DynamicResource WarningColor}" />
+                                        <MenuItem Tag="ServiceActionContinue" Click="ServiceActionContinue_Click" Foreground="{DynamicResource AccentBorder}" />
+                                        <MenuItem Tag="ServiceActionRestart" Click="ServiceActionRestart_Click" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+                                        <Separator Background="{DynamicResource BorderBrush}" />
+                                        <MenuItem Tag="ServicePinToggle" Click="ServicePinToggle_Click" FontWeight="Medium" Foreground="{DynamicResource TextPrimary}" />
+                                        <Separator Background="{DynamicResource BorderBrush}" />
+                                        <MenuItem Header="Editar tags da seleção" Tag="TagAction" Click="EditTagSelection_Click" />
+                                        <MenuItem Header="Marcar como confiável" Tag="TrustToggle" Click="ToggleSelectedTrust_Click" />
+                                        <MenuItem Header="📁 Abrir localização do executável" Tag="OpenLocationAction" Click="ServiceOpenFileLocation_Click" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                        <MenuItem Header="⚙️ Abrir no console services.msc" Click="OpenServicesConsole_Click" Foreground="{DynamicResource TextPrimary}" />
+                                        <Separator Background="{DynamicResource BorderBrush}" />
+                                        <MenuItem Header="Copiar detalhes do serviço" Click="CopyServiceDetails_Click" Foreground="{DynamicResource TextPrimary}" />
+                                        <MenuItem Header="Copiar nome do serviço" Click="CopyServiceName_Click" Foreground="{DynamicResource TextPrimary}" />
+                                    </ContextMenu>
+                                </DataGrid.ContextMenu>
+                                <DataGrid.RowStyle>
+                                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource SuccessSurface}" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource SuccessBorder}" />
+                                                <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                            </DataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsPinned}" Value="True" />
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True" />
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" Value="{DynamicResource SuccessHoverBackground}" />
+                                            </MultiDataTrigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource DataGridSelectionBorder}" />
+                                                <Setter Property="BorderThickness" Value="3,1,0,1" />
+                                                <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                            </Trigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsPinned}" Value="True" />
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" Value="{DynamicResource DataGridSelectionSurface}" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource SuccessColor}" />
+                                                <Setter Property="BorderThickness" Value="4,1,0,1" />
+                                                <Setter Property="Foreground" Value="{DynamicResource DataGridSelectionText}" />
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.RowStyle>
+                                <DataGrid.Columns>
+                                    <!-- PINNED / FIXO CHECKBOX -->
+                                    <DataGridTemplateColumn Header="FIXO" SortMemberPath="IsPinned" Width="70" MinWidth="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding IsPinned, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          ToolTip="{Binding PinnedToolTip}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- ESTADO -->
+                                    <DataGridTemplateColumn Header="ESTADO" SortMemberPath="StateDisplay" Width="135" MinWidth="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding StateBadgeBackground}" 
+                                                        BorderBrush="{Binding StateBadgeBorder}"
+                                                        BorderThickness="1" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding StateDisplay}" FontSize="11" FontWeight="Bold" Foreground="{Binding StateBadgeForeground}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- NOME DE EXIBIÇÃO & DESCRIÇÃO -->
+                                    <DataGridTemplateColumn Header="NOME DE EXIBIÇÃO" SortMemberPath="DisplayName" Width="260" MinWidth="180">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="12" />
+                                                    <TextBlock Text="{Binding Description}" FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                                               TextTrimming="CharacterEllipsis" MaxWidth="250" ToolTip="{Binding Description}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- NOME DO SERVIÇO -->
+                                    <DataGridTextColumn Header="SERVIÇO (SCM)" Binding="{Binding ServiceName}" 
+                                                        FontFamily="Cascadia Code, Consolas, monospace" Width="150" MinWidth="110" />
+
+                                    <!-- INICIALIZAÇÃO -->
+                                    <DataGridTextColumn Header="INICIALIZAÇÃO" Binding="{Binding StartTypeDisplay}" Width="140" MinWidth="105" />
+
+                                    <!-- PID -->
+                                    <DataGridTextColumn Header="PID" Binding="{Binding DisplayPid}" 
+                                                        FontFamily="Cascadia Code, Consolas, monospace" Width="75" MinWidth="60" />
+
+                                    <!-- CONFIANÇA -->
+                                    <DataGridTemplateColumn Header="CONFIANÇA"
+                                                            SortMemberPath="AnnotationTrusted"
+                                                            CellTemplate="{StaticResource AnnotationTrustBadgeTemplate}"
+                                                            Width="125"
+                                                            MinWidth="110" />
+
+                                    <!-- TAGS -->
+                                    <DataGridTemplateColumn Header="TAGS" SortMemberPath="TagText" Width="120" MinWidth="85"
+                                                            CellTemplate="{StaticResource TagsBadgesTemplate}" />
+
+                                    <!-- CAMINHO DO EXECUTÁVEL -->
+                                    <DataGridTemplateColumn Header="CAMINHO / EXECUTÁVEL" SortMemberPath="BinaryPathName" Width="*" MinWidth="220">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding BinaryPathName}" 
+                                                               FontFamily="Cascadia Code, Consolas, monospace" 
+                                                               FontSize="11" 
+                                                               Foreground="{DynamicResource TextPrimary}"
+                                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding BinaryPathName}" />
+                                                    <TextBlock Text="{Binding ThreatReason}" 
+                                                               FontSize="10" 
+                                                               FontWeight="SemiBold" 
+                                                               Foreground="{DynamicResource DangerColor}"
+                                                               Visibility="{Binding ThreatReasonVisibility}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <!-- Friendly Empty State for Pinned SubTab -->
+                            <Border x:Name="ServicesEmptyPinnedOverlay" Background="{DynamicResource BgSecondary}"
+                                    CornerRadius="8" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Visibility="Collapsed">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="📌 Nenhum serviço fixado ainda" FontSize="16" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,0,0,6" />
+                                    <TextBlock Text="Navegue até a sub-aba 'Pesquisar e Selecionar' para marcar os serviços que você deseja acompanhar e controlar aqui."
+                                               FontSize="12" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" Margin="0,0,0,14" TextWrapping="Wrap" MaxWidth="420" TextAlignment="Center" />
+                                    <Button Content="🔍 Ir para Pesquisar e Selecionar Serviços"
+                                            Style="{StaticResource ModernPrimaryButton}" Height="34" Padding="16,0"
+                                            HorizontalAlignment="Center" Click="SubTabCatalogBtn_Click" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Border>
                 </Grid>
 

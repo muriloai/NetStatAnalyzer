@@ -23,8 +23,14 @@ namespace NetStatAnalyzer
             var windowsToolsLauncher = new WindowsToolsLauncher();
             var executablePathResolver = new WindowsExecutablePathResolver();
             var executableHashResolver = new ExecutableHashResolver();
+            var serviceScanner = new WindowsServiceScanner();
+            var serviceController = new Win32WindowsServiceController();
 
             var allowlistUseCase = new ManageAllowlistUseCase(allowlistRepository);
+            var pinnedServicesUseCase = new ManagePinnedServicesUseCase(allowlistRepository);
+            var servicesUseCase = new ScanWindowsServicesUseCase(serviceScanner, pinnedServicesUseCase);
+            var serviceControlUseCase = new ControlWindowsServicesUseCase(serviceController);
+
             var viewModel = new MainViewModel(
                 new ScanConnectionsUseCase(networkScanner, processResolver, executableHashResolver),
                 allowlistUseCase,
@@ -35,7 +41,10 @@ namespace NetStatAnalyzer
                 new ScanScheduledTasksUseCase(taskScanner),
                 new ScanStartupItemsUseCase(startupScanner),
                 windowsToolsLauncher,
-                executableHashResolver);
+                executableHashResolver,
+                servicesUseCase,
+                pinnedServicesUseCase,
+                serviceControlUseCase);
 
             return new MainWindow(
                 viewModel,

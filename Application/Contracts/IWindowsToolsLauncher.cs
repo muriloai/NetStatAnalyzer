@@ -8,5 +8,6 @@ namespace NetStatAnalyzer.Application.Contracts
         bool OpenResourceMonitor();
         bool OpenStartupFolder();
         bool OpenRegistryEditor(string? keyPath = null);
+        bool OpenServicesConsole();
     }
 }

@@ -40,7 +40,7 @@ namespace NetStatAnalyzer.Domain.Entities
         public string App { get; set; } = "NetStatAnalyzer";
 
         [JsonPropertyName("version")]
-        public string Version { get; set; } = "1.5.1";
+        public string Version { get; set; } = "1.6.0";
 
         [JsonPropertyName("exportedAt")]
         public DateTime ExportedAt { get; set; } = DateTime.UtcNow;
@@ -53,6 +53,9 @@ namespace NetStatAnalyzer.Domain.Entities
 
         [JsonPropertyName("annotations")]
         public List<ItemAnnotation> Annotations { get; set; } = new();
+
+        [JsonPropertyName("pinnedServices")]
+        public List<string> PinnedServices { get; set; } = new();
 
         [JsonPropertyName("theme")]
         public string Theme { get; set; } = "Dark";

@@ -55,6 +55,11 @@ namespace NetStatAnalyzer.Infrastructure.System
             return LaunchTool("regedit.exe");
         }
 
+        public bool OpenServicesConsole()
+        {
+            return LaunchTool("services.msc");
+        }
+
         private bool LaunchTool(string fileName, string arguments = "")
         {
             try

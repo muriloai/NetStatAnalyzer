@@ -91,11 +91,13 @@ namespace NetStatAnalyzer
             ProcessesDataGrid.ItemsSource = ViewModel.FilteredProcesses;
             TasksDataGrid.ItemsSource = ViewModel.FilteredTasks;
             StartupDataGrid.ItemsSource = ViewModel.FilteredStartupItems;
+            ServicesDataGrid.ItemsSource = ViewModel.FilteredServices;
 
             System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ViewModel.FilteredEntries, ViewModel.EntriesLock);
             System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ViewModel.FilteredProcesses, ViewModel.ProcessesLock);
             System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ViewModel.FilteredTasks, ViewModel.TasksLock);
             System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ViewModel.FilteredStartupItems, ViewModel.StartupLock);
+            System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ViewModel.FilteredServices, ViewModel.ServicesLock);
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -126,11 +128,13 @@ namespace NetStatAnalyzer
             TabProcessesBtn.Style = index == 1 ? activeStyle : inactiveStyle;
             TabTasksBtn.Style = index == 2 ? activeStyle : inactiveStyle;
             TabStartupBtn.Style = index == 3 ? activeStyle : inactiveStyle;
+            TabServicesBtn.Style = index == 4 ? activeStyle : inactiveStyle;
 
             TabContentConnections.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
             TabContentProcesses.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
             TabContentTasks.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
             TabContentStartup.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
+            TabContentServices.Visibility = index == 4 ? Visibility.Visible : Visibility.Collapsed;
 
             ContinuousReadingToggleBtn.Visibility = Visibility.Visible;
             if (index >= 2 && ContinuousReadingToggleBtn.IsChecked == true)
@@ -141,6 +145,7 @@ namespace NetStatAnalyzer
                 ViewModel.StatusMessage = "Leitura contínua parada; disponível nas abas Conexões e Processos.";
             }
             UpdateLoadingVisualState();
+            UpdateServicesOverlay();
 
             ConnectionCountText.Text = ViewModel.CurrentTabSummary;
             UpdateSelectionSummary();
@@ -202,14 +207,28 @@ namespace NetStatAnalyzer
             else if (propertyName == nameof(MainViewModel.MetricStartupSuspicious))
                 MetricStartupSuspiciousText.Text = ViewModel.MetricStartupSuspicious.ToString();
 
+            // Tab 4: Serviços do Windows metrics
+            else if (propertyName == nameof(MainViewModel.MetricServicesPinned))
+                MetricServicesPinnedText.Text = ViewModel.MetricServicesPinned.ToString();
+            else if (propertyName == nameof(MainViewModel.MetricServicesRunning))
+                MetricServicesRunningText.Text = ViewModel.MetricServicesRunning.ToString();
+            else if (propertyName == nameof(MainViewModel.MetricServicesStopped))
+                MetricServicesStoppedText.Text = ViewModel.MetricServicesStopped.ToString();
+            else if (propertyName == nameof(MainViewModel.MetricServicesPaused))
+                MetricServicesPausedText.Text = ViewModel.MetricServicesPaused.ToString();
+            else if (propertyName == nameof(MainViewModel.MetricServicesCatalogTotal))
+                MetricServicesCatalogTotalText.Text = ViewModel.MetricServicesCatalogTotal.ToString();
+
             // Status & Contextual Summaries
             else if (propertyName == nameof(MainViewModel.CurrentTabSummary) ||
                      propertyName == nameof(MainViewModel.ConnectionCountSummary) ||
                      propertyName == nameof(MainViewModel.ProcessCountSummary) ||
                      propertyName == nameof(MainViewModel.TaskCountSummary) ||
-                     propertyName == nameof(MainViewModel.StartupCountSummary))
+                     propertyName == nameof(MainViewModel.StartupCountSummary) ||
+                     propertyName == nameof(MainViewModel.ServicesCountSummary))
             {
                 ConnectionCountText.Text = ViewModel.CurrentTabSummary;
+                UpdateServicesOverlay();
             }
             else if (propertyName == nameof(MainViewModel.StatusMessage))
                 StatusTextBlock.Text = ViewModel.StatusMessage;
@@ -277,6 +296,7 @@ namespace NetStatAnalyzer
                 case 1: ProcessesDataGrid.AutoFitColumns(); break;
                 case 2: TasksDataGrid.AutoFitColumns(); break;
                 case 3: StartupDataGrid.AutoFitColumns(); break;
+                case 4: ServicesDataGrid.AutoFitColumns(); break;
             }
         }
 
@@ -659,7 +679,8 @@ namespace NetStatAnalyzer
             0 => DataGrid.SelectedItems.Cast<object>(),
             1 => ProcessesDataGrid.SelectedItems.Cast<object>(),
             2 => TasksDataGrid.SelectedItems.Cast<object>(),
-            _ => StartupDataGrid.SelectedItems.Cast<object>()
+            3 => StartupDataGrid.SelectedItems.Cast<object>(),
+            _ => ServicesDataGrid.SelectedItems.Cast<object>()
         }).OfType<ViewModelBase>().ToArray();
 
         private void EditTagSelection_Click(object sender, RoutedEventArgs e)
@@ -891,6 +912,13 @@ namespace NetStatAnalyzer
                     return startupSelected.Count > 0 && startupSelected.Any(s =>
                         !string.IsNullOrWhiteSpace(s.ResolvedPath) ||
                         (!string.IsNullOrWhiteSpace(s.Command) && s.SourceType.Contains("Pasta", StringComparison.OrdinalIgnoreCase)));
+
+                case 4:
+                    var serviceSelected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+                    if (serviceSelected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel singleSvc)
+                        serviceSelected.Add(singleSvc);
+                    return serviceSelected.Count > 0 && serviceSelected.Any(s =>
+                        !string.IsNullOrWhiteSpace(s.ResolvedPath) || !string.IsNullOrWhiteSpace(s.BinaryPathName));
 
                 default:
                     return false;
@@ -1526,7 +1554,8 @@ namespace NetStatAnalyzer
                 0 => DataGrid.SelectedItems.Cast<object>(),
                 1 => ProcessesDataGrid.SelectedItems.Cast<object>(),
                 2 => TasksDataGrid.SelectedItems.Cast<object>(),
-                _ => StartupDataGrid.SelectedItems.Cast<object>()
+                3 => StartupDataGrid.SelectedItems.Cast<object>(),
+                _ => ServicesDataGrid.SelectedItems.Cast<object>()
             };
             var selected = selection.OfType<ViewModelBase>().ToArray();
             if (selected.Length == 0)
@@ -1548,6 +1577,8 @@ namespace NetStatAnalyzer
                         $"{task.TaskName} · {task.State} · {(task.IsSuspicious ? "Alerta" : "Sem alerta")}",
                     StartupItemViewModel startup =>
                         $"{startup.Name} · {startup.SourceType} · {(startup.IsEnabled ? "Ativo" : "Desativado")}",
+                    WindowsServiceItemViewModel service =>
+                        $"{service.DisplayName} ({service.ServiceName}) · {service.StateDisplay} · {service.StartTypeDisplay} · PID {service.DisplayPid}",
                     _ => "1 registro selecionado"
                 };
                 if (!string.IsNullOrWhiteSpace(selected[0].TagText))
@@ -1563,12 +1594,373 @@ namespace NetStatAnalyzer
                 ProcessAggregateItemViewModel => "processos",
                 ScheduledTaskItemViewModel => "tarefas",
                 StartupItemViewModel => "itens de inicialização",
+                WindowsServiceItemViewModel => "serviços",
                 _ => "registros"
             };
             int trustedCount = selected.Count(item => item.AnnotationTrusted);
             int taggedCount = selected.Count(item => !string.IsNullOrWhiteSpace(item.TagText));
             SelectedSummaryText.Text = $"{selected.Length} {itemType} selecionados · {trustedCount} confiáveis · {taggedCount} com tag";
             SelectedSummaryText.ToolTip = SelectedSummaryText.Text;
+        }
+
+        private void UpdateServicesOverlay()
+        {
+            if (ServicesEmptyPinnedOverlay == null || ViewModel == null) return;
+            bool showOverlay = ViewModel.SelectedTabIndex == 4 &&
+                               ViewModel.SelectedServicesSubTabIndex == 0 &&
+                               ViewModel.FilteredServices.Count == 0;
+            ServicesEmptyPinnedOverlay.Visibility = showOverlay ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void SubTabPinnedBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.SelectedServicesSubTabIndex = 0;
+            UpdateServicesSubTabVisualState();
+            UpdateServicesOverlay();
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private void SubTabCatalogBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.SelectedServicesSubTabIndex = 1;
+            UpdateServicesSubTabVisualState();
+            UpdateServicesOverlay();
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private void UpdateServicesSubTabVisualState()
+        {
+            if (SubTabPinnedBtn == null || SubTabCatalogBtn == null) return;
+            var primaryStyle = (Style)FindResource("ModernPrimaryButton");
+            var secondaryStyle = (Style)FindResource("ModernSecondaryButton");
+
+            SubTabPinnedBtn.Style = ViewModel.SelectedServicesSubTabIndex == 0 ? primaryStyle : secondaryStyle;
+            SubTabCatalogBtn.Style = ViewModel.SelectedServicesSubTabIndex == 1 ? primaryStyle : secondaryStyle;
+        }
+
+        private void MetricCardServicesPinned_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            SubTabPinnedBtn_Click(sender, e);
+        }
+
+        private void MetricCardServicesRunning_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (ServiceStateFilterComboBox != null)
+                ServiceStateFilterComboBox.SelectedIndex = 1;
+        }
+
+        private void MetricCardServicesStopped_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (ServiceStateFilterComboBox != null)
+                ServiceStateFilterComboBox.SelectedIndex = 2;
+        }
+
+        private void MetricCardServicesPaused_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (ServiceStateFilterComboBox != null)
+                ServiceStateFilterComboBox.SelectedIndex = 3;
+        }
+
+        private void MetricCardServicesCatalog_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            SubTabCatalogBtn_Click(sender, e);
+        }
+
+        private void ServiceSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.ServiceSearchQuery = ServiceSearchTextBox.Text;
+                UpdateServicesOverlay();
+                ServicesDataGrid.AutoFitColumns();
+            }
+        }
+
+        private void ServiceFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                if (ServiceStateFilterComboBox?.SelectedItem is ComboBoxItem stateItem)
+                    vm.SelectedServiceStateFilter = stateItem.Content?.ToString() ?? "Todos os estados";
+
+                if (ServiceStartupFilterComboBox?.SelectedItem is ComboBoxItem startupItem)
+                    vm.SelectedServiceStartupFilter = startupItem.Content?.ToString() ?? "Todos";
+
+                UpdateServicesOverlay();
+                ServicesDataGrid.AutoFitColumns();
+            }
+        }
+
+        private void ClearServiceFilters_Click(object sender, RoutedEventArgs e)
+        {
+            ServiceSearchTextBox.Text = string.Empty;
+            if (ServiceStateFilterComboBox != null) ServiceStateFilterComboBox.SelectedIndex = 0;
+            if (ServiceStartupFilterComboBox != null) ServiceStartupFilterComboBox.SelectedIndex = 0;
+
+            ViewModel.ClearServiceFilters();
+            UpdateServicesOverlay();
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private void ServicesDataGrid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not DataGrid grid || e.OriginalSource is not DependencyObject source) return;
+            if (ItemsControl.ContainerFromElement(grid, source) is not DataGridRow row) return;
+
+            if (!row.IsSelected)
+            {
+                grid.SelectedItems.Clear();
+                row.IsSelected = true;
+            }
+            row.Focus();
+        }
+
+        private void ServicesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                DependencyObject? current = dep;
+                while (current != null && current != ServicesDataGrid)
+                {
+                    if (current is DataGridColumnHeader || current is ScrollBar || current is Button || current is CheckBox) return;
+                    if (current is DataGridRow row && row.Item is WindowsServiceItemViewModel item)
+                    {
+                        string path = !string.IsNullOrWhiteSpace(item.ResolvedPath) ? item.ResolvedPath : item.BinaryPathName;
+                        OpenFileInExplorer(path, item.DisplayName);
+                        e.Handled = true;
+                        return;
+                    }
+                    current = VisualTreeHelper.GetParent(current);
+                }
+            }
+        }
+
+        private void ServicesContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ContextMenu menu) return;
+
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+            {
+                selected.Add(single);
+            }
+
+            int count = selected.Count;
+
+            int startEligible = selected.Count(s => s.CanStart);
+            int stopEligible = selected.Count(s => s.CanStopAction);
+            int pauseEligible = selected.Count(s => s.CanPauseAction);
+            int continueEligible = selected.Count(s => s.CanContinueAction);
+            int restartEligible = selected.Count(s => s.CanRestartAction);
+
+            ConfigureServiceActionMenuItem(menu, "ServiceActionStart", "Iniciar serviço", startEligible, count);
+            ConfigureServiceActionMenuItem(menu, "ServiceActionStop", "Parar serviço", stopEligible, count);
+            ConfigureServiceActionMenuItem(menu, "ServiceActionPause", "Pausar serviço", pauseEligible, count);
+            ConfigureServiceActionMenuItem(menu, "ServiceActionContinue", "Continuar serviço", continueEligible, count);
+            ConfigureServiceActionMenuItem(menu, "ServiceActionRestart", "Reiniciar serviço", restartEligible, count);
+
+            // Pin toggle
+            var pinAction = menu.Items.OfType<MenuItem>().FirstOrDefault(i => string.Equals(i.Tag?.ToString(), "ServicePinToggle", StringComparison.Ordinal));
+            if (pinAction != null)
+            {
+                pinAction.IsEnabled = count > 0;
+                bool willPin = selected.Any(s => !s.IsPinned);
+                if (count <= 1)
+                {
+                    pinAction.Header = willPin ? "📌 Fixar na aba Meus Serviços Fixados" : "📌 Desmarcar dos serviços fixados";
+                }
+                else
+                {
+                    pinAction.Header = willPin ? "📌 Fixar seleção na aba Meus Serviços Fixados" : "📌 Desmarcar seleção dos serviços fixados";
+                }
+            }
+
+            // Tag Action
+            var tagAction = menu.Items.OfType<MenuItem>().FirstOrDefault(i => string.Equals(i.Tag?.ToString(), "TagAction", StringComparison.Ordinal));
+            if (tagAction != null)
+            {
+                bool hasAnyTag = selected.Any(item => item.HasTags);
+                tagAction.Header = count <= 1
+                    ? (hasAnyTag ? "Editar tags do serviço" : "Aplicar tags no serviço")
+                    : (hasAnyTag ? "Editar tags da seleção" : "Aplicar tags na seleção");
+                tagAction.IsEnabled = count > 0;
+            }
+
+            // Trust Action
+            var trustAction = menu.Items.OfType<MenuItem>().FirstOrDefault(i => string.Equals(i.Tag?.ToString(), "TrustToggle", StringComparison.Ordinal));
+            if (trustAction != null)
+            {
+                bool willTrust = count == 0 || selected.All(item => !item.AnnotationTrusted);
+                trustAction.IsEnabled = count > 0;
+                trustAction.Header = willTrust ? "Marcar como confiável" : "Remover confiança";
+                trustAction.Foreground = count == 0
+                    ? (Brush)FindResource("TextMuted")
+                    : (Brush)FindResource(willTrust ? "SuccessColor" : "DangerColor");
+            }
+
+            // Open Location
+            var openLocationAction = menu.Items.OfType<MenuItem>().FirstOrDefault(i => string.Equals(i.Tag?.ToString(), "OpenLocationAction", StringComparison.Ordinal));
+            if (openLocationAction != null)
+            {
+                bool canOpen = CanOpenActiveSelectionLocation();
+                openLocationAction.IsEnabled = canOpen;
+                openLocationAction.ToolTip = canOpen
+                    ? "Abrir pasta contendo o binário no Windows Explorer"
+                    : "Localização do executável não disponível no disco";
+            }
+        }
+
+        private void ConfigureServiceActionMenuItem(ContextMenu menu, string tag, string baseLabel, int eligibleCount, int totalCount)
+        {
+            var item = menu.Items.OfType<MenuItem>().FirstOrDefault(i => string.Equals(i.Tag?.ToString(), tag, StringComparison.Ordinal));
+            if (item == null) return;
+
+            bool canDo = eligibleCount > 0;
+            item.IsEnabled = canDo;
+
+            string pluralSuffix = totalCount > 1 ? "s" : string.Empty;
+            string label = totalCount > 1 ? $"{baseLabel}{pluralSuffix}" : baseLabel;
+
+            if (totalCount > 1 && canDo)
+            {
+                item.Header = CreateMenuHeaderWithBadge(
+                    label,
+                    $"{eligibleCount} de {totalCount}",
+                    (Brush)FindResource("SurfaceInset"),
+                    (Brush)FindResource("BorderBrush"),
+                    (Brush)FindResource("AccentBorder"));
+                item.ToolTip = $"{eligibleCount} de {totalCount} serviço(s) selecionado(s) suportam esta ação.";
+            }
+            else
+            {
+                item.Header = label;
+                item.ToolTip = canDo ? null : "Ação incompatível com o estado ou configurações atuais dos serviços selecionados.";
+            }
+        }
+
+        private async void ServiceActionStart_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            await ViewModel.ExecuteServiceActionAsync(selected, Domain.Enums.WindowsServiceAction.Start);
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private async void ServiceActionStop_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            await ViewModel.ExecuteServiceActionAsync(selected, Domain.Enums.WindowsServiceAction.Stop);
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private async void ServiceActionPause_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            await ViewModel.ExecuteServiceActionAsync(selected, Domain.Enums.WindowsServiceAction.Pause);
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private async void ServiceActionContinue_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            await ViewModel.ExecuteServiceActionAsync(selected, Domain.Enums.WindowsServiceAction.Continue);
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private async void ServiceActionRestart_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            await ViewModel.ExecuteServiceActionAsync(selected, Domain.Enums.WindowsServiceAction.Restart);
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private void ServicePinToggle_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            bool willPin = selected.Any(s => !s.IsPinned);
+            ViewModel.SetServicesPinned(selected, willPin);
+            UpdateServicesOverlay();
+            ServicesDataGrid.AutoFitColumns();
+        }
+
+        private void ServiceOpenFileLocation_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            if (selected.Count == 1)
+            {
+                string path = !string.IsNullOrWhiteSpace(selected[0].ResolvedPath) ? selected[0].ResolvedPath : selected[0].BinaryPathName;
+                OpenFileInExplorer(path, selected[0].DisplayName);
+            }
+            else
+            {
+                OpenMultipleFilesInExplorer(selected.Select(s => !string.IsNullOrWhiteSpace(s.ResolvedPath) ? s.ResolvedPath : s.BinaryPathName));
+            }
+        }
+
+        private void OpenServicesConsole_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.OpenServicesConsoleCommand.Execute(null);
+        }
+
+        private void CopyServiceDetails_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            if (selected.Count == 1)
+            {
+                var s = selected[0];
+                string details = $"Serviço: {s.DisplayName} ({s.ServiceName})\nEstado: {s.StateDisplay}\nInicialização: {s.StartTypeDisplay}\nPID: {s.DisplayPid}\nConta: {s.ServiceAccount}\nCaminho: {s.BinaryPathName}\nDescrição: {s.Description}";
+                Clipboard.SetText(details);
+                ViewModel.StatusMessage = $"Detalhes de '{s.DisplayName}' copiados!";
+            }
+            else
+            {
+                var lines = selected.Select(s => $"{s.DisplayName}\t{s.ServiceName}\t{s.StateDisplay}\t{s.StartTypeDisplay}\tPID: {s.DisplayPid}\t{s.BinaryPathName}");
+                Clipboard.SetText(string.Join(Environment.NewLine, lines));
+                ViewModel.StatusMessage = $"{selected.Count} serviço(s) copiado(s).";
+            }
+        }
+
+        private void CopyServiceName_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = ServicesDataGrid.SelectedItems.OfType<WindowsServiceItemViewModel>().ToList();
+            if (selected.Count == 0 && ServicesDataGrid.SelectedItem is WindowsServiceItemViewModel single)
+                selected.Add(single);
+            if (selected.Count == 0) return;
+
+            var names = selected.Select(s => s.ServiceName);
+            Clipboard.SetText(string.Join(Environment.NewLine, names));
+            ViewModel.StatusMessage = $"{selected.Count} nome(s) de serviço copiado(s).";
         }
     }
 }
